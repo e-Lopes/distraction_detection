@@ -145,12 +145,12 @@ def process_video(config, model):
                     new_state = "FORA_DA_CADEIRA"
                     celular_exit_timer = None
                 elif found_phone:
-                    new_state = "CELULAR"
+                    new_state = "DESATENTO (CELULAR)"
                     celular_exit_timer = None
                 elif wrists_close:
-                    new_state = "SEGURANDO_OBJETO"
+                    new_state = "DESATENTO (MAOS FORA DOS CONTROLES)"
                     celular_exit_timer = None
-                elif current_state == "CELULAR":
+                elif current_state == "DESATENTO (CELULAR)":
                     if celular_exit_timer is None:
                         celular_exit_timer = timestamp
                     elif timestamp - celular_exit_timer >= CELULAR_TIMEOUT_SECONDS:
@@ -176,8 +176,8 @@ def process_video(config, model):
                 # ROI e estado
                 color_map = {
                     "ATENTO": (0, 255, 0),
-                    "CELULAR": (0, 0, 255),
-                    "SEGURANDO_OBJETO": (255, 255, 0),
+                    "DESATENTO (CELULAR)": (0, 0, 255),
+                    "DESATENTO (MAOS FORA DOS CONTROLES)": (0, 0, 255),#(255, 255, 0),
                     "FORA_DA_CADEIRA": (255, 0, 0)
                 }
                 roi_color = color_map.get(current_state, (255, 255, 255))

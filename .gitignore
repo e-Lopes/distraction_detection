@@ -4,3 +4,12 @@ videos/TELEOP - UMT001 - NVR1-Ch.6-TELEOP-UMT001-NVR1-CAM7-2025-02-11-09-00-07.m
 videos/webcam_analisada.mp4
 videos/grafico_completo.png
 *.pt
+attention_timeline_1.png
+attention_timeline_2.png
+attention_timeline_3.png
+attention_timeline_4.png
+distraction_log_1.txt
+distraction_log_2.txt
+distraction_log_3.txt
+distraction_log_4.txt
+roi_config.json
