@@ -11,6 +11,7 @@ from matplotlib.patches import Patch
 import glob
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+import urllib.request
 
 # -------------------------------
 # Configurações
@@ -20,6 +21,7 @@ OUTPUT_LOG_PREFIX = "distraction_log_"
 MODEL_PATH = "yolov11x.pt"
 TIMELINE_GRAPH_PREFIX = "attention_timeline_"
 
+MODEL_DOWNLOAD_URL = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt"
 # Configurações de dispositivo
 torch.set_num_threads(1)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -57,6 +59,12 @@ pose = mp_pose.Pose(
 # -------------------------------
 # Funções auxiliares
 # -------------------------------
+
+def ensure_model_exists(model_path, download_url): # Função para garantir o modelo do yolov11x
+    if not os.path.isfile(model_path):
+        print(f"Modelo não encontrado em '{model_path}'. Baixando de {download_url}...")
+        urllib.request.urlretrieve(download_url, model_path)
+        print("Download concluído.")
 
 def check_wrists_close(pose_landmarks, roi_width):
     """Verifica se os pulsos estão próximos (menos de 1/3 da largura da ROI)"""
@@ -179,7 +187,7 @@ class VideoSelectorApp:
         main_frame = ttk.Frame(self.root, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        ttk.Label(main_frame, text="Selecione o Vídeo para Análise", font=('Arial', 12, 'bold')).pack(pady=10)
+        ttk.Label(main_frame, text="Selecione os arquivos .mp4 para serem análisados", font=('Arial', 12, 'bold')).pack(pady=10)
         
         self.video_listbox = tk.Listbox(main_frame, selectmode=tk.MULTIPLE, height=6)
         self.video_listbox.pack(fill=tk.BOTH, expand=True, pady=10)
@@ -207,9 +215,7 @@ class VideoSelectorApp:
             self.scan_videos(folder)
     
     def scan_videos(self, folder):
-        self.video_files = glob.glob(os.path.join(folder, "*.mp4")) + \
-                          glob.glob(os.path.join(folder, "*.avi")) + \
-                          glob.glob(os.path.join(folder, "*.mov"))
+        self.video_files = glob.glob(os.path.join(folder, "*.mp4"))
         
         self.video_listbox.delete(0, tk.END)
         for video in self.video_files:
@@ -237,6 +243,7 @@ class VideoSelectorApp:
 # -------------------------------
 
 def process_video(video_path, roi_chair, output_suffix=""):
+    ensure_model_exists(MODEL_PATH, MODEL_DOWNLOAD_URL)
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Erro ao abrir vídeo: {video_path}")
@@ -261,6 +268,31 @@ def process_video(video_path, roi_chair, output_suffix=""):
     roi_area = w * h
 
     model = YOLO(MODEL_PATH).to(DEVICE)
+
+    # Configuração da janela para abrir centralizada e com tamanho adequado
+    cv2.namedWindow("Monitoramento", cv2.WINDOW_NORMAL)
+    
+    # Obtém a resolução do monitor principal
+    screen_width = 1920  # Valor padrão caso não consiga obter
+    screen_height = 1080  # Valor padrão caso não consiga obter
+    
+    try:
+        root = tk.Tk()
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        root.destroy()
+    except:
+        pass
+    
+    # Define o tamanho da janela para 80% da resolução do monitor
+    window_width = int(screen_width * 0.8)
+    window_height = int(screen_height * 0.8)
+    cv2.resizeWindow("Monitoramento", window_width, window_height)
+    
+    # Centraliza a janela
+    cv2.moveWindow("Monitoramento", 
+                  (screen_width - window_width) // 2, 
+                  (screen_height - window_height) // 2)
 
     with open(output_log, "w") as log_file:
         log_file.write("Inicio(s),Fim(s),Estado,Duração(s)\n")
@@ -364,6 +396,20 @@ def process_video(video_path, roi_chair, output_suffix=""):
                         color = (0, 255, 0) if landmark.y > 0.5 else (0, 0, 255)
                         cv2.circle(frame, (wx, wy), 8, color, -1)
 
+                # Redimensiona o frame para caber na janela
+                frame_height, frame_width = frame.shape[:2]
+                aspect_ratio = frame_width / frame_height
+                
+                if frame_width > window_width or frame_height > window_height:
+                    if frame_width / window_width > frame_height / window_height:
+                        new_width = window_width
+                        new_height = int(new_width / aspect_ratio)
+                    else:
+                        new_height = window_height
+                        new_width = int(new_height * aspect_ratio)
+                    
+                    frame = cv2.resize(frame, (new_width, new_height))
+                
                 cv2.imshow("Monitoramento", frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
@@ -378,6 +424,9 @@ def process_video(video_path, roi_chair, output_suffix=""):
 # -------------------------------
 
 if __name__ == "__main__":
+    #Faz o download do modelo do yolo se ele nao estiver na pasta
+    ensure_model_exists(MODEL_PATH, MODEL_DOWNLOAD_URL)
+
     # Cria e executa a interface gráfica
     root = tk.Tk()
     app = VideoSelectorApp(root)
