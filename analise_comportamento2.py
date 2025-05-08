@@ -14,6 +14,7 @@ TEMPO_MINIMO_ALERTA = 1.5
 HISTORICO_GRAFICO = 60
 COR_ALERTA = (0, 0, 255)
 COR_NORMAL = (0, 255, 0)
+COR_NAO_DETECTADO = (255, 0, 0)
 
 # Configurar backend do matplotlib para 'Agg' (sem interface gráfica)
 plt.switch_backend('agg')
@@ -67,10 +68,13 @@ def main():
     if roi is None:
         return
 
+    inicio_segundos = 1140  # <<< Tempo de início em segundos
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Erro ao abrir vídeo: {video_path}")
         return
+
+    cap.set(cv2.CAP_PROP_POS_MSEC, inicio_segundos * 1000)
 
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -97,19 +101,20 @@ def main():
         frames_totais += 1
         x, y, w, h = roi
         angulo = 0
-        estado = "NORMAL"
+        estado = "NÃO DETECTADO"
+        cor = COR_NAO_DETECTADO
 
         try:
             results = pose.process(cv2.cvtColor(frame[y:y+h, x:x+w], cv2.COLOR_BGR2RGB))
             
             if results.pose_landmarks:
                 angulo = calcular_inclinacao(results.pose_landmarks)
-                historico.append(angulo)
-                angulos_totais.append(angulo)
-                timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
+                estado = "NORMAL"
+                cor = COR_NORMAL
 
                 if angulo > ANGULO_ALERTA:
                     estado = "ALERTA"
+                    cor = COR_ALERTA
                     frames_alerta += 1
 
                 mp_drawing.draw_landmarks(
@@ -121,6 +126,10 @@ def main():
         except Exception as e:
             print(f"Erro no processamento: {e}")
 
+        historico.append(angulo)
+        angulos_totais.append(angulo)
+        timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000)
+
         # Atualizar gráfico
         if len(historico) > 0:
             grafico_img = update_grafico(fig, ax, line, historico)
@@ -128,7 +137,6 @@ def main():
             frame[10:210, 10:410] = grafico_img
 
         # UI
-        cor = COR_ALERTA if estado == "ALERTA" else COR_NORMAL
         cv2.rectangle(frame, (x, y), (x+w, y+h), cor, 3)
         cv2.putText(frame, f"{estado} ({angulo:.1f}°)", (x, y-15), 
                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, cor, 2)

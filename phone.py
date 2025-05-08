@@ -100,9 +100,9 @@ def process_video(config, model):
                     new_state = "FORA_DA_CADEIRA"
                     celular_exit_timer = None
                 elif found_phone:
-                    new_state = "CELULAR"
+                    new_state = "PHONE"
                     celular_exit_timer = None
-                elif current_state == "CELULAR":
+                elif current_state == "PHONE":
                     if celular_exit_timer is None:
                         celular_exit_timer = timestamp
                     elif timestamp - celular_exit_timer >= CELULAR_TIMEOUT_SECONDS:
@@ -138,12 +138,12 @@ def process_video(config, model):
                             y1 += y
                             y2 += y
                             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                            cv2.putText(frame, "Celular", (x1, y1 - 10),
+                            cv2.putText(frame, "Phone Detected", (x1, y1 - 10),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
                 # 💬 Mensagem extra se celular reaparece durante o timeout
                 # 💬 Contagem regressiva para sair do estado "CELULAR"
-                if current_state == "CELULAR" and celular_exit_timer:
+                if current_state == "PHONE" and celular_exit_timer:
                     remaining = CELULAR_TIMEOUT_SECONDS - (timestamp - celular_exit_timer)
                     if remaining > 0:
                         msg = f"Voltando ao estado ATENTO em: {remaining:.1f}s"

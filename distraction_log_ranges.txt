@@ -1,0 +1,2 @@
+Inicio(s),Fim(s),Estado,Duração(s)
+240.0,243.1,ATENTO,3.1
