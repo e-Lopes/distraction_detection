@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from pathlib import Path
 
+videos = '/home/edu/Desktop/distraction_detection/distraction_detection/videos/'
+
 # Configurações
 ANGULO_ALERTA = 20
 TEMPO_MINIMO_ALERTA = 1.5
@@ -68,7 +70,7 @@ def main():
     if roi is None:
         return
 
-    inicio_segundos = 1140  # <<< Tempo de início em segundos
+    inicio_segundos = 0  # <<< Tempo de início em segundos
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Erro ao abrir vídeo: {video_path}")
@@ -101,7 +103,7 @@ def main():
         frames_totais += 1
         x, y, w, h = roi
         angulo = 0
-        estado = "NÃO DETECTADO"
+        estado = "NAO DETECTADO"
         cor = COR_NAO_DETECTADO
 
         try:

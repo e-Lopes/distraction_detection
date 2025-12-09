@@ -1,9 +1,9 @@
 {
-    "video_path": "C:/Users/Eduardo/Documents/GitHub/distraction_detection/videos/1.mp4",
+    "video_path": "/home/edu/Desktop/distraction_detection/distraction_detection/videos/1.mp4",
     "roi_cadeira": [
-        1283,
-        553,
-        397,
-        439
+        1237,
+        546,
+        446,
+        475
     ]
 }

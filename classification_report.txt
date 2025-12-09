@@ -1,0 +1,13 @@
+Classification Report (com 'CELULAR' tratado como 'MAOS_FORA')
+------------------------------------------------------------
+Normal Operation     0.95       0.92       0.94       22264     
+Posture Deviation    0.42       0.97       0.59       887       
+Hands Off Controls   0.68       0.83       0.75       6926      
+Operator Absence     0.97       0.79       0.87       10701     
+
+Additional Metrics:
+Overall Accuracy: 0.87
+Macro F1-score: 0.79
+Weighted F1-score: 0.88
+
+Total de registros analisados: 40778

@@ -1,3 +1,6 @@
+#import tensorflow as tf
+#print(tf.__version__)
+
 import torch
 
 print("\n--- Verificação Pós-Instalação ---")
