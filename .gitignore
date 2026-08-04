@@ -1,0 +1,32 @@
+# Dados originais e sensíveis
+/data/raw/videos/
+/data/raw/annotations/
+
+# Dados intermediários e processados
+/data/interim/
+/data/processed/
+
+# Modelos treinados
+*.pt
+*.pth
+*.onnx
+
+# Vídeos
+*.mp4
+*.avi
+*.mkv
+*.mov
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Configurações locais
+.env
+.vscode/
