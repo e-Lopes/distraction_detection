@@ -1,0 +1,3 @@
+video_id,session_id,operator_alias,fps,num_frames,duration_seconds,annotation_version
+video_01,session_01,operator_A,17.0,0,0,v1
+

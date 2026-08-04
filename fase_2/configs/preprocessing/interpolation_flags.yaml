@@ -1,0 +1,8 @@
+name: "short_gap_interpolation_with_flags"
+short_gap_max_frames: 15
+short_gap_method: "linear"
+long_gap_fill: "training_median"
+add_flags: true
+flags: [face_detected, was_interpolated, missing_duration_so_far]
+scaling: "standard_train_only"
+

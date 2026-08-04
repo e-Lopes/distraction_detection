@@ -1,0 +1,11 @@
+experiment_name: "imbalance_mitigation"
+strategies:
+  - "none"
+  - "class_weights"
+  - "weighted_sampling"
+  - "light_time_series_augmentation"
+augmentation_train_only: true
+augmentation:
+  methods: [small_jitter, small_scaling, short_frame_masking]
+  preserve_physical_ranges: true
+

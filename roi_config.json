@@ -1,9 +1,0 @@
-{
-    "video_path": "/home/edu/Desktop/distraction_detection/distraction_detection/videos/1.mp4",
-    "roi_cadeira": [
-        1237,
-        546,
-        446,
-        475
-    ]
-}

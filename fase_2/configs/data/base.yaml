@@ -1,0 +1,16 @@
+dataset:
+  version: "v1"
+  manifest: "data/manifests/videos.csv"
+  annotations: "data/raw/annotations"
+  indicators: [ear, mar, pitch, yaw, roll]
+  classes: [alert, fatigue, distraction]
+  operational_states: [face_missing, operator_absent, occlusion]
+  frame_rate_source: "manifest"
+
+windowing:
+  sizes_frames: [30, 60, 150]
+  stride_frames: 15
+  label_rule: "majority"
+  minimum_target_proportion: 0.60
+  transition_policy: "exclude_from_primary_training"
+

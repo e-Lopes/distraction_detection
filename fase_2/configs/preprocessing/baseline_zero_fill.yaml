@@ -1,0 +1,6 @@
+name: "zero_fill_baseline"
+short_gap_max_frames: 0
+fill_long_gaps: "zero"
+add_flags: false
+scaling: "standard_train_only"
+

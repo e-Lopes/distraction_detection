@@ -1,0 +1,36 @@
+# Dados e informações sensíveis
+data/raw/**
+data/interim/**
+data/processed/**
+data/external/**
+!data/**/README.md
+!data/manifests/*.example.csv
+
+# Resultados pesados/reproduzíveis
+outputs/models/**
+outputs/predictions/**
+outputs/logs/**
+outputs/cache/**
+!outputs/**/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Notebooks e IDE
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# Sistema e segredos
+.DS_Store
+Thumbs.db
+.env
+*.key
+*.pem
+
