@@ -1,0 +1,5 @@
+video_id,relative_path,session_id,fps,width,height,num_frames,duration_seconds,annotation_version,metadata_backend,metadata_limitation
+video_01,fase_2/data/raw/videos/1.mp4,session_01,18.02297333739436,1920,1080,32013,1776.233,v1,opencv,FPS e frame count são metadados declarados pelo container
+video_02,fase_2/data/raw/videos/2.mp4,session_02,15.715857300015715,1920,1080,28200,1794.366,v1,opencv,FPS e frame count são metadados declarados pelo container
+video_03,fase_2/data/raw/videos/3.mp4,session_03,17.00686183760897,1920,1080,30334,1783.633,v1,opencv,FPS e frame count são metadados declarados pelo container
+video_04,fase_2/data/raw/videos/4.mp4,session_04,17.813525615558454,1920,1080,31790,1784.599,v1,opencv,FPS e frame count são metadados declarados pelo container

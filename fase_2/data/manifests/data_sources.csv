@@ -1,0 +1,7 @@
+source_id,phase,modality,format,item_count,annotation_count,labels,phase2_role,status,versioned_payload
+raw_teleoperation_videos,2,video,mp4,4,,none,primary_source,available_local,false
+temporal_behavior_intervals,2,temporal_annotation,csv_intervals,71,71,alert|fatigue|distraction|operator_absent,primary_target,available_local_ignored,false
+legacy_frame_states,1,annotated_frames,jpg_plus_csv,40778,40778,NORMAL|CELULAR|POSTURA_RUIM|MAOS_FORA|NAO_DETECTADO,auxiliary_context,available_external,false
+legacy_cellphone_boxes,1,object_detection,jpg_plus_yolo_txt,2906,2878,celular,optional_late_fusion,available_external,false
+legacy_cellphone_models,1,object_detection_weights,pytorch_pt,,multiple_runs,celular,optional_late_fusion,available_external,false
+legacy_facial_time_series,qualification,frame_time_series,unknown_pending_transfer,unknown,unknown,ear|mar|pitch|yaw|roll|face_detected,primary_features,pending_transfer,false

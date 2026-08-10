@@ -137,6 +137,56 @@ fase_2/
 8. executar ablação, explicabilidade e estudos de caso;
 9. avaliar late fusion somente após concluir o núcleo experimental.
 
+## Comandos atuais da fundação
+
+Execute sempre a partir da raiz do repositório:
+
+### Ambiente isolado
+
+```bash
+python -m venv fase_2/.venv
+source fase_2/.venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e 'fase_2[dev]'
+python -m pip install --index-url https://download.pytorch.org/whl/cpu \
+  'torch>=2.5,<3'
+```
+
+O PyTorch CPU evita baixar bibliotecas CUDA enquanto os modelos temporais ainda não estão em
+execução. Em uma máquina com GPU, a instalação deve ser substituída pela variante compatível
+com o driver/CUDA local. O ambiente `.venv` é local e ignorado pelo Git.
+
+### Pipeline de dados
+
+```bash
+python -m fase_2.src.data manifest
+python -m fase_2.src.data validate-annotations
+python -m fase_2.src.data convert-annotations
+python -m fase_2.src.data diagnose
+python -m fase_2.src.data generate-splits
+python -m pytest fase_2/tests -q
+```
+
+Entradas sensíveis permanecem em `fase_2/data/raw/`. Manifestos contêm somente IDs,
+caminhos relativos, metadados e índices temporais. Métricas agregadas são gravadas em
+`fase_2/outputs/metrics/`.
+
+## Plano pós-banca
+
+- [Documentação da fase 2](docs/README.md): hierarquia entre qualificação, plano vigente e registros técnicos.
+- [Linha de base da qualificação](docs/qualification_baseline.md): contribuições formalizadas, evidências disponíveis e pendências de reconciliação.
+- [Plano de ações pós-banca revisado](docs/plano_pos_banca.md): referência complementar; não substitui o `PlanoPósBanca.pdf` vigente.
+- [Mês 1 — Dados e protocolo](docs/months/mes_01_dados_protocolo.md): checklist operacional, entregáveis, bloqueios e critérios de aceite da etapa atual.
+
+## Fontes de dados e legado da fase 1
+
+- [Inventário e proveniência](docs/data_sources_and_provenance.md): relação entre vídeos, anotações temporais, frames por estado, validação manual e bounding boxes de celular.
+- `data/manifests/data_sources.csv`: inventário anonimizado e versionável dos ativos conhecidos.
+
+Os dados da fase 1 são evidência auxiliar para presença, postura, mãos e celular. Eles não
+substituem os rótulos temporais `alert`, `fatigue` e `distraction` usados como target principal
+na fase 2. Imagens, labels completos, ZIPs e pesos permanecem fora do Git.
+
 ## Reprodutibilidade
 
 Cada execução deve registrar:
@@ -161,4 +211,3 @@ Os vídeos e dados operacionais são sensíveis. Não devem ser versionados:
 - pesos de modelos;
 - caches e previsões individuais;
 - arquivos com identificação do operador ou da empresa.
-

@@ -1,2 +1,1 @@
 """Features agregadas e sequenciais."""
-

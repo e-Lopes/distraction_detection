@@ -1,7 +1,7 @@
 strategy: "leave_one_video_out"
 group_column: "video_id"
 validation_strategy: "contiguous_blocks_within_training_videos"
+validation_fraction: 0.20
 purge_gap_frames: 150
 random_seed: 42
 fit_preprocessing_on: "train_only"
-

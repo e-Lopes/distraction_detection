@@ -16,6 +16,7 @@ outputs/cache/**
 # Python
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -33,4 +34,3 @@ Thumbs.db
 .env
 *.key
 *.pem
-

@@ -4,18 +4,19 @@ version = "0.1.0"
 description = "Temporal fatigue and distraction detection for heavy machinery teleoperation"
 requires-python = ">=3.10"
 dependencies = [
-  "numpy",
+  "numpy>=1.26,<2",
   "pandas",
   "scikit-learn",
   "pyyaml",
-  "torch",
   "xgboost",
   "matplotlib",
   "seaborn",
+  "opencv-python-headless>=4.10,<5",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
+temporal = ["torch>=2.5,<3"]
 explainability = ["shap"]
 
 [tool.pytest.ini_options]
@@ -23,4 +24,3 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
-

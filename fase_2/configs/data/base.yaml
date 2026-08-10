@@ -1,7 +1,27 @@
 dataset:
   version: "v1"
-  manifest: "data/manifests/videos.csv"
-  annotations: "data/raw/annotations"
+  videos_dir: "fase_2/data/raw/videos"
+  manifest: "fase_2/data/manifests/videos.csv"
+  annotations: "fase_2/data/raw/annotations/temporal_intervals_v1.csv"
+  annotation_time_format: "MM:SS"
+  annotation_endpoints: "inclusive_seconds"
+  videos:
+    - video_id: "video_01"
+      filename: "1.mp4"
+      session_id: "session_01"
+      annotation_version: "v1"
+    - video_id: "video_02"
+      filename: "2.mp4"
+      session_id: "session_02"
+      annotation_version: "v1"
+    - video_id: "video_03"
+      filename: "3.mp4"
+      session_id: "session_03"
+      annotation_version: "v1"
+    - video_id: "video_04"
+      filename: "4.mp4"
+      session_id: "session_04"
+      annotation_version: "v1"
   indicators: [ear, mar, pitch, yaw, roll]
   classes: [alert, fatigue, distraction]
   operational_states: [face_missing, operator_absent, occlusion]
@@ -13,4 +33,3 @@ windowing:
   label_rule: "majority"
   minimum_target_proportion: 0.60
   transition_policy: "exclude_from_primary_training"
-

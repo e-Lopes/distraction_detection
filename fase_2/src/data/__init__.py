@@ -1,2 +1,1 @@
 """Validação, splits e janelamento."""
-

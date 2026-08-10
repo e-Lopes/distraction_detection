@@ -14,3 +14,20 @@
 | `frame_label` | frame | Alert, Fatigue ou Distraction |
 | `operational_state` | frame | Valid, FaceMissing, Occlusion ou OperatorAbsent |
 
+## Anotações temporais da fase 2
+
+As anotações manuais são intervalos em resolução de segundos. O arquivo local configurado
+em `configs/data/base.yaml` não é versionado por conter informação derivada dos vídeos.
+
+| Campo | Descrição |
+|---|---|
+| `video_id` | Identificador anônimo `video_01` a `video_04` |
+| `start_time`, `end_time` | Limites inclusivos no formato `MM:SS` |
+| `behavior_label` | `alert`, `fatigue`, `distraction` ou vazio quando não há alvo comportamental |
+| `operational_state` | `valid` ou `operator_absent` nesta versão |
+| `source_label` | Rótulo original em português, preservado para auditoria |
+| `annotation_version` | Versão congelada da anotação |
+
+`Ausente` é uma condição operacional e nunca é convertida automaticamente em fadiga ou
+distração. As grafias `Distração` e `Distraido` da fonte são normalizadas como
+`distraction`, mantendo-se o texto original em `source_label`.

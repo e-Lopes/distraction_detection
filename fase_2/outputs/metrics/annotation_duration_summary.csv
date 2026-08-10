@@ -1,0 +1,15 @@
+video_id,label,duration_seconds
+video_01,alert,904
+video_01,distraction,316
+video_01,fatigue,57
+video_01,operator_absent,500
+video_02,alert,1511
+video_02,distraction,284
+video_03,alert,1214
+video_03,distraction,105
+video_03,fatigue,23
+video_03,operator_absent,443
+video_04,alert,811
+video_04,distraction,120
+video_04,fatigue,4
+video_04,operator_absent,851
