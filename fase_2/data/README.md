@@ -20,9 +20,14 @@ data/
 └── manifests/                        # somente metadados anonimizados versionáveis
 ```
 
-Não é obrigatório duplicar os ativos da fase 1. Uma futura rotina de importação deve aceitar
-uma origem local configurável, validar hashes/contagens e produzir dados em `external/`, que
-já é ignorado. Symlinks e caminhos absolutos não devem aparecer em arquivos versionados.
+Não é obrigatório duplicar os ativos da fase 1. O extrator facial aceita uma origem local
+configurável, registra hashes e contagens e produz as séries em
+`interim/legacy_extraction/`, que já é ignorado. Symlinks e caminhos absolutos não devem
+aparecer em arquivos versionados.
+
+Cada CSV facial usa `video_id` anônimo e índice de frame iniciado em zero. Ausência de face é
+representada por `face_detected=0`, `operational_state=face_missing` e métricas vazias, não por
+zeros inventados.
 
 Consulte [Inventário e proveniência](../docs/data_sources_and_provenance.md) para saber o papel
 de cada fonte e as limitações de reutilização.

@@ -45,6 +45,25 @@ Os resultados desta fase motivaram a análise de sinais faciais e de sua evoluç
 
 No futuro, as evidências corporais e de celular poderão ser integradas às probabilidades do modelo facial por meio de uma estratégia de late fusion.
 
+## Extração temporal recuperada
+
+O script [`analise_temporal_fadiga_distracao.py`](analise_temporal_fadiga_distracao.py), recuperado do ambiente legado TELEOP, extrai por frame:
+
+- EAR e MAR;
+- pitch, yaw e roll da cabeça;
+- indicador explícito de detecção facial;
+- estado heurístico de alerta, fadiga ou distração.
+
+Os vídeos devem permanecer localmente em `fase_1/videos/`, com os nomes `1.mp4` a `4.mp4`. A região de interesse usada no estudo está registrada em `roi_config_temporal.example.json`. Execute a partir de qualquer diretório com:
+
+```bash
+python fase_1/analise_temporal_fadiga_distracao.py
+```
+
+Além dos gráficos e do relatório histórico, o script agora grava `series_temporais_Video_N.csv` em `fase_1/presentation_outputs/`. Essa pasta é ignorada pelo Git porque contém resultados individuais derivados dos vídeos.
+
+Os gráficos agregados e o relatório da execução histórica foram preservados separadamente em [`resultados_legados/`](resultados_legados/README.md). Frames com imagens dos operadores não foram importados.
+
 ## Dados e modelos
 
 Arquivos de vídeo, frames, datasets completos, pesos treinados e informações internas da empresa não devem ser enviados ao GitHub. Consulte o `.gitignore` antes de adicionar novos arquivos.

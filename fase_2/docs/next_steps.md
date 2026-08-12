@@ -38,6 +38,8 @@ ajuste das três classes, ou declarar folds nos quais determinada métrica não 
 
 ## Etapa C — Integração das séries recuperadas
 
+- [x] Recuperar e preservar o protótipo histórico que calculava as séries em memória.
+- [x] Implementar extrator reproduzível com origem configurável, schema canônico e hashes.
 - [ ] Receber os arquivos em `data/interim/legacy_extraction/`.
 - [ ] Registrar hashes e schemas sem versionar o conteúdo.
 - [ ] Comparar contagens, timestamps e taxas de detecção com a qualificação.

@@ -1,0 +1,118 @@
+======================================================================
+  FATIGUE & DISTRACTION ANALYSIS -- SUMMARY REPORT
+  For Seminar Presentation
+======================================================================
+
+  Heuristic Thresholds:
+    EAR threshold:    < 0.25 for 20 consecutive frames
+    MAR threshold:    > 0.55
+    Pitch threshold:  < -15.0°
+
+----------------------------------------------------------------------
+
+  Video: Vídeo 1
+  Resolution: 1920x1080
+  FPS: 18.0
+  Duration: 1776s (29.6 min)
+  Total frames analysed: 32,013
+
+    ALERT         :  16,702 frames  ( 52.2%)
+    FATIGUE       :   3,190 frames  ( 10.0%)
+    DISTRACTION   :  12,121 frames  ( 37.9%)
+
+  EAR stats (when face detected):
+    mean=0.286  std=0.114  min=0.072  max=1.621
+  MAR stats (when face detected):
+    mean=0.018  std=0.040  min=0.000  max=0.720
+  Pitch stats (when face detected):
+    mean=-20.8°  std=25.9°  min=-72.1°  max=+74.0°
+
+  Face detection rate: 18,241/32,013 (57.0%)
+----------------------------------------------------------------------
+
+  Video: Vídeo 2
+  Resolution: 1920x1080
+  FPS: 15.7
+  Duration: 1794s (29.9 min)
+  Total frames analysed: 28,200
+
+    ALERT         :   4,943 frames  ( 17.5%)
+    FATIGUE       :     404 frames  (  1.4%)
+    DISTRACTION   :  22,853 frames  ( 81.0%)
+
+  EAR stats (when face detected):
+    mean=0.285  std=0.068  min=0.095  max=0.991
+  MAR stats (when face detected):
+    mean=0.016  std=0.033  min=0.000  max=0.695
+  Pitch stats (when face detected):
+    mean=-31.6°  std=6.7°  min=-65.1°  max=+71.7°
+
+  Face detection rate: 23,600/28,200 (83.7%)
+----------------------------------------------------------------------
+
+  Video: Vídeo 3
+  Resolution: 1920x1080
+  FPS: 17.0
+  Duration: 1784s (29.7 min)
+  Total frames analysed: 30,334
+
+    ALERT         :  10,451 frames  ( 34.5%)
+    FATIGUE       :   1,059 frames  (  3.5%)
+    DISTRACTION   :  18,824 frames  ( 62.1%)
+
+  EAR stats (when face detected):
+    mean=0.269  std=0.057  min=0.094  max=0.931
+  MAR stats (when face detected):
+    mean=0.032  std=0.061  min=0.000  max=0.761
+  Pitch stats (when face detected):
+    mean=-30.3°  std=11.4°  min=-70.4°  max=+80.8°
+
+  Face detection rate: 20,469/30,334 (67.5%)
+----------------------------------------------------------------------
+
+  Video: Vídeo 4
+  Resolution: 1920x1080
+  FPS: 17.8
+  Duration: 1785s (29.7 min)
+  Total frames analysed: 31,790
+
+    ALERT         :  18,890 frames  ( 59.4%)
+    FATIGUE       :   1,174 frames  (  3.7%)
+    DISTRACTION   :  11,726 frames  ( 36.9%)
+
+  EAR stats (when face detected):
+    mean=0.264  std=0.063  min=0.104  max=0.886
+  MAR stats (when face detected):
+    mean=0.022  std=0.045  min=0.000  max=0.667
+  Pitch stats (when face detected):
+    mean=-29.1°  std=10.9°  min=-63.4°  max=+66.3°
+
+  Face detection rate: 13,349/31,790 (42.0%)
+----------------------------------------------------------------------
+
+======================================================================
+  OVERALL SUMMARY
+======================================================================
+  Videos analysed:        4
+  Total frames:           122,337
+  Total duration:         7139s (119.0 min)
+
+  ALERT         :   50,986 frames  ( 41.7%)
+  FATIGUE       :    5,827 frames  (  4.8%)
+  DISTRACTION   :   65,524 frames  ( 53.6%)
+======================================================================
+
+
+-- TALKING POINTS FOR PRESENTATION ----------------------
+
+Slide 10 (Threshold Table):
+  "O sistema heurístico usa thresholds fixos:
+   EAR abaixo de 0.25 por 20 frames = fadiga,
+   MAR acima de 0.55 = bocejo,
+   Pitch abaixo de -15.0° = distração."
+
+Slide 11-12 (Results):
+  "Nos 4 vídeos analisados (119 min total),
+   o estado mais frequente foi DISTRACTION com 53.6% dos frames."
+  "A alta taxa de DISTRACTION (54%) reflete as limitações
+   do sistema heurístico -- posição lateral do operador gera falsos positivos."

@@ -187,6 +187,22 @@ Os dados da fase 1 são evidência auxiliar para presença, postura, mãos e cel
 substituem os rótulos temporais `alert`, `fatigue` e `distraction` usados como target principal
 na fase 2. Imagens, labels completos, ZIPs e pesos permanecem fora do Git.
 
+### Extração das séries faciais
+
+O extrator canônico da Fase 2 recebe o diretório local dos vídeos sem registrar esse caminho no repositório. Exemplo:
+
+```bash
+python -m fase_2.src.features.extract_facial_series \
+  --video-dir "D:/dados/TELEOP/videos" \
+  --roi-config fase_2/configs/preprocessing/legacy_roi.json
+```
+
+Por padrão, são procurados `1.mp4` a `4.mp4`, associados a `video_01` a `video_04`, e os CSVs são gravados em `fase_2/data/interim/legacy_extraction/`. A saída contém EAR, MAR, pitch, yaw, roll, `face_detected` e estado operacional por frame. Campos faciais ausentes ficam vazios; zero-fill só pode ser aplicado posteriormente, na entrada do modelo.
+
+Para uma execução curta de validação, use `--max-frames 100`. O modo sintético só é ativado com `--demo`; ausência de vídeos ou MediaPipe gera erro. Arquivos existentes não são substituídos sem `--overwrite`.
+
+`legacy_heuristic_state` é preservado exclusivamente para confrontar a nova extração com o relatório histórico. Ele não é o target da Fase 2 e não substitui as anotações temporais manuais.
+
 ## Reprodutibilidade
 
 Cada execução deve registrar:
