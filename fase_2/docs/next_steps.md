@@ -19,22 +19,19 @@ com indicação explícita de detecção será o primeiro baseline.
 - [x] Gerar quatro folds leave-one-video-out.
 - [x] Reservar blocos temporais contínuos para validação com purge gap de 150 frames.
 - [x] Provar por testes que nenhuma janela ou frame atravessa subconjuntos.
-- [ ] Revisar a estratégia de validação contínua: os 20% finais deixam alguns subconjuntos
-  sem janelas de fadiga, especialmente para 60 e 150 frames.
+- [x] Revisar a estratégia de validação contínua: blocos internos preservam as três classes
+  em treino e validação, com purge gap bilateral de 150 frames.
 
 ### Diagnóstico dos splits atuais
 
-Os arquivos gerados são seguros contra sobreposição, mas ainda não devem ser congelados como
-protocolo final de treino:
+Os arquivos gerados estão congelados para o primeiro protocolo de treino:
 
-- Fold 1: treino não possui fadiga em janelas de 60/150 frames.
 - Fold 2: teste (vídeo 2) não possui fadiga em nenhum tamanho.
-- Fold 3: validação não possui fadiga em nenhum tamanho.
 - Fold 4: teste possui apenas quatro janelas de fadiga em 30 frames e nenhuma em 60/150.
+- Todos os subconjuntos de treino e validação possuem as três classes em 30, 60 e 150 frames.
 
 A ausência natural de fadiga no vídeo de teste deve ser relatada, não corrigida artificialmente.
-Para treino/validação, será necessário escolher blocos contínuos sem vazamento que permitam
-ajuste das três classes, ou declarar folds nos quais determinada métrica não é estimável.
+Nos testes sem fadiga, a métrica dessa classe não é estimável e será reportada explicitamente.
 
 ## Etapa C — Integração das séries recuperadas
 
@@ -47,10 +44,11 @@ ajuste das três classes, ou declarar folds nos quais determinada métrica não 
 
 ## Etapa D — Baselines de aprendizado
 
-- [ ] Implementar zero-fill apenas na entrada do modelo e adicionar `face_detected`.
+- [x] Implementar zero-fill apenas na agregação de entrada e adicionar `face_detected`.
 - [ ] Ajustar transformações somente no treino.
-- [ ] Criar features agregadas por janela.
-- [ ] Treinar Dummy, SVM, Random Forest e XGBoost nos mesmos folds.
+- [x] Criar primeiras features agregadas por janela (média/desvio e missingness).
+- [ ] Treinar SVM, Random Forest e XGBoost nos mesmos folds.
+- [x] Treinar Dummy `most_frequent` como piso de desempenho.
 - [ ] Registrar Macro F1, métricas por classe, balanced accuracy e matrizes de confusão.
 
 ## Bloqueios explícitos

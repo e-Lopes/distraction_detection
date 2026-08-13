@@ -280,7 +280,7 @@ def _window_rows(groups: dict[tuple[object, ...], list[int]]) -> list[WindowMiss
 def write_dataclass_csv(path: Path, rows: Iterable[object], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(asdict(row) for row in rows)
 
@@ -342,7 +342,11 @@ def write_missingness_report(
 ) -> None:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     with csv_path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(MissingnessSummary.__dataclass_fields__))
+        writer = csv.DictWriter(
+            stream,
+            fieldnames=list(MissingnessSummary.__dataclass_fields__),
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(asdict(summary) for summary in summaries)
     total = sum(summary.total_frames for summary in summaries)

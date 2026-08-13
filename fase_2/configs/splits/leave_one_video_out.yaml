@@ -2,6 +2,13 @@ strategy: "leave_one_video_out"
 group_column: "video_id"
 validation_strategy: "contiguous_blocks_within_training_videos"
 validation_fraction: 0.20
+# Escolhidos apenas com os vídeos de desenvolvimento para garantir fadiga em
+# treino/validação quando disponível. Vídeos de teste permanecem inalterados.
+validation_start_frames:
+  video_01: 14500
+  video_02: 22560
+  video_03: 22500
+  video_04: 25432
 purge_gap_frames: 150
 random_seed: 42
 fit_preprocessing_on: "train_only"

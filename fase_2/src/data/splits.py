@@ -22,8 +22,9 @@ def generate_leave_one_video_out(
     *,
     validation_fraction: float = 0.20,
     purge_gap_frames: int = 150,
+    validation_start_frames: Mapping[str, int] | None = None,
 ) -> list[SplitBlock]:
-    """Gera um fold por vídeo; validação é o bloco final dos vídeos de desenvolvimento."""
+    """Gera um fold por vídeo e blocos de desenvolvimento isolados temporalmente."""
     if len(video_num_frames) < 2:
         raise ValueError("São necessários ao menos dois vídeos")
     if not 0 < validation_fraction < 1:
@@ -41,16 +42,26 @@ def generate_leave_one_video_out(
             if video_id == test_video:
                 continue
             num_frames = video_num_frames[video_id]
-            validation_start = floor(num_frames * (1 - validation_fraction))
-            train_end = validation_start - purge_gap_frames - 1
-            if train_end < 0 or validation_start >= num_frames:
+            validation_length = num_frames - floor(num_frames * (1 - validation_fraction))
+            default_start = num_frames - validation_length
+            validation_start = int((validation_start_frames or {}).get(video_id, default_start))
+            validation_end = validation_start + validation_length - 1
+            if validation_start < 0 or validation_end >= num_frames:
                 raise ValueError(
-                    f"Vídeo {video_id} é curto para validação e purge gap configurados"
+                    f"Bloco de validação inválido para {video_id}: "
+                    f"{validation_start}-{validation_end}"
                 )
-            blocks.append(SplitBlock(fold, "train", video_id, 0, train_end))
+            left_train_end = validation_start - purge_gap_frames - 1
+            right_train_start = validation_end + purge_gap_frames + 1
+            if left_train_end >= 0:
+                blocks.append(SplitBlock(fold, "train", video_id, 0, left_train_end))
             blocks.append(
-                SplitBlock(fold, "validation", video_id, validation_start, num_frames - 1)
+                SplitBlock(fold, "validation", video_id, validation_start, validation_end)
             )
+            if right_train_start < num_frames:
+                blocks.append(
+                    SplitBlock(fold, "train", video_id, right_train_start, num_frames - 1)
+                )
     return blocks
 
 

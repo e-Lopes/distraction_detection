@@ -1,4 +1,6 @@
+import csv
 from dataclasses import replace
+from pathlib import Path
 
 from fase_2.src.data.splits import (
     generate_leave_one_video_out,
@@ -98,3 +100,51 @@ def test_test_video_never_appears_in_development():
             and block.subset in {"train", "validation"}
             for block in blocks
         )
+
+
+def test_internal_validation_block_creates_purged_training_on_both_sides():
+    blocks = generate_leave_one_video_out(
+        VIDEO_FRAMES,
+        validation_fraction=0.2,
+        purge_gap_frames=50,
+        validation_start_frames={"video_02": 400},
+    )
+    selected = sorted(
+        (
+            (block.subset, block.start_frame, block.end_frame)
+            for block in blocks
+            if block.fold == 1 and block.video_id == "video_02"
+        ),
+        key=lambda item: item[1],
+    )
+    assert selected == [
+        ("train", 0, 349),
+        ("validation", 400, 599),
+        ("train", 650, 999),
+    ]
+    assert validate_split_blocks(blocks, purge_gap_frames=50) == []
+
+
+def test_frozen_split_diagnostics_cover_development_classes_only():
+    path = Path("fase_2/outputs/metrics/split_window_distribution.csv")
+    with path.open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    classes = {"alert", "fatigue", "distraction"}
+    for size in {30, 60, 150}:
+        for fold in range(1, 5):
+            for subset in ("train", "validation"):
+                present = {
+                    row["label"]
+                    for row in rows
+                    if int(row["window_size_frames"]) == size
+                    and int(row["fold"]) == fold
+                    and row["subset"] == subset
+                }
+                assert classes <= present
+    fatigue_test = {
+        (int(row["fold"]), int(row["window_size_frames"]))
+        for row in rows
+        if row["subset"] == "test" and row["label"] == "fatigue"
+    }
+    assert (2, 60) not in fatigue_test
+    assert (4, 60) not in fatigue_test

@@ -158,8 +158,9 @@ python -m fase_2.src.data diagnose-missingness --config fase_2/configs/data/base
 - [x] Um teste confirma que janelas sobrepostas do mesmo trecho permanecem no mesmo subconjunto.
 - [x] Os testes usam somente dados sintéticos e não carregam os MP4.
 
-Os placeholders foram substituídos por testes sintéticos de isolamento e purge gap. A posição
-dos blocos de validação ainda precisa ser revista porque alguns subconjuntos não contêm fadiga.
+Os placeholders foram substituídos por testes sintéticos de isolamento e purge gap. Blocos
+internos de validação foram congelados com purge bilateral; treino e validação contêm as três
+classes em todos os tamanhos. A ausência natural de fadiga em alguns testes foi preservada.
 
 ### Comando esperado
 

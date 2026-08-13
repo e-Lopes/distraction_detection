@@ -165,6 +165,7 @@ python -m fase_2.src.data convert-annotations
 python -m fase_2.src.data diagnose
 python -m fase_2.src.data diagnose-missingness
 python -m fase_2.src.data generate-splits
+python -m fase_2.src.training.dummy_baseline
 python -m pytest fase_2/tests -q
 ```
 

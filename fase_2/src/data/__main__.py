@@ -44,7 +44,7 @@ def _data_config(path: str) -> tuple[dict, dict]:
 def _write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -156,6 +156,7 @@ def command_generate_splits(args: argparse.Namespace) -> int:
         video_frames,
         validation_fraction=float(split_config["validation_fraction"]),
         purge_gap_frames=int(split_config["purge_gap_frames"]),
+        validation_start_frames=split_config.get("validation_start_frames"),
     )
     errors = validate_split_blocks(blocks, purge_gap_frames=int(split_config["purge_gap_frames"]))
     if errors:
