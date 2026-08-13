@@ -18,6 +18,7 @@ from .config import load_yaml, repository_path
 from .manifest import build_manifest_rows, write_manifest
 from .splits import SplitBlock, generate_leave_one_video_out, validate_split_blocks, window_subset
 from .windowing import build_windows
+from ..preprocessing.missingness import diagnose_file, write_missingness_report
 
 
 def _data_config(path: str) -> tuple[dict, dict]:
@@ -294,6 +295,25 @@ def command_diagnose(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_diagnose_missingness(args: argparse.Namespace) -> int:
+    input_dir = repository_path(args.input_dir)
+    paths = sorted(input_dir.glob("video_*.csv"))
+    if not paths:
+        raise FileNotFoundError(f"Nenhuma série video_*.csv encontrada em {input_dir}")
+    summaries = [
+        diagnose_file(path, short_gap_max_frames=args.short_gap_max_frames) for path in paths
+    ]
+    output_dir = repository_path(args.output_dir)
+    write_missingness_report(
+        summaries,
+        csv_path=output_dir / "facial_missingness.csv",
+        markdown_path=output_dir / "facial_missingness.md",
+        short_gap_max_frames=args.short_gap_max_frames,
+    )
+    print(f"Diagnóstico de missingness gerado em: {output_dir}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -327,6 +347,16 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("--output-dir", default="fase_2/outputs/metrics")
     diagnose.add_argument("--splits", default="fase_2/data/manifests/temporal_splits.csv")
     diagnose.set_defaults(func=command_diagnose)
+
+    missingness = commands.add_parser(
+        "diagnose-missingness", help="Audita séries faciais e gaps de detecção"
+    )
+    missingness.add_argument(
+        "--input-dir", default="fase_2/data/interim/legacy_extraction"
+    )
+    missingness.add_argument("--output-dir", default="fase_2/outputs/metrics")
+    missingness.add_argument("--short-gap-max-frames", type=int, default=15)
+    missingness.set_defaults(func=command_diagnose_missingness)
     return parser
 
 

@@ -1,0 +1,5 @@
+video_id,total_frames,detected_frames,missing_frames,missing_rate,gap_count,short_gap_count,long_gap_count,shortest_gap_frames,median_gap_frames,longest_gap_frames
+video_01,32013,18241,13772,0.43020023115609285,159,95,64,1,10.0,5658
+video_02,28200,23602,4598,0.1630496453900709,53,24,29,1,17.0,1390
+video_03,30334,20468,9866,0.32524559899782424,95,68,27,1,6.0,7163
+video_04,31790,13349,18441,0.5800880780119534,90,51,39,1,12.0,15706

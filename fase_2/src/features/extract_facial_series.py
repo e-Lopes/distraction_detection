@@ -10,8 +10,10 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import importlib.util
 import json
 import math
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
@@ -309,7 +311,10 @@ def extract_video(
                 )
                 processed_frames += 1
                 if progress_every > 0 and processed_frames % progress_every == 0:
-                    print(f"{video_id}: {processed_frames}/{source_num_frames} frames")
+                    print(
+                        f"{video_id}: {processed_frames}/{source_num_frames} frames",
+                        flush=True,
+                    )
         temporary_path.replace(output_path)
     except Exception:
         temporary_path.unlink(missing_ok=True)
@@ -336,13 +341,37 @@ def extract_video(
     )
 
 
-def write_manifest(path: Path, summaries: Iterable[ExtractionSummary]) -> None:
+def _extract_video_worker(job: dict[str, object]) -> ExtractionSummary:
+    """Inicializa um Face Mesh isolado dentro de um processo de trabalho."""
+    import mediapipe as mp
+
+    print(f"Extraindo {job['video_id']}: {Path(job['video_path']).name}", flush=True)
+    with mp.solutions.face_mesh.FaceMesh(
+        max_num_faces=1,
+        refine_landmarks=True,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5,
+    ) as face_mesh:
+        return extract_video(face_mesh=face_mesh, **job)
+
+
+def write_manifest(
+    path: Path, summaries: Iterable[ExtractionSummary], *, overwrite: bool = False
+) -> None:
     rows = [asdict(summary) for summary in summaries]
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(ExtractionSummary.__dataclass_fields__))
-        writer.writeheader()
-        writer.writerows(rows)
+    temporary_path = _atomic_target(path, overwrite)
+    temporary_path.unlink(missing_ok=True)
+    try:
+        with temporary_path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(
+                stream, fieldnames=list(ExtractionSummary.__dataclass_fields__)
+            )
+            writer.writeheader()
+            writer.writerows(rows)
+        temporary_path.replace(path)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
 
 
 def write_demo(output_dir: Path, overwrite: bool) -> None:
@@ -394,6 +423,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--max-frames", type=int, help="Limite para teste parcial")
     parser.add_argument("--progress-every", type=int, default=1000)
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Vídeos processados simultaneamente em processos CPU independentes",
+    )
     parser.add_argument("--skip-video-hash", action="store_true")
     parser.add_argument(
         "--demo",
@@ -407,6 +442,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.max_frames is not None and args.max_frames <= 0:
         raise ValueError("--max-frames deve ser positivo")
+    if args.workers <= 0:
+        raise ValueError("--workers deve ser positivo")
     if args.demo:
         if args.video_dir or args.video:
             raise ValueError("--demo não pode ser combinado com vídeos reais")
@@ -421,39 +458,41 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise FileNotFoundError("Vídeos não encontrados: " + ", ".join(missing))
     roi = load_roi(args.roi_config)
 
-    try:
-        import mediapipe as mp
-    except ImportError as error:
+    if importlib.util.find_spec("mediapipe") is None:
         raise RuntimeError(
             "MediaPipe não instalado. Instale a dependência opcional: "
             "pip install -e 'fase_2[extraction]'"
-        ) from error
+        )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = args.output_dir / "extraction_manifest.csv"
+    expected_outputs = [args.output_dir / f"{video_id}.csv" for video_id, _ in specs]
+    existing_outputs = [path for path in [*expected_outputs, manifest_path] if path.exists()]
+    if existing_outputs and not args.overwrite:
+        names = ", ".join(path.name for path in existing_outputs)
+        raise FileExistsError(f"Saídas já existem: {names}. Use --overwrite para substituí-las.")
 
-    summaries: list[ExtractionSummary] = []
-    with mp.solutions.face_mesh.FaceMesh(
-        max_num_faces=1,
-        refine_landmarks=True,
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5,
-    ) as face_mesh:
-        for video_id, filename in specs:
-            print(f"Extraindo {video_id}: {filename}")
-            summaries.append(
-                extract_video(
-                    video_id=video_id,
-                    video_path=args.video_dir / filename,
-                    output_path=args.output_dir / f"{video_id}.csv",
-                    roi=roi,
-                    face_mesh=face_mesh,
-                    overwrite=args.overwrite,
-                    max_frames=args.max_frames,
-                    progress_every=args.progress_every,
-                    hash_video=not args.skip_video_hash,
-                )
-            )
-    write_manifest(args.output_dir / "extraction_manifest.csv", summaries)
+    jobs = [
+        {
+            "video_id": video_id,
+            "video_path": args.video_dir / filename,
+            "output_path": args.output_dir / f"{video_id}.csv",
+            "roi": roi,
+            "overwrite": args.overwrite,
+            "max_frames": args.max_frames,
+            "progress_every": args.progress_every,
+            "hash_video": not args.skip_video_hash,
+        }
+        for video_id, filename in specs
+    ]
+    worker_count = min(args.workers, len(jobs))
+    if worker_count == 1:
+        summaries = [_extract_video_worker(job) for job in jobs]
+    else:
+        print(f"Processando {len(jobs)} vídeos com {worker_count} workers", flush=True)
+        with ProcessPoolExecutor(max_workers=worker_count) as executor:
+            summaries = list(executor.map(_extract_video_worker, jobs))
+    write_manifest(manifest_path, summaries, overwrite=args.overwrite)
     print(f"Extração concluída: {args.output_dir}")
     return 0
 

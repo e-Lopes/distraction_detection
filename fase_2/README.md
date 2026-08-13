@@ -163,6 +163,7 @@ python -m fase_2.src.data manifest
 python -m fase_2.src.data validate-annotations
 python -m fase_2.src.data convert-annotations
 python -m fase_2.src.data diagnose
+python -m fase_2.src.data diagnose-missingness
 python -m fase_2.src.data generate-splits
 python -m pytest fase_2/tests -q
 ```
@@ -194,12 +195,15 @@ O extrator canônico da Fase 2 recebe o diretório local dos vídeos sem registr
 ```bash
 python -m fase_2.src.features.extract_facial_series \
   --video-dir "D:/dados/TELEOP/videos" \
-  --roi-config fase_2/configs/preprocessing/legacy_roi.json
+  --roi-config fase_2/configs/preprocessing/legacy_roi.json \
+  --workers 4
 ```
 
 Por padrão, são procurados `1.mp4` a `4.mp4`, associados a `video_01` a `video_04`, e os CSVs são gravados em `fase_2/data/interim/legacy_extraction/`. A saída contém EAR, MAR, pitch, yaw, roll, `face_detected` e estado operacional por frame. Campos faciais ausentes ficam vazios; zero-fill só pode ser aplicado posteriormente, na entrada do modelo.
 
 Para uma execução curta de validação, use `--max-frames 100`. O modo sintético só é ativado com `--demo`; ausência de vídeos ou MediaPipe gera erro. Arquivos existentes não são substituídos sem `--overwrite`.
+
+No Windows, o MediaPipe utilizado pelo projeto não oferece delegate GPU. `--workers 4` processa os quatro vídeos em processos CPU independentes, preservando o mesmo Face Mesh e reduzindo o tempo total sem alterar o método de extração.
 
 `legacy_heuristic_state` é preservado exclusivamente para confrontar a nova extração com o relatório histórico. Ele não é o target da Fase 2 e não substitui as anotações temporais manuais.
 

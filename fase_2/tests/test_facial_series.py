@@ -64,3 +64,5 @@ def test_real_execution_never_falls_back_to_demo():
         main([])
     with pytest.raises(ValueError, match="não pode ser combinado"):
         main(["--demo", "--video-dir", "videos"])
+    with pytest.raises(ValueError, match="--workers"):
+        main(["--workers", "0"])

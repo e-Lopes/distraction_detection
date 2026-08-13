@@ -15,7 +15,7 @@ O Mês 1 termina somente quando todos os itens obrigatórios estiverem concluíd
 - [x] Nenhum vídeo está rastreado pelo Git.
 - [x] A estrutura existente de `fase_2` será reutilizada; não existe `fase_2/fase_2`.
 - [x] As anotações temporais manuais dos quatro vídeos foram localizadas e normalizadas em 71 intervalos contínuos, versão `v1`.
-- [ ] **PENDENTE DE TRANSFERÊNCIA — recuperar da outra máquina as séries temporais com EAR, MAR, pitch, yaw, roll e detecção facial.** Não reprocessar os quatro vídeos antes de auditar esse material.
+- [x] O protótipo da outra máquina foi recuperado e auditado. Como ele mantinha EAR, MAR, pitch, yaw e roll somente em memória, as séries foram regeneradas com o mesmo Face Mesh e schema canônico explícito.
 - [x] OpenCV headless 4.10 foi disponibilizado para leitura não destrutiva dos metadados.
 
 `fase_1/validacao_manual.csv` foi identificado como fonte auxiliar: contém 40.778 revisões
@@ -29,7 +29,7 @@ convertidas silenciosamente em Alert/Fatigue/Distraction.
 |---|---|---|
 | Vídeos | `fase_2/data/raw/videos/` | Quatro arquivos presentes, somente leitura e ignorados pelo Git. |
 | Anotações | Definido em `fase_2/configs/data/base.yaml` após localizar o formato real | Formato, versão, IDs e cobertura temporal documentados; nenhuma conversão silenciosa. |
-| Indicadores faciais | Caminho local a definir após a descoberta | Proveniência e semântica de missing/zero conhecidas. |
+| Indicadores faciais | `fase_2/data/interim/legacy_extraction/` | Proveniência, hashes e semântica de missing/zero registrados. |
 | Configuração | `fase_2/configs/` | Caminhos relativos à raiz e parâmetros metodológicos centralizados. |
 
 O inventário completo das fontes conhecidas está em
@@ -121,16 +121,16 @@ python -m fase_2.src.data diagnose-windows --config fase_2/configs/data/base.yam
 
 ### Tarefas
 
-- [ ] Localizar os indicadores existentes e documentar como falhas foram codificadas.
-- [ ] Não interpretar zero como missing sem verificar a geração dos dados.
+- [x] Localizar o extrator existente e documentar como falhas eram codificadas.
+- [x] Não interpretar zero como missing: a nova tabela usa campos vazios e `face_detected=0`.
 - [ ] Calcular missing rate por vídeo, classe e tamanho de janela.
-- [ ] Calcular a distribuição de gaps consecutivos e quantidades de gaps curtos e longos.
+- [x] Calcular a distribuição de gaps consecutivos e quantidades de gaps curtos e longos por vídeo.
 - [ ] Se os indicadores não existirem, implementar somente a interface e documentar o formato necessário; não reprocessar os quatro vídeos.
 
 ### Critérios de aceite
 
-- [ ] Cálculos estão cobertos por dados sintéticos, inclusive zeros válidos e gaps nas bordas.
-- [ ] O limite entre gap curto e longo é configurado e não é escolhido observando o fold de teste.
+- [x] Cálculos estão cobertos por dados sintéticos, inclusive zeros válidos e gaps nas bordas.
+- [x] O limite entre gap curto e longo é configurado em 15 frames, sem observar o fold de teste.
 - [ ] Resultados reais são omitidos, não inventados, enquanto os indicadores estiverem ausentes.
 
 ### Comando esperado
@@ -172,9 +172,9 @@ python -m fase_2.src.data generate-splits --config fase_2/configs/data/base.yaml
 - [ ] Manifesto anonimizado validado.
 - [ ] Relatório de validação das anotações.
 - [ ] CSVs e resumo Markdown das distribuições frame-level e window-level.
-- [ ] Relatório de missingness ou bloqueio formal por ausência dos indicadores.
+- [x] Relatório inicial de missingness por vídeo; recortes por classe e janela permanecem pendentes.
 - [ ] Quatro arquivos de splits temporais versionáveis.
-- [ ] Testes automatizados de rótulos, anotações, missingness e vazamento.
+- [x] Testes automatizados de rótulos, anotações, missingness e vazamento.
 - [ ] Registros em `fase_2/docs/decisions/` para regra de janela, stride/60%, splits/purge gap e estados operacionais.
 - [ ] README com comandos executáveis a partir da raiz.
 
