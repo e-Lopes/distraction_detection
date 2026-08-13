@@ -1,11 +1,10 @@
 # Registro de decisões
 
-Crie um arquivo numerado para cada decisão metodológica relevante, por exemplo:
+Decisões metodológicas registradas:
 
-- `001-window-label-rule.md`
-- `002-short-gap-threshold.md`
-- `003-split-strategy.md`
-- `004-primary-metric.md`
+- [`001-separacao-fontes-e-target.md`](001-separacao-fontes-e-target.md)
+- [`002-interpolacao-adiada.md`](002-interpolacao-adiada.md)
+- [`003-missingness-estratificada.md`](003-missingness-estratificada.md)
 
 Cada registro deve conter contexto, alternativas, decisão, justificativa e consequências.
 

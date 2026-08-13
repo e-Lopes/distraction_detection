@@ -123,7 +123,7 @@ python -m fase_2.src.data diagnose-windows --config fase_2/configs/data/base.yam
 
 - [x] Localizar o extrator existente e documentar como falhas eram codificadas.
 - [x] Não interpretar zero como missing: a nova tabela usa campos vazios e `face_detected=0`.
-- [ ] Calcular missing rate por vídeo, classe e tamanho de janela.
+- [x] Calcular missing rate por vídeo, classe, tamanho de janela e subconjunto dos folds.
 - [x] Calcular a distribuição de gaps consecutivos e quantidades de gaps curtos e longos por vídeo.
 - [ ] Se os indicadores não existirem, implementar somente a interface e documentar o formato necessário; não reprocessar os quatro vídeos.
 

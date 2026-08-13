@@ -18,7 +18,18 @@ from .config import load_yaml, repository_path
 from .manifest import build_manifest_rows, write_manifest
 from .splits import SplitBlock, generate_leave_one_video_out, validate_split_blocks, window_subset
 from .windowing import build_windows
-from ..preprocessing.missingness import diagnose_file, write_missingness_report
+from ..preprocessing.missingness import (
+    GroupedMissingness,
+    WindowMissingness,
+    append_grouped_report,
+    diagnose_file,
+    expand_behavior_labels,
+    load_detection_series,
+    summarize_by_class,
+    summarize_windows,
+    write_dataclass_csv,
+    write_missingness_report,
+)
 
 
 def _data_config(path: str) -> tuple[dict, dict]:
@@ -296,6 +307,7 @@ def command_diagnose(args: argparse.Namespace) -> int:
 
 
 def command_diagnose_missingness(args: argparse.Namespace) -> int:
+    dataset, windowing = _data_config(args.config)
     input_dir = repository_path(args.input_dir)
     paths = sorted(input_dir.glob("video_*.csv"))
     if not paths:
@@ -309,6 +321,51 @@ def command_diagnose_missingness(args: argparse.Namespace) -> int:
         csv_path=output_dir / "facial_missingness.csv",
         markdown_path=output_dir / "facial_missingness.md",
         short_gap_max_frames=args.short_gap_max_frames,
+    )
+    detected_by_video = dict(load_detection_series(path) for path in paths)
+    intervals = _load_frame_intervals(repository_path(args.frame_intervals))
+    labels_by_video = expand_behavior_labels(
+        {video_id: len(values) for video_id, values in detected_by_video.items()}, intervals
+    )
+    class_rows = summarize_by_class(
+        labels_by_video,
+        detected_by_video,
+        behavior_classes=set(dataset["classes"]),
+    )
+    with repository_path(args.splits).open(newline="", encoding="utf-8") as stream:
+        blocks = [
+            SplitBlock(
+                fold=int(row["fold"]),
+                subset=row["subset"],
+                video_id=row["video_id"],
+                start_frame=int(row["start_frame"]),
+                end_frame=int(row["end_frame"]),
+            )
+            for row in csv.DictReader(stream)
+        ]
+    video_window_rows, fold_window_rows = summarize_windows(
+        labels_by_video,
+        detected_by_video,
+        sizes_frames=[int(size) for size in windowing["sizes_frames"]],
+        stride_frames=int(windowing["stride_frames"]),
+        behavior_classes=set(dataset["classes"]),
+        minimum_proportion=float(windowing["minimum_target_proportion"]),
+        split_blocks=blocks,
+    )
+    write_dataclass_csv(
+        output_dir / "facial_missingness_by_class.csv",
+        class_rows,
+        list(GroupedMissingness.__dataclass_fields__),
+    )
+    window_fields = list(WindowMissingness.__dataclass_fields__)
+    write_dataclass_csv(
+        output_dir / "facial_missingness_by_window.csv", video_window_rows, window_fields
+    )
+    write_dataclass_csv(
+        output_dir / "facial_missingness_by_fold.csv", fold_window_rows, window_fields
+    )
+    append_grouped_report(
+        output_dir / "facial_missingness.md", class_rows, video_window_rows
     )
     print(f"Diagnóstico de missingness gerado em: {output_dir}")
     return 0
@@ -354,6 +411,12 @@ def build_parser() -> argparse.ArgumentParser:
     missingness.add_argument(
         "--input-dir", default="fase_2/data/interim/legacy_extraction"
     )
+    missingness.add_argument("--config", default="fase_2/configs/data/base.yaml")
+    missingness.add_argument(
+        "--frame-intervals",
+        default="fase_2/data/manifests/annotation_frame_intervals.csv",
+    )
+    missingness.add_argument("--splits", default="fase_2/data/manifests/temporal_splits.csv")
     missingness.add_argument("--output-dir", default="fase_2/outputs/metrics")
     missingness.add_argument("--short-gap-max-frames", type=int, default=15)
     missingness.set_defaults(func=command_diagnose_missingness)

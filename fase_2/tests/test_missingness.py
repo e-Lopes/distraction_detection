@@ -6,8 +6,12 @@ import pytest
 from fase_2.src.preprocessing.missingness import (
     consecutive_false_lengths,
     diagnose_file,
+    expand_behavior_labels,
+    summarize_by_class,
     summarize_detection,
+    summarize_windows,
 )
+from fase_2.src.data.splits import SplitBlock
 
 
 def test_gaps_include_both_edges():
@@ -62,3 +66,46 @@ def test_diagnosis_rejects_metric_on_missing_frame(tmp_path: Path):
     )
     with pytest.raises(ValueError, match="face_detected=0"):
         diagnose_file(path, short_gap_max_frames=15)
+
+
+def test_missingness_is_grouped_by_manual_class():
+    labels = expand_behavior_labels(
+        {"video_01": 8},
+        [
+            {"video_id": "video_01", "start_frame": "0", "end_frame": "3",
+             "behavior_label": "alert"},
+            {"video_id": "video_01", "start_frame": "4", "end_frame": "7",
+             "behavior_label": "fatigue"},
+        ],
+    )
+    rows = summarize_by_class(
+        labels,
+        {"video_01": [True, False, True, False, True, True, False, False]},
+        behavior_classes={"alert", "fatigue", "distraction"},
+    )
+    indexed = {(row.video_id, row.label): row for row in rows}
+    assert indexed[("video_01", "alert")].missing_rate == 0.5
+    assert indexed[("video_01", "fatigue")].missing_rate == 0.5
+    assert indexed[("dataset", "alert")].total_frames == 4
+
+
+def test_window_missingness_is_assigned_only_to_contained_split():
+    labels = {"video_01": ["alert"] * 4 + ["fatigue"] * 4}
+    detected = {"video_01": [True, False, True, False, True, True, False, False]}
+    video_rows, fold_rows = summarize_windows(
+        labels,
+        detected,
+        sizes_frames=[4],
+        stride_frames=4,
+        behavior_classes={"alert", "fatigue", "distraction"},
+        minimum_proportion=0.6,
+        split_blocks=[SplitBlock(1, "test", "video_01", 0, 7)],
+    )
+    video_only = [row for row in video_rows if row.video_id == "video_01"]
+    assert len(video_only) == 2
+    assert {row.label: row.mean_missing_rate for row in video_only} == {
+        "alert": 0.5,
+        "fatigue": 0.5,
+    }
+    assert {(row.fold, row.subset) for row in fold_rows} == {(1, "test")}
+    assert {row.video_id for row in fold_rows} == {"video_01", "dataset"}
