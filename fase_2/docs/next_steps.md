@@ -45,11 +45,21 @@ Nos testes sem fadiga, a métrica dessa classe não é estimável e será report
 ## Etapa D — Baselines de aprendizado
 
 - [x] Implementar zero-fill apenas na agregação de entrada e adicionar `face_detected`.
-- [ ] Ajustar transformações somente no treino.
+- [x] Ajustar transformações somente no treino.
 - [x] Criar primeiras features agregadas por janela (média/desvio e missingness).
-- [ ] Treinar SVM, Random Forest e XGBoost nos mesmos folds.
+- [x] Treinar SVM, Random Forest e XGBoost nos mesmos folds.
 - [x] Treinar Dummy `most_frequent` como piso de desempenho.
-- [ ] Registrar Macro F1, métricas por classe, balanced accuracy e matrizes de confusão.
+- [x] Registrar Macro F1, métricas por classe, balanced accuracy e matrizes de confusão.
+- [x] Adicionar checkpoints retomáveis e figuras comparativas.
+- [x] Consolidar o grid search clássico selecionado exclusivamente pela validação.
+
+## Etapa E — Pré-processamento e contexto temporal
+
+- [ ] Comparar zero-fill, interpolação curta e flags de validade.
+- [ ] Comparar janelas de 30, 60 e 150 frames nos mesmos folds.
+- [ ] Adicionar deltas e grupos de atributos configuráveis.
+- [ ] Implementar LSTM e TCN com CUDA, AMP, early stopping e checkpoints completos.
+- [ ] Repetir configurações finalistas em múltiplas seeds.
 
 ## Bloqueios explícitos
 

@@ -166,6 +166,8 @@ python -m fase_2.src.data diagnose
 python -m fase_2.src.data diagnose-missingness
 python -m fase_2.src.data generate-splits
 python -m fase_2.src.training.dummy_baseline
+python -m fase_2.src.training.classical_baselines --xgb-device cuda
+python -m fase_2.src.training.classical_grid_search --xgb-device cuda
 python -m pytest fase_2/tests -q
 ```
 
@@ -179,6 +181,7 @@ caminhos relativos, metadados e índices temporais. Métricas agregadas são gra
 - [Linha de base da qualificação](docs/qualification_baseline.md): contribuições formalizadas, evidências disponíveis e pendências de reconciliação.
 - [Plano de ações pós-banca revisado](docs/plano_pos_banca.md): referência complementar; não substitui o `PlanoPósBanca.pdf` vigente.
 - [Mês 1 — Dados e protocolo](docs/months/mes_01_dados_protocolo.md): checklist operacional, entregáveis, bloqueios e critérios de aceite da etapa atual.
+- [Plano incremental de implementação](docs/IMPLEMENTATION_PLAN.md): estado atual, arquitetura, próximos marcos, riscos e critérios de aceite do pipeline de ML.
 
 ## Fontes de dados e legado da fase 1
 

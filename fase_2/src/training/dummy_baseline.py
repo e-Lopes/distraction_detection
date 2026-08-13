@@ -27,6 +27,10 @@ from ..preprocessing.missingness import expand_behavior_labels
 
 CLASSES = ("alert", "fatigue", "distraction")
 METRICS = ("ear", "mar", "pitch", "yaw", "roll")
+FEATURE_NAMES = tuple(
+    [name for metric in METRICS for name in (f"{metric}_mean", f"{metric}_std")]
+    + ["face_detected_rate", "missing_ratio", "gap_count", "longest_gap"]
+)
 
 
 @dataclass(frozen=True)
