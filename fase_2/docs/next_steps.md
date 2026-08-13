@@ -55,11 +55,23 @@ Nos testes sem fadiga, a métrica dessa classe não é estimável e será report
 
 ## Etapa E — Pré-processamento e contexto temporal
 
-- [ ] Comparar zero-fill, interpolação curta e flags de validade.
-- [ ] Comparar janelas de 30, 60 e 150 frames nos mesmos folds.
+- [x] Comparar zero-fill, interpolação curta e flags de validade.
+- [x] Comparar janelas de 30, 60 e 150 frames nos mesmos folds.
 - [ ] Adicionar deltas e grupos de atributos configuráveis.
 - [ ] Implementar LSTM e TCN com CUDA, AMP, early stopping e checkpoints completos.
 - [ ] Repetir configurações finalistas em múltiplas seeds.
+
+### Diagnóstico do pré-processamento
+
+Foram concluídos 108 treinamentos com hiperparâmetros fixos. A interpolação curta produziu
+ganhos pequenos e dependentes do modelo/janela. Pela validação, Random Forest com interpolação
+curta e janela de 60 frames obteve o maior Macro F1 médio (`0,4094`), praticamente empatado com
+zero-fill (`0,4082`). As flags adicionais não apresentaram benefício consistente.
+
+Na avaliação externa descritiva, o melhor Macro F1 foi `0,4778` para XGBoost com interpolação
+curta e janela de 150 frames, mas esse resultado de teste não será usado para escolher a próxima
+configuração. O recall de fadiga permaneceu próximo de zero, confirmando a necessidade de avaliar
+as sequências temporais brutas com LSTM e TCN.
 
 ## Bloqueios explícitos
 

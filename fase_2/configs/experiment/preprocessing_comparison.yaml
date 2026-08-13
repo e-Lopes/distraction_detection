@@ -1,0 +1,32 @@
+experiment_name: "preprocessing_comparison"
+window_sizes_frames: [30, 60, 150]
+seed: 42
+xgb_device: "cuda"
+models: [svm, random_forest, xgboost]
+preprocessing_configs:
+  - "fase_2/configs/preprocessing/baseline_zero_fill.yaml"
+  - "fase_2/configs/preprocessing/interpolation_only.yaml"
+  - "fase_2/configs/preprocessing/interpolation_flags.yaml"
+
+parameters:
+  svm:
+    C: 1.0
+    kernel: "rbf"
+    class_weight: "balanced"
+  random_forest:
+    n_estimators: 300
+    max_depth: null
+    min_samples_leaf: 2
+    class_weight: "balanced_subsample"
+    n_jobs: -1
+  xgboost:
+    n_estimators: 500
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    objective: "multi:softprob"
+    eval_metric: "mlogloss"
+    early_stopping_rounds: 30
+    tree_method: "hist"
+    n_jobs: -1

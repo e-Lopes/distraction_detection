@@ -3,6 +3,7 @@ data_config: "configs/data/base.yaml"
 split_config: "configs/splits/leave_one_video_out.yaml"
 preprocessing_configs:
   - "configs/preprocessing/baseline_zero_fill.yaml"
+  - "configs/preprocessing/interpolation_only.yaml"
   - "configs/preprocessing/interpolation_flags.yaml"
 models: [fixed_rules, xgboost, lstm, tcn]
 optional_models: [random_forest, svm, transformer]

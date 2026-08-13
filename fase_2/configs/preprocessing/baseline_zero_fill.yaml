@@ -1,6 +1,6 @@
 name: "zero_fill_baseline"
 short_gap_max_frames: 0
-fill_long_gaps: "zero"
+long_gap_fill: "zero"
 add_flags: true
 flags: [face_detected]
 window_missingness_features: [missing_ratio, gap_count, longest_gap]

@@ -168,8 +168,13 @@ python -m fase_2.src.data generate-splits
 python -m fase_2.src.training.dummy_baseline
 python -m fase_2.src.training.classical_baselines --xgb-device cuda
 python -m fase_2.src.training.classical_grid_search --xgb-device cuda
+python -m fase_2.src.training.preprocessing_comparison --xgb-device cuda
 python -m pytest fase_2/tests -q
 ```
+
+O comparativo de pré-processamento executa zero-fill, interpolação curta e interpolação com
+flags para janelas de 30, 60 e 150 frames. Checkpoints locais permitem retomar o comando; use
+`--no-resume` somente quando quiser refazer os 108 treinamentos.
 
 Entradas sensíveis permanecem em `fase_2/data/raw/`. Manifestos contêm somente IDs,
 caminhos relativos, metadados e índices temporais. Métricas agregadas são gravadas em

@@ -64,11 +64,11 @@ fase_2/
 
 ### Marco 2 — Pré-processamento como variável experimental
 
-- implementar zero-fill, interpolação apenas de gaps curtos e flags de validade;
-- ajustar qualquer transformação somente no treino de cada fold;
-- comparar imputação, atributos faciais e atributos de missingness;
+- [x] implementar zero-fill, interpolação apenas de gaps curtos e flags de validade;
+- [x] ajustar qualquer transformação somente no treino de cada fold;
+- [x] comparar imputação, atributos faciais e atributos de missingness;
 - testar atributos derivados (deltas e estatísticas) em grupos configuráveis;
-- avaliar janelas de 30, 60 e 150 frames antes de ampliar a lista.
+- [x] avaliar janelas de 30, 60 e 150 frames antes de ampliar a lista.
 
 ### Marco 3 — Motor temporal em PyTorch
 
