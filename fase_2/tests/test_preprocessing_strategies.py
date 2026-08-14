@@ -89,3 +89,46 @@ def test_training_median_fill_requires_train_statistics():
             [_row("", "0")],
             {"long_gap_fill": "training_median"},
         )
+
+
+def test_gap_at_exact_limit_is_interpolated_but_larger_gap_is_not():
+    medians = {name: 9.0 for name in ("ear", "mar", "pitch", "yaw", "roll")}
+    exact = preprocess_block(
+        [_row("1"), _row("", "0"), _row("", "0"), _row("4")],
+        {"short_gap_max_frames": 2, "short_gap_method": "linear", "long_gap_fill": "training_median"},
+        training_medians=medians,
+    )
+    above = preprocess_block(
+        [_row("1"), _row("", "0"), _row("", "0"), _row("", "0"), _row("5")],
+        {"short_gap_max_frames": 2, "short_gap_method": "linear", "long_gap_fill": "training_median"},
+        training_medians=medians,
+    )
+    assert [row["was_interpolated"] for row in exact] == ["0", "1", "1", "0"]
+    assert not any(row["was_interpolated"] == "1" for row in above)
+
+
+def test_all_missing_and_terminal_gaps_remain_non_interpolated():
+    medians = {name: 7.0 for name in ("ear", "mar", "pitch", "yaw", "roll")}
+    for rows in (
+        [_row("", "0"), _row("", "0")],
+        [_row("1"), _row("", "0")],
+        [_row("", "0"), _row("2")],
+    ):
+        result = preprocess_block(
+            rows,
+            {"short_gap_max_frames": 2, "short_gap_method": "linear", "long_gap_fill": "training_median"},
+            training_medians=medians,
+        )
+        assert not any(row["was_interpolated"] == "1" for row in result)
+
+
+def test_missing_duration_is_causal_and_valid_values_are_unchanged():
+    config = {"short_gap_max_frames": 3, "short_gap_method": "linear", "long_gap_fill": "zero"}
+    first = preprocess_block([_row("1"), _row("", "0"), _row("", "0"), _row("4")], config)
+    second = preprocess_block([_row("1"), _row("", "0"), _row("", "0"), _row("40")], config)
+    assert [row["missing_duration_so_far"] for row in first[:3]] == ["0", "1", "2"]
+    assert [row["missing_duration_so_far"] for row in first[:3]] == [
+        row["missing_duration_so_far"] for row in second[:3]
+    ]
+    assert first[0]["ear"] == "1"
+    assert first[-1]["ear"] == "4"

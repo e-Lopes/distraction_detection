@@ -4,13 +4,16 @@
 
 Em caso de divergência, usar a seguinte ordem:
 
-1. **Decisões explícitas mais recentes do pesquisador**, registradas em `docs/decisions/`.
-2. **`PlanoPósBanca.pdf`**, plano de execução vigente para os próximos meses.
-3. **`DocQualificacao.pdf`**, linha de base acadêmica entregue à banca, usada para preservar
+1. **Instruções explícitas mais recentes do pesquisador**.
+2. **`Plano_de_Acoes_Pos_Banca_Integrado.pdf`**, referência científica, metodológica e de
+   engenharia vigente; sua auditoria está em `integrated_plan_gap_analysis.md`.
+3. **Decisões metodológicas registradas em `docs/decisions/`**, desde que não conflitem com o
+   plano integrado ou com instrução posterior.
+4. **`DocQualificacao.pdf`**, linha de base acadêmica entregue à banca, usada para preservar
    hipóteses, contribuições, resultados preliminares e limitações formalmente declaradas.
-4. **`Plano_de_Acoes_Pos_Banca_Atualizado.pdf` e `docs/plano_pos_banca.md`**, referência
+5. **Planos pós-banca anteriores e `docs/plano_pos_banca.md`**, referência
    complementar revisada, sem prevalência sobre o plano vigente.
-5. Scripts e resultados exploratórios da fase 1, que exigem reconciliação antes de reutilização.
+6. Scripts e resultados exploratórios da fase 1, que exigem reconciliação antes de reutilização.
 
 ## Mapa da documentação
 
@@ -20,6 +23,9 @@ Em caso de divergência, usar a seguinte ordem:
 | `data_sources_and_provenance.md` | Inventário detalhado, proveniência, contagens e limitações dos dados. |
 | `data_dictionary.md` | Definir campos e taxonomias da fase 2. |
 | `methodology/experimental_protocol.md` | Protocolo experimental reproduzível. |
+| `integrated_plan_gap_analysis.md` | Aderência do código/artefatos ao plano integrado e componentes preservados. |
+| `implementation_plan.md` | Sequência incremental G0-G6, testes, riscos e rollback. |
+| `../reports/g4_imbalance_results.md` | Resultados, deltas, estabilidade e decisão da G4. |
 | `months/mes_01_dados_protocolo.md` | Checklist operacional do mês atual. |
 | `decisions/` | Decisões metodológicas que prevalecem sobre propostas anteriores. |
 

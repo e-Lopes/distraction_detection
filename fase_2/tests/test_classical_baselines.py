@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 from sklearn.dummy import DummyClassifier
 
 from fase_2.src.training.classical_baselines import (
@@ -8,6 +9,7 @@ from fase_2.src.training.classical_baselines import (
     balanced_sample_weights,
     experiment_fingerprint,
     feature_matrix,
+    fit_model,
     load_checkpoint,
     save_checkpoint,
 )
@@ -49,3 +51,17 @@ def test_checkpoint_resumes_only_with_matching_fingerprint(tmp_path: Path):
     assert loaded[0].predict([[0]]).tolist() == ["alert"]
     assert loaded[1]["train_seconds"] == 1.5
     assert load_checkpoint(checkpoint, "stale") is None
+
+
+def test_classical_fit_rejects_unknown_balancing():
+    model = DummyClassifier(strategy="most_frequent")
+    with pytest.raises(ValueError, match="Balanceamento"):
+        fit_model(
+            "svm",
+            model,
+            np.asarray([[0.0], [1.0]]),
+            np.asarray(["alert", "fatigue"]),
+            np.asarray([[2.0]]),
+            np.asarray(["alert"]),
+            balancing="both",
+        )

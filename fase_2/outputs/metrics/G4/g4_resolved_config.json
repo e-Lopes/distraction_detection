@@ -1,0 +1,155 @@
+{
+  "registry": {
+    "experiment_name": "g4_imbalance_mitigation",
+    "generation": "G4",
+    "representation": "R0",
+    "seed": 42,
+    "folds": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "scenarios": {
+      "A": "none",
+      "B": "class_weights",
+      "C": "weighted_sampling",
+      "D": "augmentation"
+    },
+    "class_weights": {
+      "formula": "N / (K * N_c)",
+      "source": "training_fold_only"
+    },
+    "weighted_sampling": {
+      "formula": "N / (K * N_c) per sample",
+      "replacement": true,
+      "num_samples_per_epoch": "N_train",
+      "seed": 42,
+      "temporal_implementation": "torch.utils.data.WeightedRandomSampler",
+      "svm_implementation": "deterministic materialized torch.multinomial"
+    },
+    "augmentation": {
+      "train_only": true,
+      "minority_classes": [
+        "fatigue",
+        "distraction"
+      ],
+      "copies_per_minority_window": 1,
+      "scale_range": [
+        0.98,
+        1.02
+      ],
+      "jitter_std": {
+        "ear": 0.005,
+        "mar": 0.005,
+        "pitch": 0.5,
+        "yaw": 0.5,
+        "roll": 0.5
+      },
+      "masking_probability": 0.5,
+      "max_mask_frames": 3,
+      "physical_ranges": {
+        "ear": [
+          0.0,
+          1.0
+        ],
+        "mar": [
+          0.0,
+          2.0
+        ],
+        "pitch": [
+          -180.0,
+          180.0
+        ],
+        "yaw": [
+          -180.0,
+          180.0
+        ],
+        "roll": [
+          -180.0,
+          180.0
+        ]
+      },
+      "seed": 42,
+      "order": "augment raw training windows, then fit scaler on augmented training",
+      "validation_test_untouched": true
+    },
+    "models": [
+      {
+        "name": "svm",
+        "window_size_frames": 60,
+        "source_generation": "G1"
+      },
+      {
+        "name": "lstm",
+        "window_size_frames": 60,
+        "source_generation": "G2"
+      },
+      {
+        "name": "tcn",
+        "window_size_frames": 60,
+        "source_generation": "G2"
+      },
+      {
+        "name": "transformer",
+        "window_size_frames": 150,
+        "source_generation": "G2"
+      }
+    ],
+    "new_run_count": 48,
+    "total_comparison_count": 64
+  },
+  "official_new_runs": 48,
+  "reused_runs": 16,
+  "run_fingerprints": {
+    "G4__g4_b_class_weights_w150__transformer__r0__w150__fold_1__seed_42": "4fb309c5457334d14c8cc074d4adcc85bb4e51738e28734dbfedf6fb87908e5c",
+    "G4__g4_b_class_weights_w150__transformer__r0__w150__fold_2__seed_42": "4fb309c5457334d14c8cc074d4adcc85bb4e51738e28734dbfedf6fb87908e5c",
+    "G4__g4_b_class_weights_w150__transformer__r0__w150__fold_3__seed_42": "4fb309c5457334d14c8cc074d4adcc85bb4e51738e28734dbfedf6fb87908e5c",
+    "G4__g4_b_class_weights_w150__transformer__r0__w150__fold_4__seed_42": "4fb309c5457334d14c8cc074d4adcc85bb4e51738e28734dbfedf6fb87908e5c",
+    "G4__g4_b_class_weights_w60__lstm__r0__w60__fold_1__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__lstm__r0__w60__fold_2__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__lstm__r0__w60__fold_3__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__lstm__r0__w60__fold_4__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__svm__r0__w60__fold_1__seed_42": "fef65d4953b2a1e400bb66ebe193264199aeb5f5ebbb8b192af3738b1e729982",
+    "G4__g4_b_class_weights_w60__svm__r0__w60__fold_2__seed_42": "fef65d4953b2a1e400bb66ebe193264199aeb5f5ebbb8b192af3738b1e729982",
+    "G4__g4_b_class_weights_w60__svm__r0__w60__fold_3__seed_42": "fef65d4953b2a1e400bb66ebe193264199aeb5f5ebbb8b192af3738b1e729982",
+    "G4__g4_b_class_weights_w60__svm__r0__w60__fold_4__seed_42": "fef65d4953b2a1e400bb66ebe193264199aeb5f5ebbb8b192af3738b1e729982",
+    "G4__g4_b_class_weights_w60__tcn__r0__w60__fold_1__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__tcn__r0__w60__fold_2__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__tcn__r0__w60__fold_3__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_b_class_weights_w60__tcn__r0__w60__fold_4__seed_42": "c159c0753b43ef6c7addcc35ed6ea1d3608a32fddb95173b9805f4a12f92ad6c",
+    "G4__g4_c_weighted_sampling_w150__transformer__r0__w150__fold_1__seed_42": "1806bda75a61f2cf817e2b03aeabe88c9edb26dfea17a307a4e5a1a5237f1093",
+    "G4__g4_c_weighted_sampling_w150__transformer__r0__w150__fold_2__seed_42": "1806bda75a61f2cf817e2b03aeabe88c9edb26dfea17a307a4e5a1a5237f1093",
+    "G4__g4_c_weighted_sampling_w150__transformer__r0__w150__fold_3__seed_42": "1806bda75a61f2cf817e2b03aeabe88c9edb26dfea17a307a4e5a1a5237f1093",
+    "G4__g4_c_weighted_sampling_w150__transformer__r0__w150__fold_4__seed_42": "1806bda75a61f2cf817e2b03aeabe88c9edb26dfea17a307a4e5a1a5237f1093",
+    "G4__g4_c_weighted_sampling_w60__lstm__r0__w60__fold_1__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__lstm__r0__w60__fold_2__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__lstm__r0__w60__fold_3__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__lstm__r0__w60__fold_4__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__svm__r0__w60__fold_1__seed_42": "0534e44e83684da83208cd87a25c1ea3606e2a4642b893182cd8563eee984c5a",
+    "G4__g4_c_weighted_sampling_w60__svm__r0__w60__fold_2__seed_42": "0534e44e83684da83208cd87a25c1ea3606e2a4642b893182cd8563eee984c5a",
+    "G4__g4_c_weighted_sampling_w60__svm__r0__w60__fold_3__seed_42": "0534e44e83684da83208cd87a25c1ea3606e2a4642b893182cd8563eee984c5a",
+    "G4__g4_c_weighted_sampling_w60__svm__r0__w60__fold_4__seed_42": "0534e44e83684da83208cd87a25c1ea3606e2a4642b893182cd8563eee984c5a",
+    "G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_1__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_2__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_3__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_4__seed_42": "f034d92f1dca9cd1b6ca02925998bfa5d6b8a9e652be74afb1e629f993e637da",
+    "G4__g4_d_augmentation_w150__transformer__r0__w150__fold_1__seed_42": "961e84247b08ce05a3c512c0468f63bd70eec09ac401ac496e0baa197fe3c407",
+    "G4__g4_d_augmentation_w150__transformer__r0__w150__fold_2__seed_42": "961e84247b08ce05a3c512c0468f63bd70eec09ac401ac496e0baa197fe3c407",
+    "G4__g4_d_augmentation_w150__transformer__r0__w150__fold_3__seed_42": "961e84247b08ce05a3c512c0468f63bd70eec09ac401ac496e0baa197fe3c407",
+    "G4__g4_d_augmentation_w150__transformer__r0__w150__fold_4__seed_42": "961e84247b08ce05a3c512c0468f63bd70eec09ac401ac496e0baa197fe3c407",
+    "G4__g4_d_augmentation_w60__lstm__r0__w60__fold_1__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__lstm__r0__w60__fold_2__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__lstm__r0__w60__fold_3__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__lstm__r0__w60__fold_4__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__svm__r0__w60__fold_1__seed_42": "1ab35633507b1d088e05dfa2f5b4b4d9e2dad6a7740b187000f7ee4033e601af",
+    "G4__g4_d_augmentation_w60__svm__r0__w60__fold_2__seed_42": "1ab35633507b1d088e05dfa2f5b4b4d9e2dad6a7740b187000f7ee4033e601af",
+    "G4__g4_d_augmentation_w60__svm__r0__w60__fold_3__seed_42": "1ab35633507b1d088e05dfa2f5b4b4d9e2dad6a7740b187000f7ee4033e601af",
+    "G4__g4_d_augmentation_w60__svm__r0__w60__fold_4__seed_42": "1ab35633507b1d088e05dfa2f5b4b4d9e2dad6a7740b187000f7ee4033e601af",
+    "G4__g4_d_augmentation_w60__tcn__r0__w60__fold_1__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__tcn__r0__w60__fold_2__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__tcn__r0__w60__fold_3__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a",
+    "G4__g4_d_augmentation_w60__tcn__r0__w60__fold_4__seed_42": "7740fd17bb2472088d6b0e7530031cf84689f52f3a42f32e0e7058f2a0ed590a"
+  },
+  "determinism_limitation": "PyTorch memory-efficient Transformer attention on CUDA warned that backward is not bitwise deterministic; seed and all other deterministic controls remained fixed."
+}

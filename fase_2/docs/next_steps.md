@@ -1,8 +1,8 @@
 # Próximas etapas executáveis
 
-Este roteiro segue `PlanoPósBanca.pdf`. A recuperação das séries faciais da outra máquina
-continua prioritária, mas não bloqueia a fundação abaixo. Interpolação está adiada; zero-fill
-com indicação explícita de detecção será o primeiro baseline.
+Este roteiro é histórico e foi reconciliado com o plano integrado em
+`integrated_plan_gap_analysis.md`. As séries faciais já foram recuperadas/regeneradas. R0 usa
+zero-fill; R1 e R2 permitem avaliar, de forma separada, interpolação curta e flags.
 
 ## Etapa A — Fundação de dados
 
@@ -58,8 +58,37 @@ Nos testes sem fadiga, a métrica dessa classe não é estimável e será report
 - [x] Comparar zero-fill, interpolação curta e flags de validade.
 - [x] Comparar janelas de 30, 60 e 150 frames nos mesmos folds.
 - [ ] Adicionar deltas e grupos de atributos configuráveis.
-- [ ] Implementar LSTM e TCN com CUDA, AMP, early stopping e checkpoints completos.
-- [ ] Repetir configurações finalistas em múltiplas seeds.
+- [x] Implementar LSTM e TCN com CUDA, AMP, early stopping e checkpoints completos.
+- [x] Implementar a infraestrutura para repetições, estatísticas e gráficos entre seeds.
+- [x] Executar G2 e congelar os candidatos por validação.
+- [x] Executar G3 separadamente, com R0 reutilizado e 24 novos runs R1/R2.
+- [x] Executar G4 sobre R0 com 48 runs novos e 16 reutilizados.
+- [ ] Congelar LSTM/B + SVM/B para cinco seeds; manter TCN/C + SVM/C como análise secundária.
+
+## Etapa F — G1 e comparação temporal
+
+- [x] Congelar regras EAR/MAR/pitch sem ajuste no teste.
+- [x] Avaliar regras, SVM, Random Forest e XGBoost sobre R0 achatado.
+- [x] Executar 30/60/150 nos quatro folds, distribuição original e seed de qualificação 42.
+- [x] Gerar métricas por classe, matrizes de confusão e gráficos comparativos.
+- [x] Executar G2 com LSTM, TCN e Transformer sobre R0 nas três janelas.
+
+Na validação G1, SVM linear com janela 60 obteve o maior Macro F1 médio (`0,4191`). Isso não
+seleciona um resultado final e não elimina as três janelas de G2. O desempenho de fadiga ainda
+é baixo e será tratado apenas nas gerações posteriores de desbalanceamento.
+
+Na G2, o melhor resultado foi TCN/60 (`0,4125 ± 0,0211` de Macro F1 entre folds), seguido pelo
+Transformer/150 (`0,4081 ± 0,0136`). O melhor LSTM foi LSTM/60 (`0,4044 ± 0,0169`). Nenhuma
+configuração temporal detectou Fatigue de forma útil (`F1 = 0`). O SVM/60 da G1 permaneceu
+ligeiramente superior, portanto H3 continua em aberto. O próximo experimento é G3, comparando
+R1 e R2 contra R0 nos candidatos TCN/60, LSTM/60 e Transformer/150, sem introduzir ainda
+balanceamento; G4 avaliará as estratégias de desbalanceamento separadamente.
+
+Na G3, R0 foi selecionada para G4 (`0,4083` de Macro F1 agregado entre os três modelos), à
+frente de R2 (`0,3691`) e R1 (`0,3156`). R2 melhorou ligeiramente apenas o Transformer/150,
+mas não foi consistente entre arquiteturas e não produziu previsões de Fatigue. A próxima etapa
+é G4, comparando as estratégias de desbalanceamento sobre R0 sem alterar simultaneamente a
+representação. G4 foi concluída; LSTM/B foi o compromisso temporal recomendado e H3 permanece aberta.
 
 ### Diagnóstico do pré-processamento
 
@@ -75,6 +104,6 @@ as sequências temporais brutas com LSTM e TCN.
 
 ## Bloqueios explícitos
 
-- Treino real depende das séries EAR/MAR/pitch/yaw/roll.
-- Manifesto real depende de OpenCV ou `ffprobe` disponível no ambiente.
+- Nenhum bloqueio de dados/GPU impede a continuação; G0, G1, G2, G3 e G4 foram concluídas.
+- G5 depende do congelamento formal de LSTM/B–SVM/B e, secundariamente, TCN/C–SVM/C.
 - Nenhuma métrica sintética será apresentada como resultado científico.

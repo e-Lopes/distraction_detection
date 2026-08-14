@@ -1,0 +1,15 @@
+model,subset,metric,n,mean,standard_deviation,median,minimum,maximum,ci95_lower,ci95_upper
+tcn,test,accuracy,1,0.296875,0.0,0.296875,0.296875,0.296875,nan,nan
+tcn,test,balanced_accuracy,1,0.30158730158730157,0.0,0.30158730158730157,0.30158730158730157,0.30158730158730157,nan,nan
+tcn,test,macro_f1_all_classes,1,0.15261044176706826,0.0,0.15261044176706826,0.15261044176706826,0.15261044176706826,nan,nan
+tcn,test,best_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,test,stopping_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,test,best_validation_macro_f1,1,0.4082687338501292,0.0,0.4082687338501292,0.4082687338501292,0.4082687338501292,nan,nan
+tcn,test,training_seconds,1,1.5799047999971663,0.0,1.5799047999971663,1.5799047999971663,1.5799047999971663,nan,nan
+tcn,validation,accuracy,1,0.40625,0.0,0.40625,0.40625,0.40625,nan,nan
+tcn,validation,balanced_accuracy,1,0.5,0.0,0.5,0.5,0.5,nan,nan
+tcn,validation,macro_f1_all_classes,1,0.4082687338501292,0.0,0.4082687338501292,0.4082687338501292,0.4082687338501292,nan,nan
+tcn,validation,best_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,validation,stopping_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,validation,best_validation_macro_f1,1,0.4082687338501292,0.0,0.4082687338501292,0.4082687338501292,0.4082687338501292,nan,nan
+tcn,validation,training_seconds,1,1.5799047999971663,0.0,1.5799047999971663,1.5799047999971663,1.5799047999971663,nan,nan

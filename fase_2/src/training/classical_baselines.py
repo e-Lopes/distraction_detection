@@ -169,14 +169,22 @@ def fit_model(
     y_train: np.ndarray,
     x_validation: np.ndarray,
     y_validation: np.ndarray,
+    *,
+    balancing: str = "class_weights",
 ) -> object:
+    if balancing not in {"none", "class_weights"}:
+        raise ValueError(f"Balanceamento classico desconhecido: {balancing}")
     if model_name == "xgboost":
+        fit_parameters = dict(
+            eval_set=[(x_validation, _encode(y_validation))],
+            verbose=False,
+        )
+        if balancing == "class_weights":
+            fit_parameters["sample_weight"] = balanced_sample_weights(y_train)
         model.fit(
             x_train,
             _encode(y_train),
-            sample_weight=balanced_sample_weights(y_train),
-            eval_set=[(x_validation, _encode(y_validation))],
-            verbose=False,
+            **fit_parameters,
         )
     else:
         model.fit(x_train, y_train)

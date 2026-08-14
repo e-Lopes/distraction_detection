@@ -1,0 +1,21 @@
+experiment_name: "g4_smoke_d"
+generation: "G4SMOKE"
+configuration_id: "g4_smoke_d"
+scenario: "D"
+representation: "R0"
+window_size_frames: 60
+preprocessing_config: "fase_2/configs/preprocessing/baseline_zero_fill.yaml"
+models: [tcn]
+seeds: [42]
+max_samples_per_subset: 64
+augmentation_seed: 42
+augmentation:
+  minority_classes: [fatigue, distraction]
+  copies_per_minority_window: 1
+  scale_range: [0.98, 1.02]
+  jitter_std: {ear: 0.005, mar: 0.005, pitch: 0.5, yaw: 0.5, roll: 0.5}
+  masking_probability: 0.5
+  max_mask_frames: 3
+training: {max_epochs: 2, batch_size: 32, learning_rate: 0.001, weight_decay: 0.0001, monitor: "val_macro_f1", mode: "max", patience: 1, minimum_delta: 0.002, checkpoint_every_epochs: 1, gradient_clip_norm: 1.0, amp: true, deterministic: true, num_workers: 0, balancing: "augmentation"}
+parameters:
+  tcn: {channels: [32, 64, 64], kernel_size: 3, dropout: 0.25, pooling: "mean"}

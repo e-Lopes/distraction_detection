@@ -1,0 +1,41 @@
+{
+  "registry": "fase_2/configs/experiment/g3_representation.yaml",
+  "registry_sha256": "1c5b113cde326190af2ea448cf04054bea0ceebf800323c9733361b749e0ddbd",
+  "matrix_size": 36,
+  "execution_counts": {
+    "new": 24,
+    "reused_g2": 12
+  },
+  "r0_numerical_equivalence": "verified for all folds at w60 and w150",
+  "g2_artifact_manifest_entries_verified": 180,
+  "configs": [
+    {
+      "config": "fase_2/configs/experiment/g3_r1_w60.yaml",
+      "config_sha256": "fd4cf392b9d0b6384e39b9bce47c544e3f1a4e29b82dbcc4d7c2b58df721aa7b",
+      "expected_run_fingerprint": "c72b34c1701ca8ede684faa439a58edc22c6e24c8b69feabb14bb1d6e7909f54",
+      "source_g2_config": "fase_2/configs/experiment/g2_temporal_r0_w60.yaml",
+      "source_g2_config_sha256": "b8bb255c0ceef8ba30c9bf2626ba37f817ae01f3bf57fc16493d30f65bcfc33b"
+    },
+    {
+      "config": "fase_2/configs/experiment/g3_r2_w60.yaml",
+      "config_sha256": "9d008b52fd95be2b58b5016d063d82bf3a1b70d3bff94de402296d6383ef869f",
+      "expected_run_fingerprint": "71321dc2402fbd9e8a5669526d59d19ba8a6f7e711f39bb6b7dd9dccc17e52ac",
+      "source_g2_config": "fase_2/configs/experiment/g2_temporal_r0_w60.yaml",
+      "source_g2_config_sha256": "b8bb255c0ceef8ba30c9bf2626ba37f817ae01f3bf57fc16493d30f65bcfc33b"
+    },
+    {
+      "config": "fase_2/configs/experiment/g3_r1_w150.yaml",
+      "config_sha256": "47d9699abaff8f16929738e0fd8d8c4c7d972d8856bd8d49f9d99809304e9612",
+      "expected_run_fingerprint": "e3048acc8368db0920d87d4a36c655dfc5906ba0c37c89a4bbb7a26f8e11861f",
+      "source_g2_config": "fase_2/configs/experiment/g2_temporal_r0_w150.yaml",
+      "source_g2_config_sha256": "d62a4ca01fe84d84b079d21cd106d5a0b35091d7a5f9e61a64b9b789c65f18d2"
+    },
+    {
+      "config": "fase_2/configs/experiment/g3_r2_w150.yaml",
+      "config_sha256": "342188913b72d3c3479dcc61c8be000396db111b848cb939f625dbec2a97d3c9",
+      "expected_run_fingerprint": "689fe0faaa5e9214f0cdbc61a954952bdbba639eafeb3ca05d2772335b1e3e60",
+      "source_g2_config": "fase_2/configs/experiment/g2_temporal_r0_w150.yaml",
+      "source_g2_config_sha256": "d62a4ca01fe84d84b079d21cd106d5a0b35091d7a5f9e61a64b9b789c65f18d2"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+experiment_name: "g4_b_class_weights_w60"
+generation: "G4"
+configuration_id: "g4_b_class_weights_w60"
+scenario: "B"
+representation: "R0"
+window_size_frames: 60
+preprocessing_config: "fase_2/configs/preprocessing/baseline_zero_fill.yaml"
+models: [lstm, tcn]
+seeds: [42]
+training: &training
+  max_epochs: 150
+  batch_size: 1024
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  monitor: "val_macro_f1"
+  mode: "max"
+  patience: 15
+  minimum_delta: 0.002
+  checkpoint_every_epochs: 10
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  balancing: "class_weights"
+parameters:
+  lstm: {hidden_dim: 64, num_layers: 2, bidirectional: false, dropout: 0.25, pooling: "last"}
+  tcn: {channels: [32, 64, 64], kernel_size: 3, dropout: 0.25, pooling: "mean"}

@@ -1,11 +1,49 @@
-experiment_name: "imbalance_mitigation"
-strategies:
-  - "none"
-  - "class_weights"
-  - "weighted_sampling"
-  - "light_time_series_augmentation"
-augmentation_train_only: true
+experiment_name: "g4_imbalance_mitigation"
+generation: "G4"
+representation: "R0"
+seed: 42
+folds: [1, 2, 3, 4]
+scenarios:
+  A: "none"
+  B: "class_weights"
+  C: "weighted_sampling"
+  D: "augmentation"
+class_weights:
+  formula: "N / (K * N_c)"
+  source: "training_fold_only"
+weighted_sampling:
+  formula: "N / (K * N_c) per sample"
+  replacement: true
+  num_samples_per_epoch: "N_train"
+  seed: 42
+  temporal_implementation: "torch.utils.data.WeightedRandomSampler"
+  svm_implementation: "deterministic materialized torch.multinomial"
 augmentation:
-  methods: [small_jitter, small_scaling, short_frame_masking]
-  preserve_physical_ranges: true
-
+  train_only: true
+  minority_classes: [fatigue, distraction]
+  copies_per_minority_window: 1
+  scale_range: [0.98, 1.02]
+  jitter_std:
+    ear: 0.005
+    mar: 0.005
+    pitch: 0.5
+    yaw: 0.5
+    roll: 0.5
+  masking_probability: 0.5
+  max_mask_frames: 3
+  physical_ranges:
+    ear: [0.0, 1.0]
+    mar: [0.0, 2.0]
+    pitch: [-180.0, 180.0]
+    yaw: [-180.0, 180.0]
+    roll: [-180.0, 180.0]
+  seed: 42
+  order: "augment raw training windows, then fit scaler on augmented training"
+  validation_test_untouched: true
+models:
+  - {name: svm, window_size_frames: 60, source_generation: G1}
+  - {name: lstm, window_size_frames: 60, source_generation: G2}
+  - {name: tcn, window_size_frames: 60, source_generation: G2}
+  - {name: transformer, window_size_frames: 150, source_generation: G2}
+new_run_count: 48
+total_comparison_count: 64

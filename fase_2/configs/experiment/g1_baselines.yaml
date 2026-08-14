@@ -1,0 +1,42 @@
+experiment_name: "g1_qualification_baselines"
+generation: "G1"
+configuration_id: "qualification_r0_flat"
+representation: "R0_flat"
+window_sizes_frames: [30, 60, 150]
+preprocessing_config: "fase_2/configs/preprocessing/baseline_zero_fill.yaml"
+models: [fixed_rules, svm, random_forest, xgboost]
+seed: 42
+xgb_device: "cuda"
+balancing: "none"
+
+fixed_rules:
+  ear_threshold: 0.25
+  ear_consecutive_frames: 20
+  mar_threshold: 0.55
+  pitch_threshold: -15.0
+  aggregation: "frame_majority"
+  tie_priority: [fatigue, distraction, alert]
+
+parameters:
+  svm:
+    C: 1.0
+    kernel: "linear"
+    class_weight: null
+  random_forest:
+    n_estimators: 200
+    max_depth: 12
+    min_samples_leaf: 2
+    max_features: "sqrt"
+    class_weight: null
+    n_jobs: -1
+  xgboost:
+    n_estimators: 300
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    objective: "multi:softprob"
+    eval_metric: "mlogloss"
+    early_stopping_rounds: 20
+    tree_method: "hist"
+    n_jobs: -1

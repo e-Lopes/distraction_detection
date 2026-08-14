@@ -1,0 +1,33 @@
+experiment_name: "g3_smoke_r1"
+generation: "G3_smoke"
+configuration_id: "smoke_r1_w60"
+representation: "R1"
+window_size_frames: 60
+feature_order: [ear, mar, pitch, yaw, roll]
+preprocessing_config: "fase_2/configs/preprocessing/interpolation_only.yaml"
+models: [tcn]
+seeds: [42]
+max_samples_per_subset: 384
+
+training:
+  max_epochs: 3
+  batch_size: 128
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  monitor: "val_macro_f1"
+  mode: "max"
+  patience: 2
+  minimum_delta: 0.002
+  checkpoint_every_epochs: 1
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  balancing: "none"
+
+parameters:
+  tcn:
+    channels: [32, 64, 64]
+    kernel_size: 3
+    dropout: 0.25
+    pooling: "mean"

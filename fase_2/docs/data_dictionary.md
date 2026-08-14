@@ -31,3 +31,16 @@ em `configs/data/base.yaml` não é versionado por conter informação derivada 
 `Ausente` é uma condição operacional e nunca é convertida automaticamente em fadiga ou
 distração. As grafias `Distração` e `Distraido` da fonte são normalizadas como
 `distraction`, mantendo-se o texto original em `source_label`.
+
+## Semântica das flags de missingness
+
+- `face_detected = 1` somente quando o frame possui detecção facial válida e os cinco sinais
+  observados; permanece `0` mesmo quando os sinais são posteriormente preenchidos.
+- `was_interpolated = 1` somente quando os cinco sinais ausentes foram produzidos pela política
+  de interpolação curta; preenchimento por zero ou mediana do treino não ativa a flag.
+- `missing_duration_so_far` conta causalmente os frames consecutivos sem detecção até o frame
+  atual e volta a zero quando `face_detected = 1`; nunca contém a duração futura total do gap.
+
+Na representação R2, a ordem é `[ear, mar, pitch, yaw, roll, face_detected, was_interpolated,
+missing_duration_so_far]`. As duas flags binárias não são padronizadas. Os cinco sinais e a
+duração usam somente parâmetros estimados no treino.

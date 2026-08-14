@@ -28,7 +28,14 @@ Os indicadores são organizados em janelas de diferentes durações:
 
 A distribuição das classes deve ser recalculada para cada combinação de tamanho de janela, stride e regra de rotulagem.
 
-Quando forem utilizadas flags de qualidade, a entrada poderá ser representada por uma matriz `N × 8`:
+As representações do protocolo são explícitas:
+
+- **R0:** `N × 5`, cinco indicadores com zero-fill;
+- **R1:** `N × 5`, cinco indicadores com tratamento apenas de gaps curtos;
+- **R2:** `N × 8`, cinco indicadores e três flags causais;
+- **R3:** estatísticas agregadas por janela para classificadores clássicos.
+
+R2 usa:
 
 ```text
 [EAR, MAR, Pitch, Yaw, Roll,
@@ -56,13 +63,14 @@ Falhas longas, oclusões e ausência do operador não devem ser interpoladas com
 - LSTM;
 - TCN.
 
-### Comparações opcionais
+### Comparações científicas de menor busca
 
 - Random Forest;
 - SVM;
 - Transformer.
 
-O Transformer e a fusão multimodal são experimentos complementares e não devem impedir a conclusão dos modelos centrais.
+O Transformer deve existir como comparação controlada, com capacidade e busca menores. A fusão
+multimodal continua opcional e não deve impedir a conclusão dos modelos centrais.
 
 ## Divisão dos dados
 
@@ -169,8 +177,37 @@ python -m fase_2.src.training.dummy_baseline
 python -m fase_2.src.training.classical_baselines --xgb-device cuda
 python -m fase_2.src.training.classical_grid_search --xgb-device cuda
 python -m fase_2.src.training.preprocessing_comparison --xgb-device cuda
+python -m fase_2.src.training.g1_baselines --dry-run
+python -m fase_2.src.training.g1_baselines --max-runs 48
+python -m fase_2.src.training.temporal_multiseed \
+  --experiment-config fase_2/configs/experiment/temporal_smoke.yaml \
+  --fold 1 --dry-run
+python -m fase_2.src.training.temporal_multiseed \
+  --experiment-config fase_2/configs/experiment/temporal_smoke.yaml \
+  --fold 1 --max-runs 2
+python -m fase_2.src.training.g2_report \
+  --configs fase_2/configs/experiment/g2_temporal_r0_w30.yaml \
+            fase_2/configs/experiment/g2_temporal_r0_w60.yaml \
+            fase_2/configs/experiment/g2_temporal_r0_w150.yaml
+python -m fase_2.src.training.g3_matrix
+python -m fase_2.src.training.temporal_multiseed \
+  --experiment-config fase_2/configs/experiment/g3_r1_w60.yaml \
+  --checkpoint-dir fase_2/outputs/models/G3 --run-dir fase_2/outputs/logs/G3 \
+  --prediction-dir fase_2/outputs/predictions/G3 --output-dir fase_2/outputs/metrics/G3 \
+  --figure-dir fase_2/outputs/figures/G3/r1_w60 --max-runs 8
+# Repetir o comando para g3_r2_w60, g3_r1_w150 e g3_r2_w150.
+python -m fase_2.src.training.g3_report
 python -m pytest fase_2/tests -q
 ```
+
+O primeiro comando temporal apenas mostra a matriz G0. O segundo executa três arquiteturas,
+uma seed e um fold por três épocas. A configuração `temporal_multiseed.yaml` contém o template
+de repetição com cinco seeds e 150 épocas; ela só deve ser usada depois de congelar a
+configuração finalista por validação.
+
+O runner G1 compara regras fixas, SVM, Random Forest e XGBoost em R0 achatado para janelas
+30/60/150 e quatro folds. Seus checkpoints permitem retomar interrupções. Os resultados de G1
+são qualificação com seed 42; configurações promovidas devem ser repetidas nas cinco seeds.
 
 O comparativo de pré-processamento executa zero-fill, interpolação curta e interpolação com
 flags para janelas de 30, 60 e 150 frames. Checkpoints locais permitem retomar o comando; use
@@ -186,7 +223,8 @@ caminhos relativos, metadados e índices temporais. Métricas agregadas são gra
 - [Linha de base da qualificação](docs/qualification_baseline.md): contribuições formalizadas, evidências disponíveis e pendências de reconciliação.
 - [Plano de ações pós-banca revisado](docs/plano_pos_banca.md): referência complementar; não substitui o `PlanoPósBanca.pdf` vigente.
 - [Mês 1 — Dados e protocolo](docs/months/mes_01_dados_protocolo.md): checklist operacional, entregáveis, bloqueios e critérios de aceite da etapa atual.
-- [Plano incremental de implementação](docs/IMPLEMENTATION_PLAN.md): estado atual, arquitetura, próximos marcos, riscos e critérios de aceite do pipeline de ML.
+- [Auditoria do plano integrado](docs/integrated_plan_gap_analysis.md): aderência, lacunas, classificação dos resultados e componentes reutilizados.
+- [Plano incremental de implementação](docs/implementation_plan.md): etapas G0-G6, testes, riscos, critérios e rollback.
 
 ## Fontes de dados e legado da fase 1
 

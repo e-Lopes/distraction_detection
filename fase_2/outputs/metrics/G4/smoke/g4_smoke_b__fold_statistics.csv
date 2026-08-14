@@ -1,0 +1,9 @@
+model,subset,fold,metric,n,mean,standard_deviation,median,minimum,maximum,ci95_lower,ci95_upper
+tcn,test,1,macro_f1_all_classes,1,0.15261044176706826,0.0,0.15261044176706826,0.15261044176706826,0.15261044176706826,nan,nan
+tcn,test,1,best_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,test,1,stopping_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,test,1,best_validation_macro_f1,1,0.4082687338501292,0.0,0.4082687338501292,0.4082687338501292,0.4082687338501292,nan,nan
+tcn,validation,1,macro_f1_all_classes,1,0.4082687338501292,0.0,0.4082687338501292,0.4082687338501292,0.4082687338501292,nan,nan
+tcn,validation,1,best_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,validation,1,stopping_epoch,1,2.0,0.0,2.0,2.0,2.0,nan,nan
+tcn,validation,1,best_validation_macro_f1,1,0.4082687338501292,0.0,0.4082687338501292,0.4082687338501292,0.4082687338501292,nan,nan

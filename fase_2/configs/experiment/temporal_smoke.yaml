@@ -1,0 +1,46 @@
+experiment_name: "temporal_smoke"
+generation: "G0"
+configuration_id: "smoke_r0_w30"
+representation: "R0"
+window_size_frames: 30
+preprocessing_config: "fase_2/configs/preprocessing/baseline_zero_fill.yaml"
+models: [lstm, tcn, transformer]
+seeds: [42]
+max_samples_per_subset: 384
+
+training:
+  max_epochs: 3
+  batch_size: 256
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  monitor: "val_macro_f1"
+  mode: "max"
+  patience: 3
+  minimum_delta: 0.002
+  checkpoint_every_epochs: 1
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  balancing: "none"
+
+parameters:
+  lstm:
+    hidden_dim: 16
+    num_layers: 1
+    bidirectional: false
+    dropout: 0.1
+    pooling: "last"
+  tcn:
+    channels: [16, 16]
+    kernel_size: 3
+    dropout: 0.1
+    pooling: "mean"
+  transformer:
+    model_dim: 16
+    num_heads: 4
+    num_layers: 1
+    feedforward_dim: 32
+    dropout: 0.1
+    pooling: "mean"
+    max_length: 150

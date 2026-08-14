@@ -1,0 +1,38 @@
+{
+  "generation": "G4",
+  "registry": "fase_2/configs/experiment/imbalance.yaml",
+  "registry_sha256": "d220030484af3950095d7a2b8368a004a4f07f72d517ff45db5ea67cf9e26958",
+  "new_runs": 48,
+  "reused_runs": 16,
+  "total_comparisons": 64,
+  "g1_artifacts_verified": 4,
+  "g2_artifacts_verified": 60,
+  "r0_numerical_equivalence": "verified",
+  "configs": [
+    {
+      "path": "fase_2/configs/experiment/g4_b_w60.yaml",
+      "sha256": "0d66b5710f7521754ea8bc4b96c5e6e9220ad30d7695fb16cd1917951bfa85a9"
+    },
+    {
+      "path": "fase_2/configs/experiment/g4_b_w150.yaml",
+      "sha256": "889ca35e937db577abea79252cc5b774357c3e122775a5233052bf2891400dd0"
+    },
+    {
+      "path": "fase_2/configs/experiment/g4_c_w60.yaml",
+      "sha256": "5635c7ad8ebc10f17324ac2b5c076cd716334c4023730ceecee36b6a987d49cf"
+    },
+    {
+      "path": "fase_2/configs/experiment/g4_c_w150.yaml",
+      "sha256": "50ebc572bedda7a4c0b494942df869fb4ad3a7c8a52fee659747f0419ddc31b0"
+    },
+    {
+      "path": "fase_2/configs/experiment/g4_d_w60.yaml",
+      "sha256": "42d22731cf284d6bee44e2cf56e32db642af7651466b8d46d3c5bd9fe21b0c40"
+    },
+    {
+      "path": "fase_2/configs/experiment/g4_d_w150.yaml",
+      "sha256": "48d58ca9c38dfa10f7b6c113b8920ab07d770828d523da375e38c5920526c0fa"
+    }
+  ],
+  "status": "ready_for_tests_and_smokes"
+}

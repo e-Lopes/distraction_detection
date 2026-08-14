@@ -1,0 +1,37 @@
+experiment_name: "temporal_multiseed_candidate"
+generation: "G5"
+configuration_id: "candidate_r0_w60"
+representation: "R0"
+window_size_frames: 60
+preprocessing_config: "fase_2/configs/preprocessing/baseline_zero_fill.yaml"
+models: [lstm, tcn]
+seeds: [42, 123, 456, 789, 2026]
+
+training:
+  max_epochs: 150
+  batch_size: 256
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  monitor: "val_macro_f1"
+  mode: "max"
+  patience: 15
+  minimum_delta: 0.002
+  checkpoint_every_epochs: 10
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  balancing: "none"
+
+parameters:
+  lstm:
+    hidden_dim: 64
+    num_layers: 2
+    bidirectional: false
+    dropout: 0.25
+    pooling: "last"
+  tcn:
+    channels: [32, 64, 64]
+    kernel_size: 3
+    dropout: 0.25
+    pooling: "mean"

@@ -1,0 +1,235 @@
+{
+  "generation": "G2",
+  "qualification_seed": 42,
+  "official_run_count": 36,
+  "balancing": "none",
+  "run_fingerprints": {
+    "G2__qualification_r0_w150_b1024__lstm__r0__w150__fold_1__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__lstm__r0__w150__fold_2__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__lstm__r0__w150__fold_3__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__lstm__r0__w150__fold_4__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__tcn__r0__w150__fold_1__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__tcn__r0__w150__fold_2__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__tcn__r0__w150__fold_3__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__tcn__r0__w150__fold_4__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__transformer__r0__w150__fold_1__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__transformer__r0__w150__fold_2__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__transformer__r0__w150__fold_3__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w150_b1024__transformer__r0__w150__fold_4__seed_42": "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9",
+    "G2__qualification_r0_w30_b1024__lstm__r0__w30__fold_1__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__lstm__r0__w30__fold_2__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__lstm__r0__w30__fold_3__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__lstm__r0__w30__fold_4__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__tcn__r0__w30__fold_1__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__tcn__r0__w30__fold_2__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__tcn__r0__w30__fold_3__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__tcn__r0__w30__fold_4__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__transformer__r0__w30__fold_1__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__transformer__r0__w30__fold_2__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__transformer__r0__w30__fold_3__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w30_b1024__transformer__r0__w30__fold_4__seed_42": "59f3e90840c9f8bec66b07e64ba0b909f879a967af51909999338c1414f7c0e8",
+    "G2__qualification_r0_w60_b1024__lstm__r0__w60__fold_1__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__lstm__r0__w60__fold_2__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__lstm__r0__w60__fold_3__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__lstm__r0__w60__fold_4__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__tcn__r0__w60__fold_1__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__tcn__r0__w60__fold_2__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__tcn__r0__w60__fold_3__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__tcn__r0__w60__fold_4__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__transformer__r0__w60__fold_1__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__transformer__r0__w60__fold_2__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__transformer__r0__w60__fold_3__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4",
+    "G2__qualification_r0_w60_b1024__transformer__r0__w60__fold_4__seed_42": "74cecc10fc2d79d3ede33e1882ddd4b2d98de18fc26cb71524298df3714ea4e4"
+  },
+  "configs": [
+    {
+      "path": "fase_2/configs/experiment/g2_temporal_r0_w30.yaml",
+      "resolved": {
+        "experiment_name": "g2_temporal_r0_w30",
+        "generation": "G2",
+        "configuration_id": "qualification_r0_w30_b1024",
+        "representation": "R0",
+        "window_size_frames": 30,
+        "preprocessing_config": "fase_2/configs/preprocessing/baseline_zero_fill.yaml",
+        "models": [
+          "lstm",
+          "tcn",
+          "transformer"
+        ],
+        "seeds": [
+          42
+        ],
+        "training": {
+          "max_epochs": 150,
+          "batch_size": 1024,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "monitor": "val_macro_f1",
+          "mode": "max",
+          "patience": 15,
+          "minimum_delta": 0.002,
+          "checkpoint_every_epochs": 10,
+          "gradient_clip_norm": 1.0,
+          "amp": true,
+          "deterministic": true,
+          "num_workers": 0,
+          "balancing": "none"
+        },
+        "parameters": {
+          "lstm": {
+            "hidden_dim": 64,
+            "num_layers": 2,
+            "bidirectional": false,
+            "dropout": 0.25,
+            "pooling": "last"
+          },
+          "tcn": {
+            "channels": [
+              32,
+              64,
+              64
+            ],
+            "kernel_size": 3,
+            "dropout": 0.25,
+            "pooling": "mean"
+          },
+          "transformer": {
+            "model_dim": 32,
+            "num_heads": 4,
+            "num_layers": 2,
+            "feedforward_dim": 64,
+            "dropout": 0.25,
+            "pooling": "mean",
+            "max_length": 150
+          }
+        }
+      }
+    },
+    {
+      "path": "fase_2/configs/experiment/g2_temporal_r0_w60.yaml",
+      "resolved": {
+        "experiment_name": "g2_temporal_r0_w60",
+        "generation": "G2",
+        "configuration_id": "qualification_r0_w60_b1024",
+        "representation": "R0",
+        "window_size_frames": 60,
+        "preprocessing_config": "fase_2/configs/preprocessing/baseline_zero_fill.yaml",
+        "models": [
+          "lstm",
+          "tcn",
+          "transformer"
+        ],
+        "seeds": [
+          42
+        ],
+        "training": {
+          "max_epochs": 150,
+          "batch_size": 1024,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "monitor": "val_macro_f1",
+          "mode": "max",
+          "patience": 15,
+          "minimum_delta": 0.002,
+          "checkpoint_every_epochs": 10,
+          "gradient_clip_norm": 1.0,
+          "amp": true,
+          "deterministic": true,
+          "num_workers": 0,
+          "balancing": "none"
+        },
+        "parameters": {
+          "lstm": {
+            "hidden_dim": 64,
+            "num_layers": 2,
+            "bidirectional": false,
+            "dropout": 0.25,
+            "pooling": "last"
+          },
+          "tcn": {
+            "channels": [
+              32,
+              64,
+              64
+            ],
+            "kernel_size": 3,
+            "dropout": 0.25,
+            "pooling": "mean"
+          },
+          "transformer": {
+            "model_dim": 32,
+            "num_heads": 4,
+            "num_layers": 2,
+            "feedforward_dim": 64,
+            "dropout": 0.25,
+            "pooling": "mean",
+            "max_length": 150
+          }
+        }
+      }
+    },
+    {
+      "path": "fase_2/configs/experiment/g2_temporal_r0_w150.yaml",
+      "resolved": {
+        "experiment_name": "g2_temporal_r0_w150",
+        "generation": "G2",
+        "configuration_id": "qualification_r0_w150_b1024",
+        "representation": "R0",
+        "window_size_frames": 150,
+        "preprocessing_config": "fase_2/configs/preprocessing/baseline_zero_fill.yaml",
+        "models": [
+          "lstm",
+          "tcn",
+          "transformer"
+        ],
+        "seeds": [
+          42
+        ],
+        "training": {
+          "max_epochs": 150,
+          "batch_size": 1024,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "monitor": "val_macro_f1",
+          "mode": "max",
+          "patience": 15,
+          "minimum_delta": 0.002,
+          "checkpoint_every_epochs": 10,
+          "gradient_clip_norm": 1.0,
+          "amp": true,
+          "deterministic": true,
+          "num_workers": 0,
+          "balancing": "none"
+        },
+        "parameters": {
+          "lstm": {
+            "hidden_dim": 64,
+            "num_layers": 2,
+            "bidirectional": false,
+            "dropout": 0.25,
+            "pooling": "last"
+          },
+          "tcn": {
+            "channels": [
+              32,
+              64,
+              64
+            ],
+            "kernel_size": 3,
+            "dropout": 0.25,
+            "pooling": "mean"
+          },
+          "transformer": {
+            "model_dim": 32,
+            "num_heads": 4,
+            "num_layers": 2,
+            "feedforward_dim": 64,
+            "dropout": 0.25,
+            "pooling": "mean",
+            "max_length": 150
+          }
+        }
+      }
+    }
+  ]
+}

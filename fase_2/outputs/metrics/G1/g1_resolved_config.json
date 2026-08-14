@@ -1,0 +1,81 @@
+{
+  "experiment": {
+    "balancing": "none",
+    "configuration_id": "qualification_r0_flat",
+    "experiment_name": "g1_qualification_baselines",
+    "fixed_rules": {
+      "aggregation": "frame_majority",
+      "ear_consecutive_frames": 20,
+      "ear_threshold": 0.25,
+      "mar_threshold": 0.55,
+      "pitch_threshold": -15.0,
+      "tie_priority": [
+        "fatigue",
+        "distraction",
+        "alert"
+      ]
+    },
+    "generation": "G1",
+    "models": [
+      "fixed_rules",
+      "svm",
+      "random_forest",
+      "xgboost"
+    ],
+    "parameters": {
+      "random_forest": {
+        "class_weight": null,
+        "max_depth": 12,
+        "max_features": "sqrt",
+        "min_samples_leaf": 2,
+        "n_estimators": 200,
+        "n_jobs": -1
+      },
+      "svm": {
+        "C": 1.0,
+        "class_weight": null,
+        "kernel": "linear"
+      },
+      "xgboost": {
+        "colsample_bytree": 0.8,
+        "early_stopping_rounds": 20,
+        "eval_metric": "mlogloss",
+        "learning_rate": 0.05,
+        "max_depth": 4,
+        "n_estimators": 300,
+        "n_jobs": -1,
+        "objective": "multi:softprob",
+        "subsample": 0.8,
+        "tree_method": "hist"
+      }
+    },
+    "preprocessing_config": "fase_2/configs/preprocessing/baseline_zero_fill.yaml",
+    "representation": "R0_flat",
+    "seed": 42,
+    "window_sizes_frames": [
+      30,
+      60,
+      150
+    ],
+    "xgb_device": "cuda"
+  },
+  "fingerprint": "c62f9c04e8a10249568ab7884971caba73f791077e13ccb29e28c3b0f632bd0a",
+  "inputs": {
+    "data_config": "fase_2/configs/data/base.yaml",
+    "experiment_config": "fase_2/configs/experiment/g1_baselines.yaml",
+    "extraction_manifest": "fase_2/data/interim/legacy_extraction/extraction_manifest.csv",
+    "frame_intervals": "fase_2/data/manifests/annotation_frame_intervals.csv",
+    "splits": "fase_2/data/manifests/temporal_splits.csv"
+  },
+  "windowing": {
+    "label_rule": "majority",
+    "minimum_target_proportion": 0.6,
+    "sizes_frames": [
+      30,
+      60,
+      150
+    ],
+    "stride_frames": 15,
+    "transition_policy": "exclude_from_primary_training"
+  }
+}

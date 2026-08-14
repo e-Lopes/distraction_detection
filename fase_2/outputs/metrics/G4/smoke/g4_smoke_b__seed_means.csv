@@ -1,0 +1,3 @@
+model,subset,seed,accuracy,balanced_accuracy,macro_f1_all_classes,best_epoch,stopping_epoch,best_validation_macro_f1,training_seconds
+tcn,test,42,0.296875,0.30158730158730157,0.15261044176706826,2.0,2.0,0.4082687338501292,1.5799047999971663
+tcn,validation,42,0.40625,0.5,0.4082687338501292,2.0,2.0,0.4082687338501292,1.5799047999971663

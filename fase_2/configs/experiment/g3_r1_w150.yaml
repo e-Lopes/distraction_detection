@@ -1,0 +1,39 @@
+experiment_name: "g3_r1_w150"
+generation: "G3"
+configuration_id: "qualification_r1_w150_b1024"
+representation: "R1"
+window_size_frames: 150
+feature_order: [ear, mar, pitch, yaw, roll]
+preprocessing_config: "fase_2/configs/preprocessing/interpolation_only.yaml"
+models: [transformer]
+seeds: [42]
+dataset_version: "v1"
+split_sha256: "5a02a39678865331d89963260f8711a280fd3a5d05c0affc90bf186ff2b1851a"
+source_g2_config_sha256: "d62a4ca01fe84d84b079d21cd106d5a0b35091d7a5f9e61a64b9b789c65f18d2"
+source_g2_run_fingerprint: "9a46aece367c9312b62de20d89107b11dce5679b1115e643e6a64ad9ac889eb9"
+
+training:
+  max_epochs: 150
+  batch_size: 1024
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  monitor: "val_macro_f1"
+  mode: "max"
+  patience: 15
+  minimum_delta: 0.002
+  checkpoint_every_epochs: 10
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  balancing: "none"
+
+parameters:
+  transformer:
+    model_dim: 32
+    num_heads: 4
+    num_layers: 2
+    feedforward_dim: 64
+    dropout: 0.25
+    pooling: "mean"
+    max_length: 150
