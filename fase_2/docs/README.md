@@ -25,6 +25,7 @@ Em caso de divergência, usar a seguinte ordem:
 | `methodology/experimental_protocol.md` | Protocolo experimental reproduzível. |
 | `integrated_plan_gap_analysis.md` | Aderência do código/artefatos ao plano integrado e componentes preservados. |
 | `implementation_plan.md` | Sequência incremental G0-G6, testes, riscos e rollback. |
+| `g45_implementation_plan.md` | Protocolo pré-resultados congelado para diagnóstico, Focal Loss e classificação hierárquica da G4.5. |
 | `../reports/g4_imbalance_results.md` | Resultados, deltas, estabilidade e decisão da G4. |
 | `months/mes_01_dados_protocolo.md` | Checklist operacional do mês atual. |
 | `decisions/` | Decisões metodológicas que prevalecem sobre propostas anteriores. |
