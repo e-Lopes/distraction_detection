@@ -8,6 +8,7 @@ Decisões metodológicas registradas:
 - [`004-splits-validacao.md`](004-splits-validacao.md)
 - [`005-interpolacao-g3.md`](005-interpolacao-g3.md)
 - [`006-desbalanceamento-g4.md`](006-desbalanceamento-g4.md)
+- [`007-g45-threshold-focal-proxima-hierarquia.md`](007-g45-threshold-focal-proxima-hierarquia.md)
 
 Cada registro deve conter contexto, alternativas, decisão, justificativa e consequências.
 

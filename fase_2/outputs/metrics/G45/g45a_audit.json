@@ -1,0 +1,98 @@
+{
+  "generation": "G45",
+  "experiment": "g45a_session_crossfit_threshold",
+  "config_path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/configs/experiment/g45_threshold.yaml",
+  "config_sha256": "eaf24eb7c3255da09822269c1f192f03ce016329c4768cb215cf223bc954a10e",
+  "loaded_test_artifacts": false,
+  "source_file_count": 12,
+  "source_files": [
+    {
+      "model_key": "lstm_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__lstm__r0__w60__fold_1__seed_42__validation.csv",
+      "size_bytes": 103981,
+      "sha256": "825cb0275ccdd5ebcc2dce1227af0bdf7e3489e0249c704818cbe7df38f0d694",
+      "subset": "validation"
+    },
+    {
+      "model_key": "lstm_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__lstm__r0__w60__fold_2__seed_42__validation.csv",
+      "size_bytes": 103841,
+      "sha256": "b8b6110e0b51283b02db6a5054440f52d69953a19faa8df566c1c82f9020aafb",
+      "subset": "validation"
+    },
+    {
+      "model_key": "lstm_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__lstm__r0__w60__fold_3__seed_42__validation.csv",
+      "size_bytes": 101978,
+      "sha256": "ba8735ebfba921893d8517e8b81dd0c7a4e5b2881467cec715a403d1a3f85b9b",
+      "subset": "validation"
+    },
+    {
+      "model_key": "lstm_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__lstm__r0__w60__fold_4__seed_42__validation.csv",
+      "size_bytes": 99770,
+      "sha256": "2730fb67b29c6c8386bfe79b39f067a1ebfef8bbac9404193ffe09770e3820ed",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__tcn__r0__w60__fold_1__seed_42__validation.csv",
+      "size_bytes": 104926,
+      "sha256": "ac099ff554a4e5492fb52500dab4eb46ab6a7081b5c1d82fc1a8ef446df9a3eb",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__tcn__r0__w60__fold_2__seed_42__validation.csv",
+      "size_bytes": 102392,
+      "sha256": "f8485055dcd86050a9b8907b6d50c534f9c6d287c6d28980e6b38745c758f729",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__tcn__r0__w60__fold_3__seed_42__validation.csv",
+      "size_bytes": 102093,
+      "sha256": "a4f653928c6ff571235b9f63cd6d93b12c8fbd30709779275ccd7f8260dc253b",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_b",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_b_class_weights_w60__tcn__r0__w60__fold_4__seed_42__validation.csv",
+      "size_bytes": 99118,
+      "sha256": "dfbcc79bb343375e76d159828f2b67aefec50c98bfc99e378c9e44bf02f83b78",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_c",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_1__seed_42__validation.csv",
+      "size_bytes": 109999,
+      "sha256": "ff6d1df2f164edafbc9c9f6d0474d85371bcb52f17e626e90c44f739f6e9bcaf",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_c",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_2__seed_42__validation.csv",
+      "size_bytes": 104838,
+      "sha256": "24801e11a56ed7e79865db7f8886b203008c990cffbd75983adaeb9d31d9540d",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_c",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_3__seed_42__validation.csv",
+      "size_bytes": 102205,
+      "sha256": "e2706f2ab36b2053c653acaa6ecebe8f8225f0d95153f3b7d6e93d08b1e45dbd",
+      "subset": "validation"
+    },
+    {
+      "model_key": "tcn_c",
+      "path": "C:/Users/Eduardo/Desktop/Mestrado/distraction_detection/distraction_detection/fase_2/outputs/predictions/G4/G4__g4_c_weighted_sampling_w60__tcn__r0__w60__fold_4__seed_42__validation.csv",
+      "size_bytes": 99488,
+      "sha256": "ad888cd21b5bc121cbf22cd69d064dde39a7f5850f07777e0eb36d4be9659ad7",
+      "subset": "validation"
+    }
+  ],
+  "raw_prediction_rows": 13887,
+  "deduplicated_rows": 4629,
+  "threshold_decisions": 12,
+  "threshold_curve_rows": 552
+}

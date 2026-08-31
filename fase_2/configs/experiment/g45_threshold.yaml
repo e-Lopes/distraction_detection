@@ -1,0 +1,38 @@
+generation: "G45"
+experiment_name: "g45a_session_crossfit_threshold"
+source_generation: "G4"
+seed: 42
+classes: [alert, fatigue, distraction]
+subset: "validation"
+
+models:
+  lstm_b:
+    model: lstm
+    strategy: B
+    file_prefix: "G4__g4_b_class_weights_w60__lstm__r0__w60"
+  tcn_b:
+    model: tcn
+    strategy: B
+    file_prefix: "G4__g4_b_class_weights_w60__tcn__r0__w60"
+  tcn_c:
+    model: tcn
+    strategy: C
+    file_prefix: "G4__g4_c_weighted_sampling_w60__tcn__r0__w60"
+
+threshold_grid:
+  minimum: 0.05
+  maximum: 0.50
+  step: 0.01
+
+selection:
+  primary: "equal_video_mean_macro_f1"
+  tie_breakers:
+    - "equal_video_mean_fatigue_f1"
+    - "equal_video_mean_fatigue_precision"
+    - "closest_to_one_third"
+    - "higher_threshold"
+
+prohibitions:
+  load_test_predictions: false
+  target_video_in_calibration: false
+  combine_with_other_intervention: false

@@ -57,12 +57,19 @@ Nos testes sem fadiga, a métrica dessa classe não é estimável e será report
 
 - [x] Comparar zero-fill, interpolação curta e flags de validade.
 - [x] Comparar janelas de 30, 60 e 150 frames nos mesmos folds.
-- [ ] Adicionar deltas e grupos de atributos configuráveis.
+- [x] Adicionar deltas e grupos de atributos configuráveis em
+  `src/features/temporal_window_features.py`, preservando o R3 histórico. A configuração
+  `temporal_behavior_v1.yaml` define distribuição, dinâmica, ocular, oral, pose e missingness;
+  sua comparação experimental ainda não foi executada.
 - [x] Implementar LSTM e TCN com CUDA, AMP, early stopping e checkpoints completos.
 - [x] Implementar a infraestrutura para repetições, estatísticas e gráficos entre seeds.
 - [x] Executar G2 e congelar os candidatos por validação.
 - [x] Executar G3 separadamente, com R0 reutilizado e 24 novos runs R1/R2.
 - [x] Executar G4 sobre R0 com 48 runs novos e 16 reutilizados.
+- [x] Executar G4.5A com threshold cross-fit por sessão; não promover porque houve piora nos
+  três modelos.
+- [x] Executar G4.5B com Focal Loss; preservar somente LSTM/Focal como candidata qualificatória.
+- [ ] Implementar e executar G4.5C hierárquica com SVM/60 e LSTM/60, somente validação.
 - [ ] Congelar LSTM/B + SVM/B para cinco seeds; manter TCN/C + SVM/C como análise secundária.
 
 ## Etapa F — G1 e comparação temporal
@@ -104,6 +111,6 @@ as sequências temporais brutas com LSTM e TCN.
 
 ## Bloqueios explícitos
 
-- Nenhum bloqueio de dados/GPU impede a continuação; G0, G1, G2, G3 e G4 foram concluídas.
-- G5 depende do congelamento formal de LSTM/B–SVM/B e, secundariamente, TCN/C–SVM/C.
+- Nenhum bloqueio de dados/GPU impede a continuação; G0–G4 e G4.5A/B foram concluídas.
+- G5 permanece bloqueada até concluir G4.5C e congelar formalmente os candidatos.
 - Nenhuma métrica sintética será apresentada como resultado científico.

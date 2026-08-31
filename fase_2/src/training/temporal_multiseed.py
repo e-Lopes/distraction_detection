@@ -182,11 +182,17 @@ def fold_seed_statistics(
 
 
 def plot_metric_variability(seed_rows: list[dict[str, object]], output: Path) -> None:
-    test = [row for row in seed_rows if row["subset"] == "test"]
-    models = sorted({str(row["model"]) for row in test})
+    available = {str(row["subset"]) for row in seed_rows}
+    subset = "test" if "test" in available else "validation"
+    selected = [row for row in seed_rows if row["subset"] == subset]
+    models = sorted({str(row["model"]) for row in selected})
     figure, axis = plt.subplots(figsize=(8, 5))
     values = [
-        [float(row["macro_f1_all_classes"]) for row in test if row["model"] == model]
+        [
+            float(row["macro_f1_all_classes"])
+            for row in selected
+            if row["model"] == model
+        ]
         for model in models
     ]
     axis.boxplot(values, tick_labels=[model.upper() for model in models], showmeans=True)
@@ -198,7 +204,7 @@ def plot_metric_variability(seed_rows: list[dict[str, object]], output: Path) ->
             zorder=3,
         )
     axis.set_ylim(0, 1)
-    axis.set_ylabel("Macro F1 externo — média dos quatro folds")
+    axis.set_ylabel(f"Macro F1 {subset} — média dos quatro folds")
     axis.set_title("Variabilidade entre seeds independentes")
     axis.grid(axis="y", alpha=0.25)
     figure.tight_layout()
@@ -298,10 +304,12 @@ def plot_early_stopping(summary: list[dict[str, object]], output: Path) -> None:
 
 
 def plot_fold_seed_heatmap(summary: list[dict[str, object]], output: Path) -> None:
-    test = [row for row in summary if row["subset"] == "test"]
-    models = sorted({str(row["model"]) for row in test})
-    seeds = sorted({int(row["seed"]) for row in test})
-    folds = sorted({int(row["fold"]) for row in test})
+    available = {str(row["subset"]) for row in summary}
+    subset = "test" if "test" in available else "validation"
+    selected = [row for row in summary if row["subset"] == subset]
+    models = sorted({str(row["model"]) for row in selected})
+    seeds = sorted({int(row["seed"]) for row in selected})
+    folds = sorted({int(row["fold"]) for row in selected})
     figure, raw_axes = plt.subplots(1, len(models), figsize=(7 * len(models), 5), sharey=True)
     axes = np.atleast_1d(raw_axes)
     for axis, model in zip(axes, models):
@@ -310,7 +318,7 @@ def plot_fold_seed_heatmap(summary: list[dict[str, object]], output: Path) -> No
                 [
                     next(
                         float(row["macro_f1_all_classes"])
-                        for row in test
+                        for row in selected
                         if row["model"] == model
                         and int(row["fold"]) == fold
                         and int(row["seed"]) == seed
@@ -335,8 +343,8 @@ def plot_fold_seed_heatmap(summary: list[dict[str, object]], output: Path) -> No
         axis.set_yticks(range(len(folds)), folds)
         axis.set_xlabel("Seed")
         axis.set_title(model.upper())
-    axes[0].set_ylabel("Fold externo")
-    figure.colorbar(image, ax=axes, label="Macro F1 externo")
+    axes[0].set_ylabel(f"Fold {subset}")
+    figure.colorbar(image, ax=axes, label=f"Macro F1 {subset}")
     figure.suptitle("Variação conjunta entre fold e seed")
     figure.subplots_adjust(top=0.83, right=0.88, wspace=0.15)
     save_figure(figure, output)
@@ -473,6 +481,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         models = [model for model in models if model in set(args.model)]
     if not folds or not seeds or not models:
         raise ValueError("Filtros produziram uma matriz de execucao vazia")
+    evaluation_subsets = tuple(
+        str(subset) for subset in experiment.get("evaluation_subsets", ("validation", "test"))
+    )
+    if "validation" not in evaluation_subsets or not set(evaluation_subsets).issubset(
+        {"validation", "test"}
+    ):
+        raise ValueError(
+            "evaluation_subsets deve conter validation e aceita somente validation/test"
+        )
     size = int(experiment["window_size_frames"])
     planned_runs = [
         {
@@ -605,7 +622,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     run_confusion = []
                     run_predictions: dict[str, list[dict[str, object]]] = {}
                     best_history = result.history[result.best_epoch - 1]
-                    for subset in ("validation", "test"):
+                    for subset in evaluation_subsets:
                         inference_started = time.perf_counter()
                         expected_ids, predicted_ids, probabilities = predict_split(
                             result.model,
@@ -697,9 +714,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "representation": representation,
                         "feature_names": list(features),
                         "window_size_frames": size,
+                        "evaluation_subsets": list(evaluation_subsets),
                         "scaler": {"mean": scaler.mean, "scale": scaler.scale},
                         "training_medians": medians,
                         "balancing": balancing,
+                        "loss": str(experiment["training"].get("loss", "cross_entropy")),
                         "train_class_counts": {
                             CLASSES[index]: int(np.sum(splits["train"].labels == index))
                             for index in range(len(CLASSES))
@@ -707,6 +726,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "class_weights": (
                             class_weights(splits["train"].labels).tolist()
                             if balancing == "class_weights" else None
+                        ),
+                        "focal_alpha": (
+                            class_weights(splits["train"].labels).tolist()
+                            if str(experiment["training"].get("loss", "cross_entropy"))
+                            == "focal"
+                            else None
                         ),
                         "sampling": (
                             {

@@ -1,0 +1,38 @@
+name: "personalized_binary_operator_state"
+version: 1
+operator_scope: "single_fixed_operator"
+role: "supplementary_operational_analysis"
+scientific_primary_task: "alert_fatigue_distraction"
+supplementary_question: "normal_operation_or_not"
+classes: [normal, non_normal]
+
+behavior_mapping:
+  alert: normal
+  fatigue: non_normal
+  distraction: non_normal
+
+excluded_from_behavior_target:
+  - mixed
+  - operator_absent
+  - face_missing
+  - occlusion
+  - unavailable
+
+operational_gate:
+  enabled: true
+  unavailable_is_non_normal: false
+
+secondary_analysis:
+  enabled: true
+  classes: [fatigue, distraction]
+  condition: "only_after_non_normal"
+
+evaluation:
+  supplementary_metric: "non_normal_event_f1"
+  supporting_metrics:
+    - non_normal_recall
+    - non_normal_precision
+    - average_precision
+    - false_alarms_per_hour
+    - detection_latency_seconds
+  threshold_source: "validation_only"

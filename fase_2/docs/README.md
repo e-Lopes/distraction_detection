@@ -20,12 +20,15 @@ Em caso de divergência, usar a seguinte ordem:
 | Documento | Finalidade |
 |---|---|
 | `qualification_baseline.md` | Relacionar a qualificação aos ativos encontrados e ao trabalho restante. |
+| `research_question_alignment.md` | Vincular pergunta, objetivos e hipótese às comparações e evidências exigidas. |
+| `temporal_feature_protocol.md` | Congelar a avaliação dos novos atributos temporais antes dos resultados. |
 | `data_sources_and_provenance.md` | Inventário detalhado, proveniência, contagens e limitações dos dados. |
 | `data_dictionary.md` | Definir campos e taxonomias da fase 2. |
 | `methodology/experimental_protocol.md` | Protocolo experimental reproduzível. |
 | `integrated_plan_gap_analysis.md` | Aderência do código/artefatos ao plano integrado e componentes preservados. |
 | `implementation_plan.md` | Sequência incremental G0-G6, testes, riscos e rollback. |
 | `g45_implementation_plan.md` | Protocolo pré-resultados congelado para diagnóstico, Focal Loss e classificação hierárquica da G4.5. |
+| `decisions/007-g45-threshold-focal-proxima-hierarquia.md` | Decisão após G4.5A/B e preparação da classificação hierárquica G4.5C. |
 | `../reports/g4_imbalance_results.md` | Resultados, deltas, estabilidade e decisão da G4. |
 | `months/mes_01_dados_protocolo.md` | Checklist operacional do mês atual. |
 | `decisions/` | Decisões metodológicas que prevalecem sobre propostas anteriores. |

@@ -14,6 +14,7 @@ import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, f1_score
 from torch import nn
+from torch.nn import functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader, WeightedRandomSampler
@@ -33,6 +34,31 @@ class TrainingResult:
     training_seconds: float
     resumed: bool
     peak_gpu_memory_bytes: int
+
+
+class FocalLoss(nn.Module):
+    """Focal Loss multiclasse ponderada conforme o protocolo G4.5B."""
+
+    def __init__(self, alpha: torch.Tensor, *, gamma: float) -> None:
+        super().__init__()
+        if alpha.ndim != 1 or len(alpha) != len(CLASSES):
+            raise ValueError(f"alpha deve possuir {len(CLASSES)} valores")
+        if not torch.isfinite(alpha).all() or torch.any(alpha <= 0):
+            raise ValueError("alpha deve ser positivo e finito")
+        if not np.isfinite(gamma) or gamma < 0:
+            raise ValueError("gamma deve ser não negativo e finito")
+        self.register_buffer("alpha", alpha.detach().to(dtype=torch.float32))
+        self.gamma = float(gamma)
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        # O cast explícito mantém log_softmax em float32 mesmo sob autocast/AMP.
+        log_probabilities = F.log_softmax(logits.float(), dim=1)
+        selected_log_probabilities = log_probabilities.gather(1, targets[:, None]).squeeze(1)
+        probabilities = selected_log_probabilities.exp()
+        alpha_targets = self.alpha[targets]
+        losses = -alpha_targets * (1.0 - probabilities).pow(self.gamma) * selected_log_probabilities
+        denominator = alpha_targets.sum().clamp_min(torch.finfo(torch.float32).eps)
+        return losses.sum() / denominator
 
 
 def set_seed(seed: int, *, deterministic: bool) -> None:
@@ -242,7 +268,18 @@ def train_model(
             f"Balanceamento nao suportado neste motor: {balancing}. "
             "Use none, class_weights, weighted_sampling ou augmentation"
         )
-    criterion = nn.CrossEntropyLoss(weight=weights)
+    loss_name = str(training.get("loss", "cross_entropy"))
+    if loss_name == "cross_entropy":
+        criterion: nn.Module = nn.CrossEntropyLoss(weight=weights)
+    elif loss_name == "focal":
+        if balancing != "none":
+            raise ValueError("Focal Loss G4.5B não pode ser combinada com balanceamento")
+        alpha = torch.tensor(
+            class_weights(splits["train"].labels), dtype=torch.float32, device=device
+        )
+        criterion = FocalLoss(alpha, gamma=float(training.get("focal_gamma", 2.0)))
+    else:
+        raise ValueError(f"Loss temporal desconhecida: {loss_name}")
     optimizer = AdamW(
         model.parameters(),
         lr=float(training["learning_rate"]),

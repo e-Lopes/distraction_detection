@@ -6,6 +6,8 @@ import torch
 
 from fase_2.src.training.temporal_data import SequenceMetadata, SequenceSplit
 from fase_2.src.training.temporal_engine import (
+    FocalLoss,
+    class_weights,
     load_training_checkpoint,
     predict_split,
     train_model,
@@ -138,3 +140,103 @@ def test_engine_rejects_non_finite_values(tmp_path: Path):
             fingerprint="nan-test",
             resume=False,
         )
+
+
+def test_focal_gamma_zero_matches_weighted_cross_entropy():
+    logits = torch.tensor(
+        [[2.0, 0.5, -1.0], [0.2, 1.1, -0.3], [-0.5, 0.1, 1.7]],
+        dtype=torch.float32,
+    )
+    targets = torch.tensor([0, 1, 2])
+    alpha = torch.tensor([0.5, 2.0, 3.0])
+    focal = FocalLoss(alpha, gamma=0.0)(logits, targets)
+    expected = torch.nn.CrossEntropyLoss(weight=alpha)(logits, targets)
+    assert torch.allclose(focal, expected, atol=1e-7)
+
+
+def test_focal_downweights_easy_example_and_keeps_float32_under_half_logits():
+    alpha = torch.ones(3)
+    easy = FocalLoss(alpha, gamma=2.0)(
+        torch.tensor([[8.0, 0.0, 0.0]], dtype=torch.float16), torch.tensor([0])
+    )
+    difficult = FocalLoss(alpha, gamma=2.0)(
+        torch.tensor([[0.2, 0.1, 0.0]], dtype=torch.float16), torch.tensor([0])
+    )
+    assert easy.dtype == difficult.dtype == torch.float32
+    assert torch.isfinite(easy) and torch.isfinite(difficult)
+    assert easy < difficult
+
+
+def test_focal_alpha_is_train_only_balanced_formula_and_rejects_combination(tmp_path: Path):
+    labels = np.asarray([0, 0, 0, 1, 2])
+    assert np.allclose(class_weights(labels), [5 / 9, 5 / 3, 5 / 3])
+    splits = {"train": _split(2), "validation": _split(1), "test": _split(1)}
+    training = {
+        "max_epochs": 1,
+        "batch_size": 3,
+        "learning_rate": 0.01,
+        "weight_decay": 0.0,
+        "patience": 1,
+        "minimum_delta": 0.0,
+        "checkpoint_every_epochs": 0,
+        "gradient_clip_norm": 1.0,
+        "amp": False,
+        "deterministic": True,
+        "num_workers": 0,
+        "balancing": "class_weights",
+        "loss": "focal",
+        "focal_gamma": 2.0,
+    }
+    with pytest.raises(ValueError, match="não pode ser combinada"):
+        train_model(
+            model_name="lstm",
+            model_parameters={"hidden_dim": 4, "num_layers": 1, "dropout": 0.0},
+            splits=splits,
+            training=training,
+            seed=42,
+            fold=1,
+            device=torch.device("cpu"),
+            checkpoint_dir=tmp_path,
+            fingerprint="focal-invalid",
+            resume=False,
+        )
+
+
+def test_focal_smoke_trains_saves_and_reloads_finite_checkpoint(tmp_path: Path):
+    splits = {"train": _split(3), "validation": _split(1), "test": _split(1)}
+    training = {
+        "max_epochs": 1,
+        "batch_size": 3,
+        "learning_rate": 0.01,
+        "weight_decay": 0.0,
+        "patience": 1,
+        "minimum_delta": 0.0,
+        "checkpoint_every_epochs": 0,
+        "gradient_clip_norm": 1.0,
+        "amp": False,
+        "deterministic": True,
+        "num_workers": 0,
+        "balancing": "none",
+        "loss": "focal",
+        "focal_gamma": 2.0,
+    }
+    result = train_model(
+        model_name="lstm",
+        model_parameters={"hidden_dim": 4, "num_layers": 1, "dropout": 0.0},
+        splits=splits,
+        training=training,
+        seed=42,
+        fold=1,
+        device=torch.device("cpu"),
+        checkpoint_dir=tmp_path,
+        fingerprint="focal-smoke",
+        resume=False,
+    )
+    assert np.isfinite(result.best_validation_macro_f1)
+    checkpoint = load_training_checkpoint(
+        tmp_path / "best_macro_f1.pt",
+        fingerprint="focal-smoke",
+        device=torch.device("cpu"),
+    )
+    assert checkpoint is not None
+    assert checkpoint["training_config"]["loss"] == "focal"

@@ -1,0 +1,22 @@
+name: "temporal_behavior_v1"
+version: 1
+groups:
+  - signal_distribution
+  - signal_dynamics
+  - ocular
+  - oral
+  - head_pose
+  - missingness
+
+# Valores históricos usados apenas como ponto de partida pré-experimento. O teste externo
+# não pode ser usado para ajustar estes limiares.
+thresholds:
+  ear_closed: 0.25
+  mar_open: 0.55
+  pitch_center: 0.0
+  pitch_deviation: 15.0
+  yaw_center: 0.0
+  yaw_deviation: 20.0
+
+missing_values: "exclude_from_signal_statistics_and_break_events"
+scaling: "standard_train_only"
