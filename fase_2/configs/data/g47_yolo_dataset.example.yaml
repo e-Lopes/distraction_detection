@@ -1,0 +1,9 @@
+# Copiar para data/external/G47/fold_N.yaml e preencher os caminhos locais.
+path: "fase_2/data/external/G47/fold_1"
+train: train.txt
+val: validation.txt
+test: test.txt
+names:
+  0: face
+kpt_shape: [22, 3]
+flip_idx: [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 16, 15, 14, 13, 12, 19, 18, 17, 20, 21]

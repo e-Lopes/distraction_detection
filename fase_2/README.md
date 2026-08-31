@@ -197,8 +197,31 @@ python -m fase_2.src.training.temporal_multiseed \
   --figure-dir fase_2/outputs/figures/G3/r1_w60 --max-runs 8
 # Repetir o comando para g3_r2_w60, g3_r1_w150 e g3_r2_w150.
 python -m fase_2.src.training.g3_report
+python -m fase_2.src.training.g45_hierarchical --dry-run
+python -m fase_2.src.training.g45_hierarchical --model svm --fold 1 \
+  --max-samples-per-subset 90 --no-resume
+python -m fase_2.src.training.g45_hierarchical --model lstm --fold 1 \
+  --max-samples-per-subset 90 --max-epochs 2 --device cpu --no-resume
+# Somente apos os dois smokes:
+python -m fase_2.src.training.g45_hierarchical --max-runs 8
+python -m fase_2.src.features.plot_facial_indicators
+python -m fase_2.src.features.plot_perclos --window-seconds 60 --minimum-coverage 0.5
+python -m fase_2.src.features.extract_facial_series \
+  --schema-version v2 --video-dir fase_2/data/raw/videos \
+  --roi-config fase_2/configs/preprocessing/legacy_roi.json --workers 4 --overwrite
+python -m fase_2.src.training.g46_pose_robustness --dry-run
+python -m fase_2.src.training.g46_pose_robustness
+python -m fase_2.src.data.g47_landmarks validate-schema \
+  --schema fase_2/configs/features/g47_face_landmarks.yaml
+python -m fase_2.src.training.g47_yolo_face --help
+python -m fase_2.src.evaluation.g47_benchmark --help
+python -m fase_2.src.evaluation.g47_downstream --help
 python -m pytest fase_2/tests -q
 ```
+
+Durante o treinamento hierárquico, o terminal exibe uma barra por época com nível, losses de
+treino/validação, Macro F1 atual e melhor, época do melhor checkpoint e contador do early
+stopping. Cada fold termina com um resumo de Macro F1, balanced accuracy e tempo decorrido.
 
 O primeiro comando temporal apenas mostra a matriz G0. O segundo executa três arquiteturas,
 uma seed e um fold por três épocas. A configuração `temporal_multiseed.yaml` contém o template
@@ -225,6 +248,9 @@ caminhos relativos, metadados e índices temporais. Métricas agregadas são gra
 - [Mês 1 — Dados e protocolo](docs/months/mes_01_dados_protocolo.md): checklist operacional, entregáveis, bloqueios e critérios de aceite da etapa atual.
 - [Auditoria do plano integrado](docs/integrated_plan_gap_analysis.md): aderência, lacunas, classificação dos resultados e componentes reutilizados.
 - [Plano incremental de implementação](docs/implementation_plan.md): etapas G0-G6, testes, riscos, critérios e rollback.
+- [Resultados da classificação hierárquica G4.5C](reports/g45c_results.md): matriz validation-only e decisão de não promoção.
+- [Resultados de robustez à câmera lateral G4.6](reports/g46_pose_robustness_results.md): correção de pose, PERCLOS e decisão experimental.
+- [Protocolo MediaPipe × YOLO26 facial G4.7](docs/g47_framework_benchmark_protocol.md): schema de 22 pontos, treino, benchmark e gates de promoção.
 
 ## Fontes de dados e legado da fase 1
 

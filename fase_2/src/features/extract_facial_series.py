@@ -13,14 +13,13 @@ import hashlib
 import importlib.util
 import json
 import math
+from collections.abc import Iterable, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import cv2
 import numpy as np
-
 
 RIGHT_EYE = [33, 160, 158, 133, 153, 144]
 LEFT_EYE = [362, 385, 387, 263, 373, 380]
@@ -65,6 +64,23 @@ SERIES_FIELDS = (
     "operational_state",
     "legacy_heuristic_state",
 )
+SERIES_FIELDS_V2 = (
+    "video_id",
+    "frame_index",
+    "timestamp_seconds",
+    "ear",
+    "ear_left",
+    "ear_right",
+    "ear_asymmetry",
+    "eye_quality_left",
+    "eye_quality_right",
+    "mar",
+    "pitch",
+    "yaw",
+    "roll",
+    "face_detected",
+    "operational_state",
+)
 
 
 @dataclass(frozen=True)
@@ -100,6 +116,38 @@ def compute_ear(
     return numerator / denominator
 
 
+def normalize_landmarks_2d(landmarks: Sequence[object], width: int, height: int) -> np.ndarray:
+    """Normaliza translação, escala e rotação no plano pelo eixo entre os olhos."""
+    points = np.asarray([[point.x * width, point.y * height] for point in landmarks], dtype=float)
+    left_center = points[LEFT_EYE].mean(axis=0)
+    right_center = points[RIGHT_EYE].mean(axis=0)
+    origin = (left_center + right_center) / 2.0
+    eye_axis = left_center - right_center
+    scale = float(np.linalg.norm(eye_axis))
+    if not np.isfinite(scale) or scale <= 1e-6:
+        raise ValueError("Distância interocular inválida")
+    angle = math.atan2(float(eye_axis[1]), float(eye_axis[0]))
+    cosine, sine = math.cos(-angle), math.sin(-angle)
+    rotation = np.asarray([[cosine, -sine], [sine, cosine]])
+    return ((points - origin) @ rotation.T) / scale
+
+
+def compute_eye_measurement(
+    landmarks: Sequence[object], indices: Sequence[int], width: int, height: int
+) -> tuple[float | None, float]:
+    """EAR normalizado e qualidade geométrica; olho fora da imagem permanece ausente."""
+    raw = np.asarray([[landmarks[index].x, landmarks[index].y] for index in indices], dtype=float)
+    in_frame = np.mean((raw[:, 0] >= 0) & (raw[:, 0] <= 1) & (raw[:, 1] >= 0) & (raw[:, 1] <= 1))
+    normalized = normalize_landmarks_2d(landmarks, width, height)
+    eye = normalized[list(indices)]
+    width_ratio = float(np.linalg.norm(eye[0] - eye[3]))
+    quality = float(np.clip(in_frame * width_ratio / 0.25, 0.0, 1.0))
+    if in_frame < 1.0 or width_ratio <= 1e-4:
+        return None, quality
+    numerator = _distance(eye[1], eye[5]) + _distance(eye[2], eye[4])
+    return numerator / (2.0 * width_ratio + 1e-6), quality
+
+
 def compute_mar(landmarks: Sequence[object], width: int, height: int) -> float:
     top = np.mean(
         [[landmarks[index].x * width, landmarks[index].y * height] for index in MOUTH_TOP],
@@ -110,9 +158,7 @@ def compute_mar(landmarks: Sequence[object], width: int, height: int) -> float:
         axis=0,
     )
     left = np.array([landmarks[MOUTH_LR[0]].x * width, landmarks[MOUTH_LR[0]].y * height])
-    right = np.array(
-        [landmarks[MOUTH_LR[1]].x * width, landmarks[MOUTH_LR[1]].y * height]
-    )
+    right = np.array([landmarks[MOUTH_LR[1]].x * width, landmarks[MOUTH_LR[1]].y * height])
     return _distance(top, bottom) / (_distance(left, right) + 1e-6)
 
 
@@ -151,6 +197,25 @@ def compute_head_pose(
         yaw = 0.0
         roll = math.degrees(math.atan2(-rotation_matrix[1, 2], rotation_matrix[1, 1]))
     return pitch, yaw, roll
+
+
+def compute_head_pose_v2(
+    landmarks: Sequence[object], width: int, height: int
+) -> tuple[float, float, float]:
+    """Preserva pitch/yaw e remove a ambiguidade de 180 graus observada no roll."""
+    pitch, yaw, roll = compute_head_pose(landmarks, width, height)
+    yaw = canonicalize_lateral_angle(yaw)
+    roll = canonicalize_lateral_angle(roll)
+    return pitch, yaw, roll
+
+
+def canonicalize_lateral_angle(angle: float) -> float:
+    """Remove saltos equivalentes de ±180° na instalação lateral fixa."""
+    while angle < -90:
+        angle += 180
+    while angle > 90:
+        angle -= 180
+    return angle
 
 
 def legacy_heuristic_state(ear: float, mar: float, pitch: float, ear_streak: int) -> str:
@@ -232,6 +297,7 @@ def extract_video(
     max_frames: int | None = None,
     progress_every: int = 1000,
     hash_video: bool = True,
+    schema_version: str = "v1",
 ) -> ExtractionSummary:
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
@@ -250,7 +316,10 @@ def extract_video(
     ear_streak = 0
     try:
         with temporary_path.open("w", newline="", encoding="utf-8") as stream:
-            writer = csv.DictWriter(stream, fieldnames=SERIES_FIELDS)
+            if schema_version not in {"v1", "v2"}:
+                raise ValueError("schema_version deve ser v1 ou v2")
+            fields = SERIES_FIELDS if schema_version == "v1" else SERIES_FIELDS_V2
+            writer = csv.DictWriter(stream, fieldnames=fields)
             writer.writeheader()
             while True:
                 if max_frames is not None and processed_frames >= max_frames:
@@ -273,42 +342,66 @@ def extract_video(
 
                 face_detected = bool(result.multi_face_landmarks)
                 ear = mar = pitch = yaw = roll = None
+                ear_left = ear_right = eye_quality_left = eye_quality_right = None
                 if face_detected:
                     landmarks = result.multi_face_landmarks[0].landmark
-                    ear = (
-                        compute_ear(landmarks, RIGHT_EYE, region_width, region_height)
-                        + compute_ear(landmarks, LEFT_EYE, region_width, region_height)
-                    ) / 2.0
+                    if schema_version == "v2":
+                        ear_left, eye_quality_left = compute_eye_measurement(
+                            landmarks, LEFT_EYE, region_width, region_height
+                        )
+                        ear_right, eye_quality_right = compute_eye_measurement(
+                            landmarks, RIGHT_EYE, region_width, region_height
+                        )
+                        observed_ears = [v for v in (ear_left, ear_right) if v is not None]
+                        ear = float(np.mean(observed_ears)) if observed_ears else None
+                    else:
+                        ear = (
+                            compute_ear(landmarks, RIGHT_EYE, region_width, region_height)
+                            + compute_ear(landmarks, LEFT_EYE, region_width, region_height)
+                        ) / 2.0
                     mar = compute_mar(landmarks, region_width, region_height)
                     try:
-                        pitch, yaw, roll = compute_head_pose(
-                            landmarks, region_width, region_height
+                        pose_function = (
+                            compute_head_pose_v2 if schema_version == "v2" else compute_head_pose
                         )
+                        pitch, yaw, roll = pose_function(landmarks, region_width, region_height)
                     except RuntimeError:
                         pitch = yaw = roll = None
                     detected_frames += 1
-                    ear_streak = ear_streak + 1 if ear < EAR_THRESHOLD else 0
+                    ear_streak = ear_streak + 1 if ear is not None and ear < EAR_THRESHOLD else 0
                 else:
                     ear_streak = 0
 
                 legacy_state = legacy_heuristic_state(
                     ear or 0.0, mar or 0.0, pitch or 0.0, ear_streak
                 )
-                writer.writerow(
-                    {
-                        "video_id": video_id,
-                        "frame_index": frame_index,
-                        "timestamp_seconds": _format_metric(timestamp),
-                        "ear": _format_metric(ear),
-                        "mar": _format_metric(mar),
-                        "pitch": _format_metric(pitch),
-                        "yaw": _format_metric(yaw),
-                        "roll": _format_metric(roll),
-                        "face_detected": int(face_detected),
-                        "operational_state": "valid" if face_detected else "face_missing",
-                        "legacy_heuristic_state": legacy_state,
-                    }
-                )
+                row = {
+                    "video_id": video_id,
+                    "frame_index": frame_index,
+                    "timestamp_seconds": _format_metric(timestamp),
+                    "ear": _format_metric(ear),
+                    "mar": _format_metric(mar),
+                    "pitch": _format_metric(pitch),
+                    "yaw": _format_metric(yaw),
+                    "roll": _format_metric(roll),
+                    "face_detected": int(face_detected),
+                    "operational_state": "valid" if face_detected else "face_missing",
+                }
+                if schema_version == "v1":
+                    row["legacy_heuristic_state"] = legacy_state
+                else:
+                    row.update(
+                        ear_left=_format_metric(ear_left),
+                        ear_right=_format_metric(ear_right),
+                        ear_asymmetry=_format_metric(
+                            abs(ear_left - ear_right)
+                            if ear_left is not None and ear_right is not None
+                            else None
+                        ),
+                        eye_quality_left=_format_metric(eye_quality_left),
+                        eye_quality_right=_format_metric(eye_quality_right),
+                    )
+                writer.writerow(row)
                 processed_frames += 1
                 if progress_every > 0 and processed_frames % progress_every == 0:
                     print(
@@ -363,9 +456,7 @@ def write_manifest(
     temporary_path.unlink(missing_ok=True)
     try:
         with temporary_path.open("w", newline="", encoding="utf-8") as stream:
-            writer = csv.DictWriter(
-                stream, fieldnames=list(ExtractionSummary.__dataclass_fields__)
-            )
+            writer = csv.DictWriter(stream, fieldnames=list(ExtractionSummary.__dataclass_fields__))
             writer.writeheader()
             writer.writerows(rows)
         temporary_path.replace(path)
@@ -411,7 +502,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("fase_2/data/interim/legacy_extraction"),
+        default=None,
         help="Diretório de saída não versionado",
     )
     parser.add_argument("--roi-config", type=Path, help="JSON opcional com roi_cadeira")
@@ -430,6 +521,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Vídeos processados simultaneamente em processos CPU independentes",
     )
     parser.add_argument("--skip-video-hash", action="store_true")
+    parser.add_argument("--schema-version", choices=("v1", "v2"), default="v1")
     parser.add_argument(
         "--demo",
         action="store_true",
@@ -440,6 +532,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.output_dir is None:
+        args.output_dir = Path(
+            "fase_2/data/interim/geometry_v2"
+            if args.schema_version == "v2"
+            else "fase_2/data/interim/legacy_extraction"
+        )
     if args.max_frames is not None and args.max_frames <= 0:
         raise ValueError("--max-frames deve ser positivo")
     if args.workers <= 0:
@@ -482,6 +580,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "max_frames": args.max_frames,
             "progress_every": args.progress_every,
             "hash_video": not args.skip_video_hash,
+            "schema_version": args.schema_version,
         }
         for video_id, filename in specs
     ]

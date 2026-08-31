@@ -1,0 +1,20 @@
+name: "pose_robust_v1"
+version: 1
+generation: "G46"
+camera_constraint: "fixed_lateral"
+representations: [baseline, geometry_normalized, pose_corrected]
+pose_correction:
+  features: [pitch, yaw, pitch_squared, pitch_yaw, yaw_squared]
+  estimator: "huber_regression"
+  fit_subset: "train_alert_valid_only"
+  closed_ratio: 0.70
+perclos:
+  windows_seconds: [30, 60]
+  minimum_coverage: 0.50
+  thresholds_role: "exploratory_only"
+  severity_thresholds_percent: [3.75, 7.50, 11.25, 15.00]
+public_pretraining:
+  primary_dataset: "NTHU-DDD"
+  complementary_dataset: "YawDD"
+  split_unit: "subject_id"
+  local_test_usage: "prohibited_for_selection"

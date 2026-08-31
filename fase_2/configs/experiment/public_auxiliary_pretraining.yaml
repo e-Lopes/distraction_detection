@@ -1,0 +1,19 @@
+generation: "G46_EXTERNAL"
+role: "pretraining_and_robustness_only"
+models:
+  eye_state:
+    dataset: "NTHU-DDD"
+    classes: [open, closed]
+    output_feature: "prob_eye_closed_public_encoder"
+  yawn:
+    dataset: "YawDD"
+    classes: [not_yawn, yawn]
+    output_feature: "prob_yawn_public_encoder"
+split:
+  unit: "subject_id"
+  seed: 42
+  validation_fraction: 0.20
+prohibitions:
+  mix_local_test_into_training: true
+  select_from_local_test: true
+  report_public_performance_as_operational: true

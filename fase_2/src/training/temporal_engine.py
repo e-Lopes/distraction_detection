@@ -75,11 +75,18 @@ def set_seed(seed: int, *, deterministic: bool) -> None:
         torch.use_deterministic_algorithms(True, warn_only=True)
 
 
-def class_weights(labels: np.ndarray) -> np.ndarray:
-    counts = np.bincount(labels, minlength=len(CLASSES)).astype(float)
+def class_weights(labels: np.ndarray, *, num_classes: int | None = None) -> np.ndarray:
+    """Pesos N/(K*N_c), falhando quando uma classe requerida nao existe."""
+    class_count = len(CLASSES) if num_classes is None else int(num_classes)
+    if class_count < 2:
+        raise ValueError("num_classes deve ser pelo menos 2")
+    labels = np.asarray(labels, dtype=int)
+    if labels.size == 0 or np.any(labels < 0) or np.any(labels >= class_count):
+        raise ValueError("Rotulos vazios ou fora do intervalo esperado")
+    counts = np.bincount(labels, minlength=class_count).astype(float)
     if np.any(counts == 0):
         raise ValueError(f"Treino sem classe necessária: {counts.tolist()}")
-    return len(labels) / (len(CLASSES) * counts)
+    return len(labels) / (class_count * counts)
 
 
 def sample_weights(labels: np.ndarray) -> np.ndarray:
@@ -110,7 +117,9 @@ def make_loader(
             raise ValueError("weighted sampling e exclusivo do loader de treino")
         sampler = WeightedRandomSampler(
             torch.as_tensor(sample_weights(split.labels), dtype=torch.double),
-            len(split.labels), replacement=True, generator=generator,
+            len(split.labels),
+            replacement=True,
+            generator=generator,
         )
     return DataLoader(
         WindowSequenceDataset(split),
@@ -243,6 +252,8 @@ def train_model(
     fingerprint: str,
     resume: bool,
     feature_names: Sequence[str] | None = None,
+    num_classes: int | None = None,
+    progress_label: str | None = None,
 ) -> TrainingResult:
     if str(training.get("monitor", "val_macro_f1")) != "val_macro_f1":
         raise ValueError("O motor temporal suporta apenas monitor=val_macro_f1")
@@ -250,10 +261,17 @@ def train_model(
         raise ValueError("val_macro_f1 exige mode=max")
     deterministic = bool(training["deterministic"])
     set_seed(seed, deterministic=deterministic)
+    output_classes = len(CLASSES) if num_classes is None else int(num_classes)
+    # Valida antes de construir o modelo e garante que treino e validacao obedecem ao contrato.
+    class_weights(splits["train"].labels, num_classes=output_classes)
+    if np.any(splits["validation"].labels < 0) or np.any(
+        splits["validation"].labels >= output_classes
+    ):
+        raise ValueError("Validacao contem rotulo fora do intervalo esperado")
     model = build_temporal_model(
         model_name,
         input_dim=splits["train"].values.shape[-1],
-        num_classes=len(CLASSES),
+        num_classes=output_classes,
         parameters=model_parameters,
     ).to(device)
     balancing = str(training.get("balancing", "none"))
@@ -261,7 +279,9 @@ def train_model(
         weights = None
     elif balancing == "class_weights":
         weights = torch.tensor(
-            class_weights(splits["train"].labels), dtype=torch.float32, device=device
+            class_weights(splits["train"].labels, num_classes=output_classes),
+            dtype=torch.float32,
+            device=device,
         )
     else:
         raise ValueError(
@@ -384,7 +404,7 @@ def train_model(
         validation_macro_f1 = f1_score(
             validation_expected,
             validation_predicted,
-            labels=range(len(CLASSES)),
+            labels=range(output_classes),
             average="macro",
             zero_division=0,
         )
@@ -395,7 +415,7 @@ def train_model(
             "training_macro_f1": f1_score(
                 train_expected,
                 train_predicted,
-                labels=range(len(CLASSES)),
+                labels=range(output_classes),
                 average="macro",
                 zero_division=0,
             ),
@@ -460,9 +480,16 @@ def train_model(
                 train_generator_state=train_loader.generator.get_state(),
             )
         stopping_epoch = epoch
+        progress = min(epoch / int(training["max_epochs"]), 1.0)
+        filled = round(progress * 20)
+        progress_bar = "█" * filled + "░" * (20 - filled)
+        label = progress_label or f"{model_name.upper()} | fold {fold} | seed {seed}"
         print(
-            f"{model_name} | fold {fold} | seed {seed} | época {epoch} | "
-            f"val Macro F1 {validation_macro_f1:.4f}",
+            f"[{progress_bar}] {epoch:03d}/{int(training['max_epochs']):03d} | {label} | "
+            f"loss {train_loss:.4f}/{validation_loss:.4f} | "
+            f"F1 val {validation_macro_f1:.4f} | melhor {best_metric:.4f} "
+            f"(ép. {best_epoch}) | espera {epochs_without_improvement:02d}/"
+            f"{int(training['patience']):02d}",
             flush=True,
         )
         if epochs_without_improvement >= int(training["patience"]):

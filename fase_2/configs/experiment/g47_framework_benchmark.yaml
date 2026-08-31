@@ -1,0 +1,34 @@
+experiment_name: "g47_mediapipe_vs_yolo26_face_pose"
+generation: "G47"
+seed: 42
+schema: "fase_2/configs/features/g47_face_landmarks.yaml"
+models:
+  active: [yolo26n, yolo26s, yolo26m]
+  deferred: [yolo26l, yolo26x]
+training:
+  image_size: 640
+  epochs: 150
+  patience: 20
+  batch: auto
+  nominal_batch_size: 64
+  fliplr: 0.5
+  default_losses: {pose: 12.0, kobj: 1.0, rle: 1.0}
+  nano_loss_grid:
+    pose: [12.0, 18.0]
+    kobj: [1.0, 2.0]
+    rle: [1.0, 2.0]
+benchmark:
+  devices: [cpu, "cuda:0"]
+  warmup_frames: 200
+  repetitions: 3
+  minimum_fps: 20.0
+  maximum_p95_ms: 55.0
+  maximum_coverage_loss: 0.02
+  maximum_macro_f1_loss: 0.01
+smoothing:
+  trigger_jitter_ratio: 1.5
+  trigger_limits_degrees: {pitch: 7.5, yaw: 5.0, roll: 5.0}
+  filters: [ema, one_euro]
+  reset_gap_seconds: 0.5
+  minimum_error_reduction: 0.10
+  maximum_lag_ms: 100

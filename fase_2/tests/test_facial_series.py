@@ -1,16 +1,38 @@
 import csv
 from pathlib import Path
 
+import numpy as np
 import pytest
-
 from fase_2.src.features.extract_facial_series import (
     SERIES_FIELDS,
+    canonicalize_lateral_angle,
+    compute_eye_measurement,
     legacy_heuristic_state,
     load_roi,
     main,
     parse_video_specs,
     write_demo,
 )
+
+
+class _Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+def _face_points(scale=1.0, angle=0.0, offset=(0.0, 0.0)):
+    points = [_Point(0.5, 0.5) for _ in range(468)]
+    eye = np.array([[0, 0], [1, 0.5], [2, 0.5], [3, 0], [2, -0.5], [1, -0.5]])
+    rotation = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+    for indices, center in (
+        ([33, 160, 158, 133, 153, 144], (-2, 0)),
+        ([362, 385, 387, 263, 373, 380], (2, 0)),
+    ):
+        transformed = (eye + center) @ rotation.T * scale + np.asarray(offset) + 50
+        for index, value in zip(indices, transformed, strict=True):
+            points[index] = _Point(value[0] / 100, value[1] / 100)
+    return points
 
 
 def test_parse_video_specs_uses_anonymous_defaults():
@@ -66,3 +88,20 @@ def test_real_execution_never_falls_back_to_demo():
         main(["--demo", "--video-dir", "videos"])
     with pytest.raises(ValueError, match="--workers"):
         main(["--workers", "0"])
+
+
+def test_normalized_ear_is_invariant_to_similarity_transform():
+    base, _ = compute_eye_measurement(_face_points(), [362, 385, 387, 263, 373, 380], 100, 100)
+    transformed, _ = compute_eye_measurement(
+        _face_points(scale=1.7, angle=0.6, offset=(8, -5)),
+        [362, 385, 387, 263, 373, 380],
+        100,
+        100,
+    )
+    assert transformed == pytest.approx(base, rel=1e-6)
+
+
+def test_lateral_angle_canonicalization_removes_180_degree_jump():
+    assert canonicalize_lateral_angle(-175) == 5
+    assert canonicalize_lateral_angle(155) == -25
+    assert canonicalize_lateral_angle(-20) == -20

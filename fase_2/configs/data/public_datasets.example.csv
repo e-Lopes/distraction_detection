@@ -1,0 +1,3 @@
+dataset_id,subject_id,sample_id,relative_path,task,label,license
+NTHU-DDD,subject_001,sample_001,NTHU-DDD/subject_001/sample_001.mp4,eye_state,open,academic_request
+YawDD,subject_001,sample_001,YawDD/subject_001/sample_001.avi,yawn,yawn,IEEE_DataPort_terms

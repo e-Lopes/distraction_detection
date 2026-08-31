@@ -1,0 +1,31 @@
+schema_version: "g47_face_22_v1"
+coordinate_convention: "anatomical_subject_left_right"
+kpt_shape: [22, 3]
+names:
+  - left_eye_outer
+  - left_eye_upper_outer
+  - left_eye_upper_inner
+  - left_eye_inner
+  - left_eye_lower_inner
+  - left_eye_lower_outer
+  - right_eye_outer
+  - right_eye_upper_outer
+  - right_eye_upper_inner
+  - right_eye_inner
+  - right_eye_lower_inner
+  - right_eye_lower_outer
+  - mouth_left_corner
+  - mouth_upper_left
+  - mouth_upper_center
+  - mouth_upper_right
+  - mouth_right_corner
+  - mouth_lower_right
+  - mouth_lower_center
+  - mouth_lower_left
+  - nose_tip
+  - chin_center
+flip_idx: [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 16, 15, 14, 13, 12, 19, 18, 17, 20, 21]
+mappings:
+  mediapipe: [263, 387, 385, 362, 380, 373, 33, 160, 158, 133, 153, 144, 291, 312, 13, 82, 61, 87, 14, 317, 1, 152]
+  # Preencher e validar contra a versão exata das anotações WFLW antes da conversão.
+  wflw: null

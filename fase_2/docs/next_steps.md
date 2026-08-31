@@ -69,7 +69,13 @@ Nos testes sem fadiga, a métrica dessa classe não é estimável e será report
 - [x] Executar G4.5A com threshold cross-fit por sessão; não promover porque houve piora nos
   três modelos.
 - [x] Executar G4.5B com Focal Loss; preservar somente LSTM/Focal como candidata qualificatória.
-- [ ] Implementar e executar G4.5C hierárquica com SVM/60 e LSTM/60, somente validação.
+- [x] Implementar e executar G4.5C hierárquica com SVM/60 e LSTM/60, somente validação;
+  8 pipelines/16 estimadores concluídos em 31/08/2026. A LSTM obteve Macro F1 `0,4186`,
+  mas sem ganho consistente nos quatro folds; nenhum hierárquico foi promovido.
+- [x] Executar G4.6 de robustez à câmera lateral. A correção reduziu EAR–pitch nos quatro folds,
+  mas não melhorou Macro F1 consistentemente; preservar como diagnóstico, sem promoção.
+- [ ] Adquirir NTHU-DDD/YawDD sob suas condições de uso, preencher o manifesto por sujeito e
+  executar o pré-treino dos encoders auxiliares sem acesso ao teste operacional.
 - [ ] Congelar LSTM/B + SVM/B para cinco seeds; manter TCN/C + SVM/C como análise secundária.
 
 ## Etapa F — G1 e comparação temporal
@@ -112,5 +118,5 @@ as sequências temporais brutas com LSTM e TCN.
 ## Bloqueios explícitos
 
 - Nenhum bloqueio de dados/GPU impede a continuação; G0–G4 e G4.5A/B foram concluídas.
-- G5 permanece bloqueada até concluir G4.5C e congelar formalmente os candidatos.
+- G5 está liberada com LSTM/B e SVM/B principais; TCN/C e SVM/C são análise secundária.
 - Nenhuma métrica sintética será apresentada como resultado científico.

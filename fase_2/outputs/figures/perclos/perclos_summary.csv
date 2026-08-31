@@ -1,0 +1,5 @@
+video_id,window_seconds,minimum_coverage,ear_closed_threshold,baixo_1,baixo_2,moderado_1,moderado_2,severo,indisponivel
+video_01,60.0,0.5,0.25,1174,47,106,627,15531,14528
+video_02,60.0,0.5,0.25,1057,823,852,1232,20818,3418
+video_03,60.0,0.5,0.25,3,66,793,700,20676,8096
+video_04,60.0,0.5,0.25,2,0,0,17,15062,16709

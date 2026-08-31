@@ -1,0 +1,296 @@
+RELATÓRIO EXECUTIVO — ANDAMENTO DA FASE 2
+Data: 31/08/2026
+
+Projeto: Detecção de fadiga e distração em operadores de teleoperação
+
+1. OBJETIVO DA FASE 2
+
+A Fase 2 tem como objetivo desenvolver e avaliar uma solução capaz de identificar três estados
+do operador ao longo do tempo:
+
+- estado de alerta;
+- fadiga ou sonolência;
+- distração.
+
+A análise utiliza vídeos reais de operação e cinco indicadores extraídos do rosto do operador:
+abertura dos olhos (EAR), abertura da boca (MAR) e orientação da cabeça nos eixos pitch, yaw e
+roll.
+
+O trabalho não se limita a reconhecer uma imagem isolada. A proposta principal é observar como
+esses indicadores se comportam durante alguns segundos e verificar se modelos temporais conseguem
+identificar mudanças no estado do operador.
+
+
+2. ORGANIZAÇÃO E PREPARAÇÃO DOS DADOS
+
+Foram organizados quatro vídeos reais de sessões de teleoperação, totalizando aproximadamente
+122 mil frames. Os intervalos de alerta, fadiga, distração, ausência do operador e outras
+condições operacionais foram documentados separadamente.
+
+Também foram implantados controles para evitar resultados artificialmente elevados:
+
+- um vídeo inteiro é separado como teste em cada divisão;
+- treino e validação usam blocos temporais distintos;
+- janelas próximas não podem ser distribuídas entre conjuntos diferentes;
+- ajustes e escolhas de modelo são feitos sem consultar o vídeo de teste;
+- dados ausentes não são tratados automaticamente como fadiga ou distração.
+
+Esse processo tornou a avaliação mais rigorosa e mais próxima do uso real do sistema.
+
+
+3. EXTRAÇÃO DOS INDICADORES FACIAIS
+
+Foi desenvolvido um processo automático para extrair os indicadores faciais de todos os frames.
+Os quatro vídeos foram processados integralmente.
+
+A taxa de detecção facial variou entre as sessões, principalmente devido à posição lateral da
+câmera, movimentação do operador, oclusões e períodos em que o operador não estava visível.
+
+Foram mantidas duas versões da extração:
+
+- versão histórica, preservada para reproduzir os experimentos anteriores;
+- versão 2, criada para estudar os efeitos da câmera lateral.
+
+A versão 2 acrescenta informações separadas para o olho esquerdo e direito, diferença entre os
+olhos, qualidade da observação e tratamento mais adequado dos ângulos da cabeça.
+
+
+4. COMPARAÇÕES REALIZADAS
+
+Foram comparados diferentes tipos de abordagem:
+
+- regras fixas baseadas em limites de abertura dos olhos, boca e posição da cabeça;
+- modelos clássicos de aprendizado de máquina, como SVM, Random Forest e XGBoost;
+- modelos temporais, como LSTM, TCN e Transformer;
+- diferentes tamanhos de janela temporal: 30, 60 e 150 frames;
+- diferentes formas de tratar falhas na detecção facial;
+- técnicas para reduzir o efeito do desbalanceamento entre as classes;
+- ajuste do limite de decisão para fadiga;
+- Focal Loss, que aumenta a atenção do modelo sobre exemplos difíceis;
+- classificação hierárquica, separando primeiro alerta de não alerta e depois fadiga de
+  distração;
+- correção dos indicadores em função da posição lateral da cabeça.
+
+Todos os experimentos possuem configurações registradas, identificação do fold e da seed,
+checkpoints, métricas e testes automatizados.
+
+
+5. PRINCIPAIS RESULTADOS
+
+5.1 Regras fixas
+
+As regras fixas apresentaram desempenho baixo. Isso confirmou que limites únicos de EAR, MAR e
+posição da cabeça não são suficientes para representar a variação observada em uma operação
+real.
+
+5.2 Modelos clássicos e temporais
+
+Os modelos de aprendizado de máquina melhoraram significativamente em relação às regras fixas.
+Entretanto, os modelos temporais ainda não demonstraram vantagem geral e consistente sobre os
+melhores modelos clássicos.
+
+Na comparação sem tratamento especial de classes, a TCN com janela de 60 frames obteve Macro F1
+de aproximadamente 0,4125. O melhor SVM comparável obteve aproximadamente 0,4191.
+
+Isso mostra que a informação temporal é útil, mas ainda não existe evidência suficiente para
+afirmar que uma arquitetura temporal é sempre superior aos classificadores tradicionais.
+
+5.3 Detecção de fadiga
+
+Fadiga é a classe mais difícil do estudo. Ela possui poucos eventos independentes e muito menos
+exemplos do que alerta e distração.
+
+Pesos de classe e amostragem balanceada aumentaram a capacidade de encontrar fadiga, mas também
+elevaram a quantidade de falsos alarmes.
+
+A configuração LSTM com pesos de classe foi mantida como o melhor compromisso temporal. Seu
+Macro F1 médio foi aproximadamente 0,4004. O resultado ainda é limitado para fadiga e não deve
+ser apresentado como uma solução operacional concluída.
+
+5.4 Ajuste do threshold
+
+Foi testado um ajuste específico do limite de decisão de fadiga, sempre excluindo o vídeo que
+estava sendo avaliado. O ajuste piorou os resultados dos modelos avaliados.
+
+Conclusão: o problema de fadiga não é causado apenas pelo limite usado para escolher a classe.
+
+5.5 Focal Loss
+
+A Focal Loss produziu uma pequena melhoria na LSTM, alcançando Macro F1 próximo de 0,4044 e F1
+de fadiga próximo de 0,1039. Na TCN, o efeito foi praticamente nulo.
+
+A LSTM com Focal Loss foi preservada como análise complementar, mas o ganho não foi suficiente
+para substituir os candidatos principais.
+
+5.6 Classificação hierárquica
+
+Foi avaliada uma abordagem em duas etapas:
+
+1. alerta contra não alerta;
+2. fadiga contra distração.
+
+A LSTM hierárquica atingiu Macro F1 médio de 0,4186. Apesar da melhoria média, o ganho ocorreu
+principalmente em dois dos quatro folds e não se repetiu nos demais. O SVM hierárquico não
+conseguiu recuperar a classe fadiga.
+
+Conclusão: a abordagem foi preservada como resultado de pesquisa, mas não foi promovida como
+modelo final.
+
+
+6. ANÁLISE DA CÂMERA LATERAL
+
+Os dados confirmaram que a posição lateral da câmera influencia os indicadores. A abertura dos
+olhos apresentou forte relação com a inclinação da cabeça. Em algumas sessões, a correlação
+entre EAR e pitch ficou entre aproximadamente -0,58 e -0,70.
+
+Foi criada uma correção que aprende, apenas com os dados de treino, qual abertura dos olhos seria
+esperada para cada posição da cabeça. Essa correção reduziu consideravelmente a relação
+indesejada entre EAR e pitch nos quatro folds.
+
+Foram comparadas três representações:
+
+- indicadores da extração v2 sem correção;
+- indicadores com normalização geométrica;
+- indicadores com correção condicionada à pose.
+
+Resultados médios de Macro F1:
+
+- baseline v2: 0,3993;
+- geometria normalizada: 0,3989;
+- correção de pose: 0,4005.
+
+A correção funcionou do ponto de vista geométrico, mas não trouxe melhoria consistente para a
+classificação. Por esse motivo, ela foi mantida como diagnóstico e não foi promovida para a
+etapa final de cinco repetições.
+
+
+7. ANÁLISE DE PERCLOS
+
+O PERCLOS representa a porcentagem de tempo em que os olhos permanecem fechados dentro de uma
+janela temporal. Foram produzidos gráficos usando janelas móveis de 30 e 60 segundos.
+
+Uma análise inicial mostrou que usar diretamente EAR menor que 0,25 classificava uma quantidade
+excessiva de frames como olhos fechados. Isso acontecia porque a câmera lateral reduz e distorce
+a medida aparente dos olhos.
+
+Na versão corrigida:
+
+- somente frames com face e olhos válidos entram no cálculo;
+- ausência facial não é interpretada como fechamento dos olhos;
+- é exigida cobertura mínima de 50% da janela;
+- o limite ocular é calculado em relação ao comportamento esperado no treino;
+- as faixas fornecidas na imagem PERCLOS_Thresholds.png são usadas apenas para visualização.
+
+Esses thresholds ainda não são utilizados como regra científica ou operacional porque falta
+documentar a fonte original, a definição exata do valor S e a duração de janela utilizada no
+estudo de origem.
+
+
+8. VISUALIZAÇÕES E ACOMPANHAMENTO
+
+Foram gerados gráficos dos cinco indicadores ao longo do tempo para cada vídeo. Também foram
+produzidos gráficos específicos para:
+
+- olho esquerdo e direito;
+- EAR corrigido;
+- pitch e yaw;
+- PERCLOS de 30 e 60 segundos;
+- cobertura da detecção facial;
+- relação entre EAR e posição da cabeça;
+- intervalos anotados de alerta, fadiga e distração.
+
+O treinamento dos modelos temporais também passou a apresentar no terminal:
+
+- barra de progresso;
+- época atual;
+- loss de treino e validação;
+- Macro F1 atual e melhor valor;
+- contador do early stopping;
+- resumo de cada fold.
+
+Isso permite acompanhar se o treinamento está evoluindo normalmente ou se o processo parou de
+melhorar.
+
+
+9. QUALIDADE E REPRODUTIBILIDADE
+
+O projeto possui atualmente 129 testes automatizados aprovados. Esses testes verificam, entre
+outros pontos:
+
+- integridade dos dados e das anotações;
+- ausência de vazamento entre treino, validação e teste;
+- funcionamento dos modelos e checkpoints;
+- cálculo de pesos e estratégias de balanceamento;
+- composição da classificação hierárquica;
+- invariância geométrica básica;
+- correção de pose ajustada somente no treino;
+- limites e cobertura do PERCLOS;
+- separação de pessoas em futuros datasets públicos.
+
+Os resultados antigos foram preservados. As novas etapas utilizam diretórios, configurações e
+identificações próprias.
+
+
+10. USO FUTURO DE DATASETS PÚBLICOS
+
+Foi preparada a estrutura para utilizar os datasets públicos NTHU-DDD e YawDD.
+
+A proposta é usar esses dados para pré-treinar dois classificadores auxiliares:
+
+- probabilidade de olhos fechados;
+- probabilidade de bocejo.
+
+Essas probabilidades serão adicionadas como informações auxiliares ao modelo principal. Os dados
+públicos não substituirão os vídeos reais e seus resultados não serão apresentados como
+desempenho operacional na cabine.
+
+Também foi implementada a obrigatoriedade de separar treino e validação por pessoa, evitando que
+imagens da mesma pessoa apareçam nos dois conjuntos.
+
+O treinamento externo ainda não foi executado porque os datasets precisam ser obtidos de forma
+autorizada e registrados com suas licenças e informações de origem.
+
+
+11. SITUAÇÃO ATUAL
+
+As etapas de preparação dos dados, baselines, modelos temporais, tratamento de classes,
+threshold, Focal Loss, classificação hierárquica e robustez à câmera lateral foram concluídas em
+nível de qualificação, usando uma seed e validação controlada.
+
+Os resultados atuais demonstram que:
+
+- o sistema aprende padrões melhores do que regras fixas;
+- a câmera lateral realmente afeta os indicadores;
+- a correção geométrica reduz esse efeito, mas não resolve sozinha a classificação;
+- distração é identificada com mais facilidade do que fadiga;
+- a pequena quantidade de eventos de fadiga é a principal limitação científica;
+- ainda não foi atingido desempenho suficiente para uso operacional autônomo.
+
+
+12. PRÓXIMOS PASSOS RECOMENDADOS
+
+1. Obter formalmente os datasets públicos NTHU-DDD e YawDD e registrar suas licenças.
+2. Pré-treinar os classificadores auxiliares de olhos fechados e bocejo.
+3. Verificar se as probabilidades desses classificadores melhoram mais de um fold local.
+4. Congelar os candidatos principais LSTM/B e SVM/B.
+5. Executar os candidatos congelados com cinco seeds independentes.
+6. Consolidar média, desvio padrão, estabilidade, falsos alarmes e tempo de inferência.
+7. Executar explicabilidade, ablação de indicadores e estudos de falsos positivos/negativos.
+8. Manter o teste externo reservado para a avaliação final, sem utilizá-lo para escolher
+   configurações.
+
+
+13. CONCLUSÃO EXECUTIVA
+
+A Fase 2 já possui um pipeline completo, testado e reproduzível para extrair indicadores
+faciais, criar janelas temporais, treinar diferentes famílias de modelos e comparar resultados
+sem vazamento de dados.
+
+O projeto avançou de regras simples para uma avaliação científica mais rigorosa. Os resultados
+mostram progresso claro na identificação dos estados do operador, mas também deixam evidente que
+a fadiga continua sendo um evento raro e difícil de distinguir. A posição lateral da câmera foi
+investigada e parcialmente compensada, porém não explica sozinha as limitações de desempenho.
+
+O trabalho está tecnicamente preparado para a etapa de pré-treino externo e para a repetição dos
+modelos finalistas com múltiplas seeds. A solução ainda deve ser considerada experimental e não
+pronta para tomada automática de decisão em ambiente operacional.
