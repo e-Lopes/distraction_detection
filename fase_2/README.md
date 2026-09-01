@@ -216,8 +216,21 @@ python -m fase_2.src.data.g47_landmarks validate-schema \
 python -m fase_2.src.training.g47_yolo_face --help
 python -m fase_2.src.evaluation.g47_benchmark --help
 python -m fase_2.src.evaluation.g47_downstream --help
+python -m fase_2.src.evaluation.g47_realtime \
+  --video fase_2/data/raw/videos/1.mp4 \
+  --roi-config fase_2/configs/preprocessing/legacy_roi.json
 python -m pytest fase_2/tests -q
 ```
+
+O visualizador G4.7 abre uma grade sincronizada com MediaPipe e YOLO26-Pose N/S/M. Pressione
+`q` para sair e espaço para pausar. Também é possível gravar a grade com `--output painel.mp4`;
+use `--no-display` em execução sem interface gráfica. Para pesos COCO de 17 pontos, pitch,
+yaw e roll são proxies calculados por `solvePnP` a partir de nariz, olhos e orelhas; não são
+intercambiáveis com a pose facial de seis pontos. Pesos customizados com `kpt_shape: [22, 3]`
+usam o contrato facial completo G4.7. O limiar desses cinco keypoints é configurável com
+`--keypoint-confidence` (padrão `0.05`) porque uma das orelhas costuma ter baixa confiança na
+vista lateral. Quando há mais de uma pessoa na ROI, cada YOLO mantém explicitamente somente a
+detecção com maior confiança e mostra essa porcentagem no painel.
 
 Durante o treinamento hierárquico, o terminal exibe uma barra por época com nível, losses de
 treino/validação, Macro F1 atual e melhor, época do melhor checkpoint e contador do early
@@ -251,6 +264,7 @@ caminhos relativos, metadados e índices temporais. Métricas agregadas são gra
 - [Resultados da classificação hierárquica G4.5C](reports/g45c_results.md): matriz validation-only e decisão de não promoção.
 - [Resultados de robustez à câmera lateral G4.6](reports/g46_pose_robustness_results.md): correção de pose, PERCLOS e decisão experimental.
 - [Protocolo MediaPipe × YOLO26 facial G4.7](docs/g47_framework_benchmark_protocol.md): schema de 22 pontos, treino, benchmark e gates de promoção.
+- [Protocolo de alternativas ao MediaPipe G4.8](docs/g48_mediapipe_alternatives_protocol.md): etapa independente E1–E7 para qualidade geométrica, robustez, custo e impacto downstream.
 
 ## Fontes de dados e legado da fase 1
 

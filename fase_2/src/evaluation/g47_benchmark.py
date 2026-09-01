@@ -22,7 +22,12 @@ import pandas as pd
 from ..features.extract_facial_series import load_roi
 from ..features.g47_extractors import MediaPipeFaceMeshExtractor, YOLOFacePoseExtractor
 from ..features.g47_filters import LandmarkFilter, bland_altman, make_filter, temporal_jitter
-from ..features.g47_schema import FacialIndicators, compute_indicators, load_schema
+from ..features.g47_schema import (
+    FacialIndicators,
+    compute_coco_head_pose,
+    compute_indicators,
+    load_schema,
+)
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -51,6 +56,15 @@ def _crop(frame: np.ndarray, roi: tuple[int, int, int, int] | None) -> np.ndarra
 
 def _empty_indicators() -> FacialIndicators:
     return FacialIndicators(*(math.nan for _ in range(7)))
+
+
+def _yolo_indicators(points: np.ndarray, width: int, height: int) -> FacialIndicators:
+    if points.shape == (22, 3):
+        return compute_indicators(points, width, height)
+    if points.shape == (17, 3):
+        pitch, yaw, roll = compute_coco_head_pose(points, width, height, 0.05)
+        return FacialIndicators(math.nan, math.nan, math.nan, math.nan, pitch, yaw, roll)
+    return _empty_indicators()
 
 
 def _indicator_dict(prefix: str, values: FacialIndicators) -> dict[str, float]:
@@ -115,6 +129,7 @@ def run_benchmark(
     output_csv: Path,
     roi: tuple[int, int, int, int] | None = None,
     warmup_frames: int = 200,
+    start_frame: int = 0,
     max_frames: int | None = None,
     progress_every: int = 500,
     landmark_filter: LandmarkFilter | None = None,
@@ -126,7 +141,7 @@ def run_benchmark(
         raise ValueError(f"Não foi possível abrir {video_path}")
     fps = float(capture.get(cv2.CAP_PROP_FPS) or 0.0)
     source_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-    if warmup_frames < 0 or (max_frames is not None and max_frames <= 0):
+    if warmup_frames < 0 or start_frame < 0 or (max_frames is not None and max_frames <= 0):
         raise ValueError("warmup deve ser não negativo e max_frames deve ser positivo")
     if filter_reset_seconds <= 0:
         raise ValueError("filter_reset_seconds deve ser positivo")
@@ -136,11 +151,13 @@ def run_benchmark(
     try:
         if warmup_frames:
             _warmup(capture, (media_pipe, yolo), warmup_frames, roi)
+        capture.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
         if landmark_filter:
             landmark_filter.reset()
         last_yolo_detection: float | None = None
-        frame_index = 0
-        while max_frames is None or frame_index < max_frames:
+        frame_index = start_frame
+        processed = 0
+        while max_frames is None or processed < max_frames:
             success, frame = capture.read()
             if not success:
                 break
@@ -158,11 +175,12 @@ def run_benchmark(
             for name, extractor in order:
                 total_started = time.perf_counter_ns()
                 detection = extractor.detect(region)
-                values = (
-                    compute_indicators(detection.points, width, height)
-                    if detection.points is not None
-                    else _empty_indicators()
-                )
+                if detection.points is None:
+                    values = _empty_indicators()
+                elif name == "yolo":
+                    values = _yolo_indicators(detection.points, width, height)
+                else:
+                    values = compute_indicators(detection.points, width, height)
                 totals[name] = (time.perf_counter_ns() - total_started) / 1e6
                 detections[name] = detection
                 indicators[name] = values
@@ -177,7 +195,7 @@ def run_benchmark(
                 ):
                     landmark_filter.reset()
                 last_yolo_detection = timestamp
-                if landmark_filter:
+                if landmark_filter and yolo_detection.points.shape == (22, 3):
                     filtered_points = landmark_filter.update(yolo_detection.points, timestamp)
                     filtered = compute_indicators(filtered_points, width, height)
 
@@ -202,13 +220,14 @@ def run_benchmark(
             row.update(_indicator_dict("yolo_filtered", filtered))
             rows.append(row)
             frame_index += 1
-            if progress_every and frame_index % progress_every == 0:
+            processed += 1
+            if progress_every and processed % progress_every == 0:
                 elapsed = time.perf_counter() - started_wall
                 coverage_mp = np.mean([item["mp_detected"] for item in rows])
                 coverage_yolo = np.mean([item["yolo_detected"] for item in rows])
                 print(
-                    f"{video_id}: {frame_index}/{source_frames} | "
-                    f"{frame_index / elapsed:.2f} FPS | "
+                    f"{video_id}: {processed} frames (fonte {frame_index}/{source_frames}) | "
+                    f"{processed / elapsed:.2f} FPS | "
                     f"MP {coverage_mp:.1%} | YOLO {coverage_yolo:.1%}",
                     flush=True,
                 )
@@ -338,6 +357,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path, default=Path("fase_2/outputs/metrics/G47"))
     parser.add_argument("--figure-dir", type=Path, default=Path("fase_2/outputs/figures/G47"))
     parser.add_argument("--warmup-frames", type=int, default=200)
+    parser.add_argument("--start-frame", type=int, default=0)
     parser.add_argument("--max-frames", type=int)
     parser.add_argument("--progress-every", type=int, default=500)
     parser.add_argument("--filter", choices=("none", "ema", "one_euro"), default="none")
@@ -367,6 +387,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             output_csv=output_csv,
             roi=roi,
             warmup_frames=args.warmup_frames,
+            start_frame=args.start_frame,
             max_frames=args.max_frames,
             progress_every=args.progress_every,
             landmark_filter=make_filter(args.filter),

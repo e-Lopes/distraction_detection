@@ -154,6 +154,30 @@ recomendado como compromisso temporal, pareado com SVM/B; H3 permanece aberta.
 - **Risco:** vazamento OOF e desalinhamento de fontes.
 - **Rollback:** extensao totalmente opcional e separada.
 
+## Etapa 10 - G4.8, alternativas ao MediaPipe
+
+**Estado: G4.8-E1 em preparação.** O protocolo completo está em
+[`g48_mediapipe_alternatives_protocol.md`](g48_mediapipe_alternatives_protocol.md) e deriva da
+instrução mais recente registrada em `../../plano_experimento_alternativas_mediapipe.md`.
+
+- **Objetivo:** comparar MediaPipe, InsightFace, OpenFace 2.0 e MMPose/RTMW em qualidade de
+  landmarks, robustez, estabilidade, custo e efeito downstream; OpenSeeFace é extensão de
+  eficiência e YOLO26 facial é condicionado à decisão final.
+- **Subetapas:** E1 preparação, E2 ground truth, E3 integração, E4 avaliação isolada, E5
+  benchmark, E6 downstream e E7 decisão de Pareto.
+- **Arquivos:** protocolo G4.8, `configs/experiment/g48_extractor_alternatives.yaml`, futuros
+  adaptadores/mapeamentos e artefatos exclusivamente sob diretórios `G48`.
+- **Reuso:** vídeos, ROI, intervalos, splits temporais, schema anatômico, funções compartilhadas
+  de indicadores e motor downstream já validados.
+- **Testes:** contrato normalizado, mapeamentos sintéticos/visuais, missingness, métricas
+  geométricas, repetibilidade computacional e isolamento train/validation/test.
+- **Conclusão:** fronteira de Pareto e decisão rastreável sobre manter/substituir o MediaPipe e
+  avançar ou não ao YOLO26 facial customizado.
+- **Dependências:** licenças e pesos auditados, ground truth manual e ambientes reproduzíveis.
+- **Risco:** topologias não equivalentes, licenças restritivas, poucos vídeos e ausência de
+  referência angular instrumental.
+- **Rollback:** geração independente; não altera nem reclassifica resultados G0–G4.7.
+
 ## Matriz de geracoes prevista
 
 | Geracao | Escopo | Criterio para avancar |
@@ -165,5 +189,6 @@ recomendado como compromisso temporal, pareado com SVM/B; H3 permanece aberta.
 | G4 | none/weights/sampling/augmentation | estrategia congelada sem teste externo |
 | G5 | cinco seeds por fold/config finalista | estabilidade e media mais ou menos DP |
 | G6 | fusao opcional | somente apos fechamento facial-temporal |
+| G4.8 | alternativas ao MediaPipe, E1–E7 | promoção por gates e decisão final por Pareto |
 
 O runner deve imprimir essa matriz em modo seco antes de criar qualquer artefato de treino.

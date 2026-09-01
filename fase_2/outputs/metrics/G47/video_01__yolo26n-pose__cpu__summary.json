@@ -1,0 +1,49 @@
+{
+  "cpu_seconds": 17112.095512641998,
+  "device": "cpu",
+  "filter": "none",
+  "gpu_memory_used_mb": 489.0,
+  "gpu_name": "NVIDIA GeForce GTX 1060 6GB",
+  "gpu_power_watts": 22.68,
+  "gpu_utilization_percent": 0.0,
+  "model": "fase_2/yolo_models/yolo26n-pose.pt",
+  "model_sha256": "eb3bb8268828aeaf515cec23a4bfafd793944a86fe9af94ba7823609c14522a9",
+  "mp_coverage": 0.5707056508293505,
+  "mp_inference": {
+    "mean": 4.072117389560491,
+    "p50": 4.172571,
+    "p95": 6.067980599999999,
+    "p99": 6.706973680000001,
+    "variance": 1.27693487510171
+  },
+  "mp_total": {
+    "mean": 4.597606047012152,
+    "p50": 4.93122,
+    "p95": 6.2650065999999995,
+    "p99": 7.157167640000001,
+    "variance": 1.5326635252833516
+  },
+  "processed_frames": 32013,
+  "python": "3.12.7",
+  "schema_sha256": "8cf95c8e34401dbc83704706806a8d66c8f43ba6b513a94eebf9cddce2d10c16",
+  "source_fps": 18.02297333739436,
+  "source_frames": 32013,
+  "throughput_fps": 14.82577727065305,
+  "video_id": "video_01",
+  "wall_seconds": 2159.279706931,
+  "yolo_coverage": 0.8077031206072534,
+  "yolo_inference": {
+    "mean": 60.577445950488865,
+    "p50": 60.615072,
+    "p95": 66.0711758,
+    "p99": 72.9651896,
+    "variance": 19.144679584457652
+  },
+  "yolo_total": {
+    "mean": 60.970095630618815,
+    "p50": 60.962635,
+    "p95": 66.46199139999999,
+    "p99": 73.43624268,
+    "variance": 19.004996209693363
+  }
+}

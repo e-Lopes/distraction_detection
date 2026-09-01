@@ -28,6 +28,7 @@ Em caso de divergência, usar a seguinte ordem:
 | `integrated_plan_gap_analysis.md` | Aderência do código/artefatos ao plano integrado e componentes preservados. |
 | `implementation_plan.md` | Sequência incremental G0-G6, testes, riscos e rollback. |
 | `g45_implementation_plan.md` | Protocolo pré-resultados congelado para diagnóstico, Focal Loss e classificação hierárquica da G4.5. |
+| `g48_mediapipe_alternatives_protocol.md` | Nova G4.8: comparação controlada de alternativas ao MediaPipe, do ground truth à decisão de Pareto. |
 | `decisions/007-g45-threshold-focal-proxima-hierarquia.md` | Decisão após G4.5A/B e preparação da classificação hierárquica G4.5C. |
 | `../reports/g4_imbalance_results.md` | Resultados, deltas, estabilidade e decisão da G4. |
 | `months/mes_01_dados_protocolo.md` | Checklist operacional do mês atual. |

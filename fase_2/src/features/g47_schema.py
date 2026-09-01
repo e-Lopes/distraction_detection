@@ -110,6 +110,20 @@ HEAD_MODEL_3D = np.asarray(
     dtype=np.float64,
 )
 
+# Modelo cefálico reduzido na ordem COCO: nariz, olho E, olho D, orelha E, orelha D.
+# É um proxy antropométrico: os cinco pontos permitem pose, mas não EAR/MAR.
+COCO_HEAD_INDICES = np.asarray([0, 1, 2, 3, 4])
+COCO_HEAD_MODEL_3D = np.asarray(
+    [
+        [0.000, 0.000, 0.030],
+        [0.032, 0.032, 0.000],
+        [-0.032, 0.032, 0.000],
+        [0.075, 0.012, -0.018],
+        [-0.075, 0.012, -0.018],
+    ],
+    dtype=np.float64,
+)
+
 
 @dataclass(frozen=True)
 class LandmarkSchema:
@@ -254,6 +268,46 @@ def compute_head_pose(
     angles, *_ = cv2.RQDecomp3x3(rotation_matrix)
     pitch, yaw, roll = (float(value) for value in angles)
     return pitch, yaw, roll
+
+
+def compute_coco_head_pose(
+    points: np.ndarray,
+    width: int,
+    height: int,
+    minimum_confidence: float = 0.5,
+) -> tuple[float, float, float]:
+    """Estima pitch/yaw/roll pelos cinco pontos cefálicos do COCO-Pose.
+
+    Esta pose é um proxy antropométrico e não é intercambiável com o solvePnP facial
+    de seis pontos usado pelo schema G4.7.
+    """
+    points = np.asarray(points, dtype=float)
+    missing = (math.nan, math.nan, math.nan)
+    if points.shape not in {(17, 2), (17, 3)}:
+        return missing
+    selected = points[COCO_HEAD_INDICES]
+    visible = np.isfinite(selected[:, :2]).all(axis=1)
+    if points.shape[1] == 3:
+        visible &= selected[:, 2] >= minimum_confidence
+    # SQPnP aceita quatro correspondências. Isso tolera uma orelha/olho ocluso,
+    # situação frequente na câmera lateral, sem inventar pontos ausentes.
+    if int(visible.sum()) < 4:
+        return missing
+    try:
+        success, rotation_vector, _ = cv2.solvePnP(
+            COCO_HEAD_MODEL_3D[visible],
+            selected[visible, :2].astype(np.float64),
+            camera_matrix(width, height),
+            np.zeros((4, 1), dtype=np.float64),
+            flags=cv2.SOLVEPNP_SQPNP,
+        )
+    except cv2.error:
+        return missing
+    if not success:
+        return missing
+    rotation_matrix, _ = cv2.Rodrigues(rotation_vector)
+    angles, *_ = cv2.RQDecomp3x3(rotation_matrix)
+    return tuple(float(value) for value in angles)
 
 
 def compute_indicators(

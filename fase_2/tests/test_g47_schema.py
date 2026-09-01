@@ -5,12 +5,14 @@ import numpy as np
 import pytest
 
 from fase_2.src.features.g47_schema import (
+    COCO_HEAD_MODEL_3D,
     DEFAULT_FLIP_INDEX,
     HEAD_MODEL_3D,
     LANDMARK_NAMES,
     POSE_INDICES,
     camera_matrix,
     compute_indicators,
+    compute_coco_head_pose,
     flip_landmarks,
     load_schema,
     normalized_mean_error,
@@ -75,6 +77,49 @@ def test_solvepnp_recovers_neutral_synthetic_pose():
     assert pose.pitch == pytest.approx(0, abs=1e-4)
     assert pose.yaw == pytest.approx(0, abs=1e-4)
     assert pose.roll == pytest.approx(0, abs=1e-4)
+
+
+def test_coco_five_point_proxy_recovers_neutral_synthetic_pose():
+    projected, _ = cv2.projectPoints(
+        COCO_HEAD_MODEL_3D,
+        np.zeros((3, 1)),
+        np.asarray([[0.0], [0.0], [1.0]]),
+        camera_matrix(640, 480),
+        np.zeros((4, 1)),
+    )
+    points = np.zeros((17, 3), dtype=float)
+    points[:5, :2] = projected.reshape(-1, 2)
+    points[:5, 2] = 1.0
+
+    pitch, yaw, roll = compute_coco_head_pose(points, 640, 480)
+
+    assert pitch == pytest.approx(0, abs=1e-4)
+    assert yaw == pytest.approx(0, abs=1e-4)
+    assert roll == pytest.approx(0, abs=1e-4)
+
+
+def test_coco_five_point_proxy_requires_visible_head_points():
+    points = np.zeros((17, 3), dtype=float)
+    assert all(np.isnan(compute_coco_head_pose(points, 640, 480)))
+
+
+def test_coco_five_point_proxy_tolerates_one_occluded_ear():
+    projected, _ = cv2.projectPoints(
+        COCO_HEAD_MODEL_3D,
+        np.zeros((3, 1)),
+        np.asarray([[0.0], [0.0], [1.0]]),
+        camera_matrix(640, 480),
+        np.zeros((4, 1)),
+    )
+    points = np.zeros((17, 3), dtype=float)
+    points[:5, :2] = projected.reshape(-1, 2)
+    points[:5, 2] = 1.0
+    points[3, 2] = 0.0
+
+    pose = compute_coco_head_pose(points, 640, 480)
+
+    assert all(np.isfinite(pose))
+    assert pose == pytest.approx((0, 0, 0), abs=1e-3)
 
 
 def test_nme_uses_interocular_normalization():

@@ -85,6 +85,13 @@ class YOLOFacePoseExtractor:
         self.image_size = image_size
         self.minimum_confidence = minimum_confidence
         self._model = YOLO(str(self.model_path))
+        keypoint_shape = getattr(self._model.model, "kpt_shape", None)
+        if keypoint_shape is None or list(keypoint_shape) not in ([17, 3], [22, 3]):
+            raise ValueError(
+                "Peso YOLO incompatível com o benchmark G4.7: esperado "
+                f"kpt_shape=[17, 3] ou [22, 3], recebido {keypoint_shape!r} em {self.model_path}."
+            )
+        self.keypoint_shape = tuple(int(value) for value in keypoint_shape)
 
     def close(self) -> None:
         return None
@@ -105,7 +112,8 @@ class YOLOFacePoseExtractor:
         if not results or results[0].keypoints is None or len(results[0].keypoints.data) == 0:
             return LandmarkDetection(None, inference_ms, 0.0, "face_missing")
         data: Any = results[0].keypoints.data[0].detach().cpu().numpy()
-        if data.shape[0] != 22 or data.shape[1] not in {2, 3}:
+        expected_points = self.keypoint_shape[0]
+        if data.shape[0] != expected_points or data.shape[1] not in {2, 3}:
             return LandmarkDetection(
                 None,
                 inference_ms,
@@ -113,7 +121,7 @@ class YOLOFacePoseExtractor:
                 f"invalid_keypoint_shape:{tuple(data.shape)}",
             )
         if data.shape[1] == 2:
-            data = np.column_stack((data, np.ones(22, dtype=float)))
+            data = np.column_stack((data, np.ones(expected_points, dtype=float)))
         confidence = float(np.nanmean(data[:, 2]))
         return LandmarkDetection(np.asarray(data, dtype=float), inference_ms, confidence)
 
