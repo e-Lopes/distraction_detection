@@ -216,6 +216,7 @@ python -m fase_2.src.data.g47_landmarks validate-schema \
 python -m fase_2.src.training.g47_yolo_face --help
 python -m fase_2.src.evaluation.g47_benchmark --help
 python -m fase_2.src.evaluation.g47_downstream --help
+python -m fase_2.src.data.g48_preparation --help
 python -m fase_2.src.evaluation.g47_realtime \
   --video fase_2/data/raw/videos/1.mp4 \
   --roi-config fase_2/configs/preprocessing/legacy_roi.json

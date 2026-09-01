@@ -1,0 +1,31 @@
+sample_id,video_id,frame_id,timestamp_ms,temporal_class,difficulty,selection_reason,mediapipe_previous_status,source_manifest
+video_01__frame_004055,video_01,4055,224990.6230281448,fatigue,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_005615,video_01,5615,311546.8183238059,distraction,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_005745,video_01,5745,318759.8345984444,fatigue,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_005889,video_01,5889,326749.6372411208,fatigue,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_006062,video_01,6062,336348.4973604473,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_006276,video_01,6276,348222.2318433136,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_010473,video_01,10473,581091.6880329867,distraction,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_013840,video_01,13840,767908.8095461219,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_015908,video_01,15908,882651.253053447,alert,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_017665,video_01,17665,980137.942242214,fatigue,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_01__frame_017763,video_01,17763,985575.44681848,fatigue,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_000994,video_02,994,63248.22,alert,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_009717,video_02,9717,618292.7100000001,alert,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_013563,video_02,13563,863013.69,distraction,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_013719,video_02,13719,872939.97,distraction,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_016815,video_02,16815,1069938.4500000002,alert,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_018301,video_02,18301,1164492.63,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_02__frame_019415,video_02,19415,1235376.45,alert,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_03__frame_005582,video_03,5582,328220.45908881124,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_03__frame_006279,video_03,6279,369203.916628206,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_03__frame_016925,video_03,16925,995186.5406804247,alert,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_03__frame_020070,video_03,20070,1180111.8978703765,distraction,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_03__frame_021149,video_03,21149,1243556.8773323663,distraction,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_03__frame_021282,video_03,21282,1251377.2501483483,distraction,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_04__frame_017617,video_04,17617,988967.6182132746,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_04__frame_019825,video_04,19825,1112918.3760616544,alert,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv
+video_04__frame_020233,video_04,20233,1135822.3204466812,alert,easy,Face Mesh válido; pose frontal/moderada,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_04__frame_025635,video_04,25635,1439075.0350739225,alert,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_04__frame_027322,video_04,27322,1533778.3541365208,distraction,intermediate,Face Mesh válido; pose lateral ampla,1,fase_2/data/manifests/g48_annotation_sample.csv
+video_04__frame_027392,video_04,27392,1537707.9524378737,distraction,hard,falha conhecida do Face Mesh,0,fase_2/data/manifests/g48_annotation_sample.csv

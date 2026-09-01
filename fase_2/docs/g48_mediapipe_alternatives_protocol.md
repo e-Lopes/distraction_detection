@@ -1,6 +1,10 @@
-# G4.8 — Alternativas ao MediaPipe para indicadores faciais
+# G4.8 — Alternativas ao MediaPipe para indicadores faciais (pausada)
 
-**Estado:** G4.8-E1 em preparação  
+> Preservado para rastreabilidade. A etapa ativa é a
+> [G48A — smoke de frameworks faciais](g48a_framework_smoke_protocol.md); a amostra
+> CVAT/400 frames deste documento não integra a G48A.
+
+**Estado:** pausado; licenças auditadas e amostra de 400 frames preservada
 **Plano de origem:** `../../plano_experimento_alternativas_mediapipe.md`  
 **Geração de artefatos:** `G48`  
 **Escopo principal:** MediaPipe, InsightFace, OpenFace 2.0 e MMPose/RTMW  
@@ -131,3 +135,30 @@ YOLO26 facial permanece condicionado à decisão E7.
 4. Criar os quatro mapeamentos anatômicos e aprová-los visualmente.
 5. Somente então iniciar a extração comparativa curta e a anotação manual.
 
+A auditoria inicial e o registro de candidatos estão em
+[`g48_e1_license_environment_audit.md`](g48_e1_license_environment_audit.md) e
+`../data/manifests/g48_extractor_registry.csv`.
+
+## Amostra congelada para ground truth
+
+O manifesto `../data/manifests/g48_annotation_sample.csv` contém 400 frames, 100 por vídeo,
+selecionados com seed 42 e distância mínima de 2 segundos dentro de cada vídeo. Nenhuma imagem é
+incluída no manifesto. Trechos `operator_absent` foram excluídos.
+
+Distribuição congelada:
+
+| Dimensão | Contagem |
+|---|---:|
+| Alerta | 202 |
+| Fadiga | 35 |
+| Distração | 163 |
+| MediaPipe detectou | 289 |
+| MediaPipe não detectou | 111 |
+| Pose near / medium / large / unknown | 85 / 93 / 111 / 111 |
+
+A assimetria de Fadiga reflete sua disponibilidade real nos quatro vídeos; não serão duplicados
+frames temporalmente próximos para produzir equilíbrio artificial. O manifesto pode ser recriado
+por `python -m fase_2.src.data.g48_preparation --overwrite`.
+
+O pacote local e as regras de anotação são descritos em
+[`g48_cvat_annotation_guide.md`](g48_cvat_annotation_guide.md).

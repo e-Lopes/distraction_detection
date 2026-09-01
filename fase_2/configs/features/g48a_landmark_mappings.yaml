@@ -1,0 +1,22 @@
+schema: "g47_face_22_v1"
+coordinate_convention: "anatomical_subject_left_right"
+notes:
+  - "Only landmarks required by EAR, MAR and standardized solvePnP are mapped."
+  - "InsightFace/OpenFace mappings must pass G1 visual inspection before G2."
+extractors:
+  mediapipe_face_mesh:
+    topology: 478
+    confidence: "face-level availability only; no calibrated per-point score"
+    correspondence: direct
+    canonical_indices: [263, 387, 385, 362, 380, 373, 33, 160, 158, 133, 153, 144, 291, 312, 13, 82, 61, 87, 14, 317, 1, 152]
+  insightface_2d106:
+    topology: 106
+    confidence: "RetinaFace detection score; no per-point score exposed"
+    correspondence: "approximate via documented 106-to-68 anatomical subset; visual audit required"
+    canonical_indices: [93, 96, 95, 89, 90, 91, 35, 41, 42, 39, 37, 36, 67, 68, 71, 64, 52, 55, 53, 58, 86, 0]
+  openface_68:
+    topology: 68
+    confidence: "OpenFace confidence/success are face-level"
+    correspondence: "direct within the conventional 68-point topology"
+    canonical_indices: [45, 44, 43, 42, 47, 46, 36, 37, 38, 39, 40, 41, 54, 53, 51, 49, 48, 59, 57, 55, 30, 8]
+

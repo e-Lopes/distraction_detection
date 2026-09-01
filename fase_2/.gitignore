@@ -11,6 +11,7 @@ outputs/models/**
 outputs/predictions/**
 outputs/logs/**
 outputs/cache/**
+outputs/G48A_framework_smoke/**
 outputs/metrics/G3_smoke/**
 outputs/figures/G3_smoke/**
 !outputs/**/.gitkeep

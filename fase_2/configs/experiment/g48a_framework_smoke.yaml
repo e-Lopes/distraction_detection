@@ -1,0 +1,29 @@
+experiment_name: "g48a_framework_smoke"
+generation: "G48A"
+gate: "G1_smoke"
+seed: 42
+context_seconds: 1.0
+roi_config: "fase_2/configs/preprocessing/legacy_roi.json"
+videos_manifest: "fase_2/data/manifests/videos.csv"
+candidate_manifest: "fase_2/data/manifests/g48_annotation_sample.csv"
+sample_manifest: "fase_2/data/manifests/g48a_smoke_30.csv"
+operator_anchor_normalized: [0.65, 0.25]
+extractors:
+  - id: mediapipe_face_mesh
+    version: "0.10.21"
+    mode: video_tracking
+    environment: "fase_2/.venv"
+  - id: insightface_2d106
+    version: "0.7.3"
+    model: "buffalo_l/2d106det.onnx"
+    mode: independent_image
+    environment: "conda:g48_insightface"
+  - id: openface_2
+    version: "2.0-era (container created 2018; internal git revision unavailable)"
+    mode: independent_image
+    environment: "docker:algebr/openface@sha256:f43ad4e7fa4530143c7a9e0e8eca7e4f2b45599c1ef19680b68ad1eebba05197"
+outputs:
+  root: "fase_2/outputs/G48A_framework_smoke"
+  metrics: "fase_2/outputs/G48A_framework_smoke/metrics"
+  figures: "fase_2/outputs/G48A_framework_smoke/figures"
+  report: "fase_2/outputs/G48A_framework_smoke/report"

@@ -13,9 +13,11 @@ extractors:
 data:
   videos_manifest: "fase_2/data/manifests/videos.csv"
   intervals_manifest: "fase_2/data/manifests/annotation_frame_intervals.csv"
+  annotation_sample_manifest: "fase_2/data/manifests/g48_annotation_sample.csv"
   roi_config: "fase_2/configs/preprocessing/legacy_roi.json"
   annotation_sample_min: 300
   annotation_sample_max: 600
+  annotation_sample_frozen: 400
   nme_primary_normalization: face_bbox_diagonal
   nme_secondary_normalization: interocular_distance
 
@@ -48,4 +50,3 @@ outputs:
   predictions: "fase_2/outputs/predictions/G48"
   logs: "fase_2/outputs/logs/G48"
   cache: "fase_2/outputs/cache/G48"
-
