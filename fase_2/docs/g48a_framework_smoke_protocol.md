@@ -33,3 +33,25 @@ região espacial plausível da cadeira para rejeitar o trabalhador ao fundo.
 A imagem OpenFace foi criada em 2018 e não expõe uma revisão Git interna verificável.
 Por isso, ela é registrada como “2.0-era”, fixada pelo digest, e não como 2.2.0. Os
 avisos sobre modelos sintéticos dos olhos não afetam os 68 pontos faciais usados aqui.
+
+## Extensão para todos os frames
+
+Após o gate exploratório, a extração integral usa os 122.337 frames diretamente dos quatro
+vídeos, sem persistir cópias JPEG. O runner grava um CSV atômico por vídeo em
+`outputs/G48A_all_frames/metrics/<extrator>/`; arquivos completos são reutilizados ao retomar.
+Use `--max-frames` para smoke e `--video-id` para paralelizar por vídeo:
+
+```bash
+python -m fase_2.scripts.g48a_run_all_frames --extractor mediapipe
+conda run -n g48_insightface python -m fase_2.scripts.g48a_run_all_frames \
+  --extractor insightface --device auto
+# Execução sequencial dos dois braços, com progresso, FPS e ETA:
+bash fase_2/scripts/run_g48a_all_frames.sh auto
+# OpenFace 2.0-era (CPU), em lotes PNG lossless e sem persistência após cada lote:
+python -u -m fase_2.scripts.g48a_run_openface_all_frames --batch-size 250
+```
+
+Esses CSVs são derivados sensíveis em nível de frame e permanecem ignorados pelo Git.
+Na implementação atual, MediaPipe Face Mesh em Python usa CPU. O InsightFace usa CUDA quando
+o driver NVIDIA funciona e o ambiente expõe `CUDAExecutionProvider`; `--device cuda` exige
+essas condições e falha explicitamente se elas não forem atendidas.
