@@ -45,6 +45,8 @@ Use `--max-frames` para smoke e `--video-id` para paralelizar por vídeo:
 python -m fase_2.scripts.g48a_run_all_frames --extractor mediapipe
 conda run -n g48_insightface python -m fase_2.scripts.g48a_run_all_frames \
   --extractor insightface --device auto
+# Alternativa reprodutível em hosts Windows sem Python 3.11/compilador C++:
+docker build -t g48a-insightface:0.7.3 -f fase_2/docker/g48a-insightface.Dockerfile .
 # Execução sequencial dos dois braços, com progresso, FPS e ETA:
 bash fase_2/scripts/run_g48a_all_frames.sh auto
 # OpenFace 2.0-era (CPU), em lotes PNG lossless e sem persistência após cada lote:

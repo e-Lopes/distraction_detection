@@ -16,14 +16,12 @@ import numpy as np
 
 from fase_2.src.evaluation.g48a_contract import (
     empty_result,
+    INSIGHTFACE_MAPPING,
     map_to_canonical,
     result_from_landmarks,
     select_operator_face,
 )
 from fase_2.src.features.g47_extractors import MediaPipeFaceMeshExtractor
-
-INSIGHTFACE_MAPPING = [93, 96, 95, 89, 90, 91, 35, 41, 42, 39, 37, 36, 67, 68, 71, 64, 52, 55, 53, 58, 86, 0]
-
 
 def _bbox(points: np.ndarray) -> tuple[float, float, float, float]:
     mins, maxs = points[:, :2].min(axis=0), points[:, :2].max(axis=0)

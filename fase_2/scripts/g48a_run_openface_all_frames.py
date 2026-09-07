@@ -6,16 +6,24 @@ import argparse, csv, json, math, os, shutil, subprocess, time
 from pathlib import Path
 import cv2
 import numpy as np
-from fase_2.src.evaluation.g48a_contract import empty_result, map_to_canonical, result_from_landmarks
+from fase_2.src.evaluation.g48a_contract import (
+    OPENFACE_MAPPING, empty_result, map_to_canonical, result_from_landmarks,
+)
 
-MAPPING = [45, 44, 43, 42, 47, 46, 36, 37, 38, 39, 40, 41, 54, 53, 51, 49, 48, 59, 57, 55, 30, 8]
 IMAGE = "algebr/openface@sha256:f43ad4e7fa4530143c7a9e0e8eca7e4f2b45599c1ef19680b68ad1eebba05197"
 VERSION = "2.0-era/sha256:f43ad4e7fa4530143c7a9e0e8eca7e4f2b45599c1ef19680b68ad1eebba05197"
+
+def _valid_openface_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Aceita a saída de imagem (sem ``success``) e a saída de tracking (com a coluna)."""
+    return [row for row in rows if "success" not in row or int(float(row["success"])) == 1]
 
 def _count_rows(path: Path) -> int:
     if not path.is_file(): return 0
     with path.open(encoding="utf-8", newline="") as stream:
         return max(sum(1 for _ in stream) - 1, 0)
+
+def _csv_bool(value: object) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes"}
 
 def _run_batch(frames_dir: Path, raw_dir: Path, log_path: Path, verbose: bool) -> None:
     command = [
@@ -38,8 +46,7 @@ def _result(raw_path: Path, video_id: str, frame_id: int, fps: float, width: int
     timestamp_ms = frame_id * 1000.0 / fps
     if raw_path.is_file():
         with raw_path.open(encoding="utf-8-sig", newline="") as stream:
-            valid = [r for r in csv.DictReader(stream, skipinitialspace=True)
-                     if int(float(r.get("success", 0))) == 1]
+            valid = _valid_openface_rows(list(csv.DictReader(stream, skipinitialspace=True)))
     else: valid = []
     if not valid:
         reason = "openface_tracking_failed" if raw_path.is_file() else "openface_output_missing"
@@ -49,7 +56,7 @@ def _result(raw_path: Path, video_id: str, frame_id: int, fps: float, width: int
     row = max(valid, key=lambda item: float(item.get("confidence", 0)))
     points = np.column_stack(([float(row[f"x_{i}"]) for i in range(68)],
                               [float(row[f"y_{i}"]) for i in range(68)]))
-    canonical = map_to_canonical(points, MAPPING)
+    canonical = map_to_canonical(points, OPENFACE_MAPPING)
     mins, maxs = points.min(axis=0), points.max(axis=0)
     return result_from_landmarks(points=canonical, width=width, height=height,
         video_id=video_id, frame_id=frame_id, timestamp_ms=timestamp_ms, extractor="openface_68",
@@ -67,6 +74,8 @@ def main() -> int:
     parser.add_argument("--docker-verbose", action="store_true",
                         help="Exibe também o log interno detalhado do OpenFace.")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--reuse-detections", action="store_true",
+                        help="Recalcula somente frames positivos do CSV completo existente.")
     args = parser.parse_args()
     if args.max_frames is not None and args.max_frames <= 0: parser.error("--max-frames deve ser positivo")
     if args.batch_size <= 0: parser.error("--batch-size deve ser positivo")
@@ -81,7 +90,13 @@ def main() -> int:
         video_id, fps = meta["video_id"], float(meta["fps"])
         expected = min(int(meta["num_frames"]), args.max_frames or int(meta["num_frames"]))
         destination = metrics_dir / f"{video_id}.csv"
-        if not args.overwrite and _count_rows(destination) == expected:
+        reused: dict[int, dict[str, str]] = {}
+        if args.reuse_detections:
+            if _count_rows(destination) != expected:
+                raise ValueError(f"{destination} precisa conter {expected} linhas para reutilização")
+            with destination.open(encoding="utf-8", newline="") as stream:
+                reused = {int(row["frame_id"]): row for row in csv.DictReader(stream)}
+        elif not args.overwrite and _count_rows(destination) == expected:
             print(f"{video_id}: completo, reutilizado ({expected} frames)", flush=True); continue
         work = cache_root / video_id; frames_dir, raw_dir = work / "frames", work / "raw"
         shutil.rmtree(work, ignore_errors=True); frames_dir.mkdir(parents=True); raw_dir.mkdir(parents=True)
@@ -94,20 +109,28 @@ def main() -> int:
                 writer = None
                 for start in range(0, expected, args.batch_size):
                     end = min(start + args.batch_size, expected)
+                    selected: set[int] = set()
                     for frame_id in range(start, end):
                         ok, frame = capture.read()
                         if not ok: raise RuntimeError(f"{video_id}: leitura terminou em {frame_id}/{expected}")
+                        if reused and not _csv_bool(reused[frame_id]["face_detected"]):
+                            continue
+                        selected.add(frame_id)
                         path = frames_dir / f"frame_{frame_id:09d}.png"
                         if not cv2.imwrite(str(path), frame[y:y+height, x:x+width]): raise RuntimeError(str(path))
                     batch_number = start // args.batch_size + 1
                     total_batches = (expected + args.batch_size - 1) // args.batch_size
                     print(f"{video_id}: lote {batch_number}/{total_batches} no OpenFace "
                           f"(frames {start}-{end - 1})", flush=True)
-                    _run_batch(frames_dir, raw_dir, log_dir / f"{video_id}.log", args.docker_verbose)
+                    if selected:
+                        _run_batch(frames_dir, raw_dir, log_dir / f"{video_id}.log", args.docker_verbose)
                     for frame_id in range(start, end):
-                        row = _result(raw_dir / f"frame_{frame_id:09d}.csv", video_id, frame_id,
-                                      fps, width, height).to_dict()
-                        detected += int(row["face_detected"])
+                        if reused and frame_id not in selected:
+                            row = reused[frame_id]
+                        else:
+                            row = _result(raw_dir / f"frame_{frame_id:09d}.csv", video_id, frame_id,
+                                          fps, width, height).to_dict()
+                        detected += int(_csv_bool(row["face_detected"]))
                         if writer is None:
                             writer = csv.DictWriter(output, fieldnames=list(row)); writer.writeheader()
                         writer.writerow(row)

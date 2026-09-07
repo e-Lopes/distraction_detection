@@ -11,9 +11,10 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from fase_2.src.evaluation.g48a_contract import empty_result, map_to_canonical, result_from_landmarks
+from fase_2.src.evaluation.g48a_contract import (
+    OPENFACE_MAPPING, empty_result, map_to_canonical, result_from_landmarks,
+)
 
-MAPPING = [45, 44, 43, 42, 47, 46, 36, 37, 38, 39, 40, 41, 54, 53, 51, 49, 48, 59, 57, 55, 30, 8]
 DIGEST = "sha256:f43ad4e7fa4530143c7a9e0e8eca7e4f2b45599c1ef19680b68ad1eebba05197"
 
 
@@ -43,7 +44,7 @@ def main() -> int:
                 ([float(record[f"x_{i}"]) for i in range(68)],
                  [float(record[f"y_{i}"]) for i in range(68)])
             )
-            canonical = map_to_canonical(points68, MAPPING)
+            canonical = map_to_canonical(points68, OPENFACE_MAPPING)
             height, width = frame.shape[:2]
             mins, maxs = points68.min(axis=0), points68.max(axis=0)
             result = result_from_landmarks(points=canonical, width=width, height=height,

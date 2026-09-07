@@ -10,6 +10,13 @@ import numpy as np
 
 from ..features.g47_schema import FacialIndicators, compute_indicators
 
+INSIGHTFACE_MAPPING = (93, 96, 95, 89, 90, 91, 35, 41, 42, 39, 37, 36,
+                       67, 68, 71, 64, 52, 55, 53, 58, 86, 0)
+# O MediaPipe usa a abertura interna dos lábios; no esquema de 68 pontos isso
+# corresponde a 60--67, não ao contorno externo 48--59.
+OPENFACE_MAPPING = (45, 44, 43, 42, 47, 46, 36, 37, 38, 39, 40, 41,
+                    64, 63, 62, 61, 60, 67, 66, 65, 30, 8)
+
 
 @dataclass(frozen=True)
 class FaceLandmarkResult:

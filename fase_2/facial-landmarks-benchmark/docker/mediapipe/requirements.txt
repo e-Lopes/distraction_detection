@@ -1,0 +1,6 @@
+mediapipe==0.10.21
+opencv-python-headless==4.10.0.84
+numpy<2
+pandas==2.2.2
+psutil==6.0.0
+pynvml==11.5.3

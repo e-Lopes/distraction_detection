@@ -1,0 +1,50 @@
+name: facial-landmarks-benchmark
+
+x-runner: &runner
+  volumes:
+    - ./data:/data:ro
+    - ./results:/results
+
+services:
+  mediapipe:
+    <<: *runner
+    build:
+      context: .
+      dockerfile: docker/mediapipe/Dockerfile
+
+  openface:
+    <<: *runner
+    build:
+      context: .
+      dockerfile: docker/openface/Dockerfile
+
+  insightface:
+    <<: *runner
+    build:
+      context: .
+      dockerfile: docker/insightface/Dockerfile
+    volumes:
+      - ./data:/data:ro
+      - ./results:/results
+      - insightface_models:/root/.insightface
+    gpus: all
+
+  analysis:
+    build:
+      context: .
+      dockerfile: docker/analysis/Dockerfile
+    volumes:
+      - ./results:/results
+
+  downloader:
+    build:
+      context: .
+      dockerfile: docker/downloader/Dockerfile
+    environment:
+      KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
+      KAGGLE_KEY: ${KAGGLE_KEY:-}
+    volumes:
+      - ./data:/data
+
+volumes:
+  insightface_models:

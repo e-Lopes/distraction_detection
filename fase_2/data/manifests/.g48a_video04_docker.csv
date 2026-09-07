@@ -1,0 +1,2 @@
+video_id,relative_path,session_id,fps,width,height,num_frames,duration_seconds,annotation_version,metadata_backend,metadata_limitation
+video_04,/videos/4.mp4,session_04,17.813525615558454,1920,1080,31790,1784.599,v1,opencv,Manifesto temporario para container G48A

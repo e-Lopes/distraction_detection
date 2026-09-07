@@ -1,0 +1,5 @@
+**
+!fase_2/
+fase_2/**
+!fase_2/docker/
+!fase_2/docker/g48a-insightface.Dockerfile

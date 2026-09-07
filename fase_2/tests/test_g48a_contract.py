@@ -6,6 +6,7 @@ import pytest
 from fase_2.src.evaluation.g48a_contract import (
     empty_result,
     map_to_canonical,
+    OPENFACE_MAPPING,
     select_operator_face,
 )
 
@@ -43,3 +44,7 @@ def test_g48a_operator_selection_rejects_only_background_face():
     boxes = np.asarray([[195, -8, 255, 62]], dtype=float)
     with pytest.raises(ValueError, match="região espacial plausível"):
         select_operator_face(boxes, width=538, height=491)
+
+
+def test_openface_mapping_uses_inner_lip_contour_for_mar():
+    assert OPENFACE_MAPPING[12:20] == (64, 63, 62, 61, 60, 67, 66, 65)
