@@ -37,7 +37,10 @@ def test_distribution_and_deltas_have_stable_order_and_expected_values():
     assert features["ear_slope"] == pytest.approx(-0.1)
     assert features["ear_delta_mean"] == pytest.approx(-0.1)
     assert features["ear_mean_abs_delta"] == pytest.approx(0.1)
-    assert len(features) == 65
+    assert features["ear_iqr"] == pytest.approx(0.1)
+    assert features["ear_line_length"] == pytest.approx(0.2)
+    assert features["ear_total_variation"] == pytest.approx(0.2)
+    assert len(features) == 140
 
 
 def test_behavioral_events_and_ratios_are_computed_without_using_the_target():
@@ -81,6 +84,15 @@ def test_all_missing_window_is_finite_and_explicit():
     assert features["face_detected_rate"] == 0
     assert features["missing_ratio"] == 1
     assert features["longest_gap_fraction"] == 1
+
+
+def test_multivariate_and_interpolation_features_are_finite_for_constants():
+    rows = [_row(0.3, mar=0.2, timestamp=0.0), _row(0.3, mar=0.2, timestamp=0.1)]
+    rows[1]["was_interpolated"] = "1"
+    features = _as_dict(rows, groups=("multivariate", "missingness"), fps=10)
+    assert features["ear_mar_correlation"] == 0
+    assert features["ear_mar_covariance"] == 0
+    assert features["interpolated_ratio"] == 0.5
 
 
 def test_configuration_validation_rejects_ambiguous_inputs():

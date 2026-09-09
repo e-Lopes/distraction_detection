@@ -11,6 +11,9 @@ outputs/models/**
 outputs/predictions/**
 outputs/logs/**
 outputs/cache/**
+outputs/final/checkpoints/**
+outputs/final/predictions/**
+outputs/final/runs/**
 outputs/G48A_framework_smoke/**
 outputs/G48A_all_frames/**
 outputs/metrics/G3_smoke/**

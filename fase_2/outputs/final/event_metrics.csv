@@ -1,0 +1,17 @@
+source,scientific_status,model,scenario,target_class,metric,mean,std,unit,note
+G4,preliminary_proxy,svm,A,fatigue,false_fatigue_episodes_per_hour,53.095579081273264,26.302339739393542,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,svm,B,fatigue,false_fatigue_episodes_per_hour,58.293350728480554,32.9071815808193,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,svm,C,fatigue,false_fatigue_episodes_per_hour,80.29723743657134,29.70112765923963,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,svm,D,fatigue,false_fatigue_episodes_per_hour,47.22503843367298,23.09899179735495,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,lstm,A,fatigue,false_fatigue_episodes_per_hour,0.0,0.0,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,lstm,B,fatigue,false_fatigue_episodes_per_hour,56.91876550150527,57.580341273337595,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,lstm,C,fatigue,false_fatigue_episodes_per_hour,89.93863831783149,59.12167465847935,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,lstm,D,fatigue,false_fatigue_episodes_per_hour,0.0,0.0,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,tcn,A,fatigue,false_fatigue_episodes_per_hour,0.0,0.0,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,tcn,B,fatigue,false_fatigue_episodes_per_hour,96.72070455489099,40.87208311733868,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,tcn,C,fatigue,false_fatigue_episodes_per_hour,84.79254641584696,43.43447463761331,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,tcn,D,fatigue,false_fatigue_episodes_per_hour,0.0,0.0,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,transformer,A,fatigue,false_fatigue_episodes_per_hour,0.0,0.0,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,transformer,B,fatigue,false_fatigue_episodes_per_hour,31.75089704075451,15.800268525954245,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,transformer,C,fatigue,false_fatigue_episodes_per_hour,33.56549737915996,18.90360789141291,episodes_per_hour,window-derived proxy; full event matching pending
+G4,preliminary_proxy,transformer,D,fatigue,false_fatigue_episodes_per_hour,0.0,0.0,episodes_per_hour,window-derived proxy; full event matching pending

@@ -20,6 +20,7 @@ dev = ["pytest", "ruff"]
 # 0.10.35 removeu a API legada ``mp.solutions`` usada pelo extrator canonico.
 extraction = ["mediapipe>=0.10.18,<=0.10.21"]
 temporal = ["torch>=2.5,<3"]
+tsc = ["sktime[classification]>=1.0"]
 explainability = ["shap"]
 g47 = ["mediapipe>=0.10.18,<=0.10.21", "ultralytics==8.4.115", "psutil"]
 

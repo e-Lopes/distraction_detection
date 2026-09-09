@@ -1,0 +1,187 @@
+name: final_temporal_comparison
+version: 1
+primary_metric: macro_f1_oof
+delta_macro_f1: 0.01
+
+data:
+  manifest: fase_2/data/manifests/videos.csv
+  annotations: fase_2/data/manifests/annotation_frame_intervals.csv
+  facial_series: fase_2/data/interim/legacy_extraction
+  extraction_manifest: fase_2/data/interim/legacy_extraction/extraction_manifest.csv
+  classes: [alert, fatigue, distraction]
+  indicators: [ear, mar, pitch, yaw, roll]
+  videos: [video_01, video_02, video_03, video_04]
+
+preprocessing:
+  primary: zero_fill
+  historical_representations:
+    R0: {short_gap_max_frames: 0, long_gap_fill: zero}
+    R1: {short_gap_max_frames: 15, short_gap_method: linear, long_gap_fill: training_median}
+    R2:
+      short_gap_max_frames: 15
+      short_gap_method: linear
+      long_gap_fill: training_median
+      flags: [face_detected, was_interpolated, missing_duration_so_far]
+  fit_on: train_only
+  preserve_long_gaps: true
+  preserve_operator_absence: true
+
+windowing:
+  sizes_frames: [30, 60, 150]
+  stride_frames: 15
+  label_rule: majority
+  minimum_target_proportion: 0.60
+  transition_policy: exclude_from_primary_training
+  preserve_frame_baseline: true
+  resampling: disabled
+
+features:
+  base: [ear, mar, pitch, yaw, roll]
+  primary_classical: R0_flat
+  primary_temporal: R0
+  temporal_behavior_v1:
+    enabled: true
+    config: fase_2/configs/features/temporal_behavior_v1.yaml
+    groups: [signal_distribution, signal_dynamics, ocular, oral, head_pose, multivariate, missingness]
+  optional_dependencies:
+    minirocket: false
+    catch22: false
+    tsfresh: false
+    tsfel: false
+
+splits:
+  strategy: leave_one_video_out
+  manifest: fase_2/data/manifests/temporal_splits.csv
+  config: fase_2/configs/splits/leave_one_video_out.yaml
+  folds: [1, 2, 3, 4]
+  purge_gap_frames: 150
+  validation: contiguous_blocks
+  external_test_for_selection: false
+
+models:
+  classical:
+    historical: [dummy, fixed_rules, svm, random_forest, xgboost]
+    new: [logistic_regression]
+    logistic_regression:
+      C: 1.0
+      class_weight: null
+      max_iter: 1000
+      solver: lbfgs
+  temporal:
+    historical: [lstm, tcn, transformer]
+    optional: {minirocket: false}
+    parameters:
+      lstm: {hidden_dim: 64, num_layers: 2, bidirectional: false, dropout: 0.25, pooling: last}
+      tcn: {channels: [32, 64, 64], kernel_size: 3, dropout: 0.25, pooling: mean}
+      transformer: {model_dim: 32, num_heads: 4, num_layers: 2, feedforward_dim: 64, dropout: 0.25, pooling: mean, max_length: 150}
+  screening:
+    feature:
+      enabled: true
+      representation: temporal_behavior_v1
+      windows: [60]
+      balancing: class_weights
+      candidates:
+        - {model: logistic_regression, parameters: {C: 1.0, max_iter: 1000}}
+        - {model: svm, parameters: {C: 1.0, kernel: linear, probability: true}}
+        - {model: random_forest, parameters: {n_estimators: 300, max_depth: null, n_jobs: -1}}
+        - {model: xgboost, parameters: {n_estimators: 300, max_depth: 6, learning_rate: 0.05, n_jobs: -1}}
+    distance:
+      enabled: true
+      representation: R0
+      windows: [60]
+      candidates:
+        - model: knn_dtw
+          parameters: {k: 1, dependent: true, sakoe_chiba_radius: 6}
+          cost: {max_pairs_without_confirmation: 5000000, cache_distances: true}
+    shapelet:
+      enabled: true
+      representation: R0
+      windows: [60]
+      candidates:
+        - model: random_shapelet_ridge
+          parameters: {candidate_budget: 2000, max_shapelets: 200, min_length: 6, max_length: 30, n_jobs: 1}
+    transform:
+      enabled: true
+      representation: R0
+      windows: [30, 60, 150]
+      candidates:
+        - model: minirocket_ridge
+          parameters: {num_kernels: 5040, max_dilations_per_kernel: 32, n_jobs: 1, alphas: [0.01, 0.1, 1.0, 10.0]}
+      disabled_candidates:
+        - {model: dwt_svm, reason: not_required_for_initial_screening}
+        - {model: sax, reason: information_loss_and_no_initial_scientific_need}
+    ensemble:
+      enabled: false
+      candidates: [drcif, arsenal, hivecote_v2]
+      documented_only: [ts_chief]
+
+training:
+  mode: screening
+  screening:
+    seed: 42
+    only_unseen_candidates: true
+    selection_source: validation_only
+    expected_runs: 36
+  confirmation:
+    blocked_until_screening_promotion: true
+    promotion_file: fase_2/outputs/final/screening_promotion.yaml
+    seeds: [42, 123, 456, 789, 2026]
+    candidates:
+      - {family: classical, model: svm, representation: R0_flat, window: 60, balancing: class_weights, enabled: true, deterministic: true}
+      - {family: temporal, model: lstm, representation: R0, window: 60, balancing: class_weights, enabled: true}
+      - {family: classical, model: svm, representation: R0_flat, window: 60, balancing: weighted_sampling, enabled: false, role: secondary}
+      - {family: temporal, model: tcn, representation: R0, window: 60, balancing: weighted_sampling, enabled: false, role: secondary}
+      - {family: temporal, model: lstm, representation: R0, window: 60, balancing: focal, enabled: false, role: compatibility_candidate}
+  max_epochs: 150
+  batch_size: 1024
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping: {monitor: val_macro_f1, mode: max, patience: 15, minimum_delta: 0.002}
+  checkpoint_every_epochs: 10
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  resume: true
+
+balancing:
+  none: {enabled: true}
+  class_weights: {formula: N/(K*N_c), fit_on: train_only}
+  weighted_sampling: {replacement: true, fit_on: train_only}
+  focal: {gamma: 2.0, alpha: N/(K*N_c), fit_on: train_only}
+  augmentation: {enabled: false, fit_on: train_only}
+
+thresholds:
+  prediction: argmax
+  crossfit_fatigue: disabled_after_negative_result
+  selection_source: validation_only
+  test_access_for_selection: false
+
+event_evaluation:
+  enabled: true
+  status: pending_full_oof_predictions
+  target_class: fatigue
+  minimum_duration_seconds: null
+  gap_tolerance_seconds: null
+  minimum_iou: null
+  selection_source: validation_only
+
+compute_metrics:
+  global: [accuracy, balanced_accuracy, macro_f1, weighted_f1]
+  per_class: [precision, recall, f1, pr_auc]
+  stability: [mean, standard_deviation, worst_video, seed_variation]
+  event: [event_precision, event_recall, event_f1, false_episodes_per_hour, detection_latency, fragmentation, duration_error]
+  cost: [training_seconds, latency_p50_ms, latency_p95_ms, throughput, peak_ram, peak_vram, parameter_count, model_size_bytes]
+
+outputs:
+  root: fase_2/outputs/final
+  window_counts: fase_2/outputs/metrics/split_window_distribution.csv
+  registry: fase_2/outputs/final/run_registry.csv
+  metrics: fase_2/outputs/final/metrics_long.csv
+  event_metrics: fase_2/outputs/final/event_metrics.csv
+  figures: fase_2/outputs/final/figures
+  checkpoints: fase_2/outputs/final/checkpoints
+  predictions: fase_2/outputs/final/predictions
+  resolved: fase_2/outputs/final/resolved
+  report: fase_2/reports/final_experiment_report.md
+  figure_format: png

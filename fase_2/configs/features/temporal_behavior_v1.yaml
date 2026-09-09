@@ -6,6 +6,7 @@ groups:
   - ocular
   - oral
   - head_pose
+  - multivariate
   - missingness
 
 # Valores históricos usados apenas como ponto de partida pré-experimento. O teste externo
@@ -20,3 +21,15 @@ thresholds:
 
 missing_values: "exclude_from_signal_statistics_and_break_events"
 scaling: "standard_train_only"
+constant_policy: "finite_zero_for_undefined_variation_or_correlation"
+nan_policy: "reject_non_finite_inputs; emit_finite_features"
+selected_features:
+  - distribution_and_robust_quantiles
+  - first_and_second_order_dynamics
+  - threshold_behavioral_baselines
+  - contemporaneous_correlations_and_covariances
+  - explicit_missingness_and_interpolation
+discarded_features:
+  - {name: lagged_cross_correlations, reason: unstable_support_in_30_and_60_frame_windows}
+  - {name: high_order_autoregression, reason: excessive_variance_for_short_windows}
+  - {name: spectral_bands, reason: fps_differs_between_videos_and_no_resampling_is_preregistered}
