@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +13,15 @@ from scipy.stats import binomtest
 
 EXTRACTORS = ("mediapipe", "insightface", "openface")
 MEASURES = ("ear", "mar", "pitch", "yaw", "roll")
+DISPLAY_NAMES = {
+    "mediapipe": "MediaPipe",
+    "insightface": "InsightFace",
+    "openface": "OpenFace",
+}
+
+
+def format_pt(value: float, decimals: int = 2) -> str:
+    return f"{value:,.{decimals}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
 def wilson_interval(successes: int, total: int, z: float = 1.959963984540054) -> tuple[float, float]:
@@ -218,6 +228,126 @@ def load_operational_state(path: Path, video_id: str, frame_index: pd.Index) -> 
     return state
 
 
+def plot_detection_summary(summary: pd.DataFrame, output: Path, video_id: str) -> None:
+    """Gera uma única figura pronta para apresentação, sem depender dos CSVs brutos."""
+    import matplotlib.pyplot as plt
+
+    ordered = summary.sort_values("extractor")
+    labels = [DISPLAY_NAMES.get(value, value) for value in ordered["extractor"]]
+    present = ordered["detection_rate_operator_present"].to_numpy(dtype=float) * 100
+    false_absent = ordered["false_detection_rate_operator_absent"].to_numpy(dtype=float) * 100
+    missing_gap = ordered["longest_missing_run_present_seconds"].to_numpy(dtype=float)
+
+    figure, axes = plt.subplots(1, 2, figsize=(11, 4.6))
+    colors = ["#2563eb", "#ea580c", "#16a34a"][:len(labels)]
+
+    bars = axes[0].bar(labels, present, color=colors, width=0.62)
+    axes[0].set_title("Detecção com operador presente")
+    axes[0].set_ylabel("Frames detectados (%)")
+    axes[0].set_ylim(0, 100)
+    axes[0].grid(axis="y", alpha=0.2)
+    for bar, value, false_rate in zip(bars, present, false_absent, strict=True):
+        axes[0].text(bar.get_x() + bar.get_width() / 2, value + 1.5,
+                     f"{format_pt(value, 1)}%", ha="center", fontweight="bold")
+        axes[0].text(bar.get_x() + bar.get_width() / 2, 3,
+                     f"falso s/ operador: {format_pt(false_rate)}%", ha="center", fontsize=8,
+                     color="white", fontweight="bold")
+
+    bars = axes[1].bar(labels, missing_gap, color=colors, width=0.62)
+    axes[1].set_title("Maior falha contínua com operador")
+    axes[1].set_ylabel("Segundos sem detecção")
+    axes[1].grid(axis="y", alpha=0.2)
+    for bar, value in zip(bars, missing_gap, strict=True):
+        axes[1].text(bar.get_x() + bar.get_width() / 2, value + max(missing_gap) * 0.025,
+                     f"{format_pt(value, 1)} s", ha="center", fontweight="bold")
+
+    figure.suptitle(f"Comparação dos extratores faciais — {video_id}", fontweight="bold")
+    figure.text(0.5, 0.01, "Avaliação frame a frame; intervalos sem operador separados.",
+                ha="center", fontsize=9, color="#475569")
+    figure.tight_layout(rect=(0, 0.04, 1, 0.94))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output, dpi=180, bbox_inches="tight")
+    plt.close(figure)
+
+
+def write_result_report(summary: pd.DataFrame, availability: pd.DataFrame,
+                        agreement: pd.DataFrame, output: Path, video_id: str,
+                        figure: Path) -> None:
+    """Escreve a síntese que pode ser usada diretamente na reunião/apresentação."""
+    baseline = summary.loc[summary["extractor"].eq("mediapipe")].iloc[0]
+    rows = []
+    for item in summary.itertuples(index=False):
+        rows.append(
+            f"| {DISPLAY_NAMES.get(item.extractor, item.extractor)} | "
+            f"{format_pt(item.frames, 0)} | "
+            f"{format_pt(item.detection_rate_operator_present * 100)}% | "
+            f"{format_pt(item.false_detection_rate_operator_absent * 100)}% | "
+            f"{format_pt(item.longest_missing_run_present_seconds, 1)} s |"
+        )
+
+    findings = []
+    for item in availability.itertuples(index=False):
+        name = DISPLAY_NAMES.get(item.candidate, item.candidate)
+        findings.append(
+            f"- **{name}:** diferença de detecção com operador presente de "
+            f"{format_pt(item.detection_rate_delta_operator_present * 100)} p.p. em relação ao "
+            f"MediaPipe (IC95% por blocos de 5 s: "
+            f"{format_pt(item.delta_present_block_bootstrap_ci95_low * 100)} a "
+            f"{format_pt(item.delta_present_block_bootstrap_ci95_high * 100)} p.p.)."
+        )
+
+    cautions = []
+    for candidate, group in agreement.groupby("candidate", sort=False):
+        name = DISPLAY_NAMES.get(candidate, candidate)
+        correlations = group.set_index("measure")["pearson_r"]
+        cautions.append(
+            f"- Os indicadores do {name} não devem substituir os do MediaPipe sem recalibração: "
+            f"as correlações observadas variaram de {format_pt(correlations.min())} a "
+            f"{format_pt(correlations.max())}."
+        )
+
+    relative_figure = Path(os.path.relpath(figure, output.parent))
+    content = f"""# Resultado direto — comparação de extratores faciais
+
+## Resultado principal
+
+No **{video_id}**, foram avaliados **{format_pt(baseline.frames, 0)} frames**. O resultado abaixo mede
+disponibilidade da face e continuidade da extração; não mede, sozinho, precisão dos landmarks.
+
+| Extrator | Frames | Detecção com operador | Falso positivo sem operador | Maior falha contínua |
+|---|---:|---:|---:|---:|
+{chr(10).join(rows)}
+
+{chr(10).join(findings)}
+
+![Comparação de detecção]({relative_figure.as_posix()})
+
+## Interpretação
+
+O candidato com maior cobertura pode reduzir lacunas nas séries temporais. Porém, os valores de
+EAR, MAR e pose não são numericamente intercambiáveis entre frameworks. Antes de alimentar um
+modelo já treinado, thresholds e normalização precisam ser recalibrados ou o modelo deve ser
+retreinado com o novo extrator.
+
+{chr(10).join(cautions)}
+
+## Limites desta entrega
+
+- resultado de um vídeo e um operador;
+- comparação contra o MediaPipe, não contra landmarks anotados manualmente;
+- OpenFace não fornece latência por frame comparável neste pipeline;
+- intervalos de confiança usam bootstrap em blocos temporais de 5 segundos.
+
+## Próximo passo mínimo
+
+Executar exatamente a mesma análise nos demais vídeos já extraídos. Não é necessário criar uma
+nova bateria de smoke tests. A decisão prática deve usar cobertura com operador presente, falsos
+positivos sem operador e estabilidade entre vídeos.
+"""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("fase_2/outputs/G48A_all_frames"))
@@ -226,6 +356,10 @@ def main() -> int:
     parser.add_argument("--annotations", type=Path,
                         default=Path("fase_2/data/manifests/annotation_frame_intervals.csv"))
     parser.add_argument("--output", type=Path, default=Path("fase_2/outputs/metrics/G48A"))
+    parser.add_argument("--figure-output", type=Path,
+                        default=Path("fase_2/outputs/figures/G48A/g48a_detection_summary.png"))
+    parser.add_argument("--report-output", type=Path,
+                        default=Path("fase_2/reports/g48a_all_frames_results.md"))
     args = parser.parse_args()
     frames = load_frames(args.root, args.video_id)
     state = load_operational_state(args.annotations, args.video_id, frames["mediapipe"].index)
@@ -235,8 +369,13 @@ def main() -> int:
     summary.to_csv(f"{prefix}_extractor_summary.csv", index=False)
     availability.to_csv(f"{prefix}_pairwise_availability.csv", index=False)
     agreement.to_csv(f"{prefix}_agreement.csv", index=False)
+    plot_detection_summary(summary, args.figure_output, args.video_id)
+    write_result_report(summary, availability, agreement, args.report_output, args.video_id,
+                        args.figure_output)
     print(summary.to_string(index=False))
     print(f"Artefatos gravados com prefixo: {prefix}")
+    print(f"Figura: {args.figure_output}")
+    print(f"Relatório: {args.report_output}")
     return 0
 
 

@@ -2,6 +2,25 @@
 
 Esta pasta contém a etapa atual do projeto de mestrado, dedicada à classificação temporal dos estados **Alert**, **Fatigue** e **Distraction** a partir de indicadores faciais extraídos de vídeos reais de teleoperação.
 
+## Prioridade imediata: resultados
+
+O caminho curto do projeto é comparar a disponibilidade dos extratores faciais nos vídeos reais.
+Com as extrações prontas, um único comando gera as métricas, a figura e o relatório de apresentação:
+
+```bash
+python -m fase_2.src.evaluation.g48a_statistics
+```
+
+Saídas principais:
+
+- `reports/g48a_all_frames_results.md`: síntese pronta para discussão;
+- `outputs/figures/G48A/g48a_detection_summary.png`: figura para apresentação;
+- `outputs/metrics/G48A/g48a_video_04_*.csv`: resultados auditáveis.
+
+Até a apresentação, novas matrizes de modelos, datasets públicos, benchmarks amplos e smoke tests
+ficam fora do caminho crítico. O foco é concluir a mesma comparação nos vídeos disponíveis e
+mostrar cobertura, falsos positivos sem operador e estabilidade entre vídeos.
+
 ## Objetivo
 
 Comparar regras fixas, classificadores clássicos e modelos temporais para verificar se a evolução dos indicadores faciais melhora a identificação de fadiga e distração em relação a abordagens sem contexto temporal.
