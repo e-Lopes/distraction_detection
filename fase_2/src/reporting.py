@@ -108,6 +108,16 @@ def consolidate_metrics(config: Mapping[str, object]) -> list[dict[str, object]]
     screening_metrics = Path(config["outputs"]["root"]) / "screening_metrics.csv"
     if screening_metrics.is_file():
         _append_overall(rows, str(screening_metrics), "screening")
+    _append_overall(rows, str(Path(config["outputs"]["root"]) / "confirmation_classical_metrics.csv"),
+                    "confirmation")
+    for path in (Path(config["outputs"]["root"]) / "screening_details").glob("*__per_class.csv"):
+        _append_per_class(rows, str(path), "screening")
+    for path in (Path(config["outputs"]["root"]) / "confirmation_details").glob("*__per_class.csv"):
+        _append_per_class(rows, str(path), "confirmation")
+    for path in (Path(config["outputs"]["root"]) / "temporal_metrics").rglob("*__runs.csv"):
+        _append_overall(rows, str(path), "confirmation")
+    for path in (Path(config["outputs"]["root"]) / "temporal_metrics").rglob("*__per_class.csv"):
+        _append_per_class(rows, str(path), "confirmation")
     unique: dict[tuple[object, ...], dict[str, object]] = {}
     for row in rows:
         key = tuple(row[field] for field in METRIC_FIELDS[2:-1]) + (row["metric"],)
@@ -447,5 +457,10 @@ def generate_report(config_path: str | Path) -> int:
     report = Path(config["outputs"]["report"])
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(_report_text(config, metrics, figures), encoding="utf-8")
+    screening = Path(config["outputs"]["root"]) / "screening_metrics.csv"
+    if screening.is_file():
+        from .progress_table import generate_binary_attention_table, generate_progress_table
+        generate_progress_table(config_path)
+        generate_binary_attention_table(config_path)
     print(f"[REPORT 8/8] DONE report={report} figures={len(figures)}")
     return 0

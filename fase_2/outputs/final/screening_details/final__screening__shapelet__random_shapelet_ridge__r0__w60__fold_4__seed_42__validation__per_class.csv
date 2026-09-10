@@ -1,0 +1,4 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+random_shapelet_ridge,R0,4,validation,alert,0.9316909294512878,0.8221343873517787,0.873490813648294,1012,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_4__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,4,validation,fatigue,0.0,0.0,0.0,17,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_4__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,4,validation,distraction,0.27450980392156865,0.4375,0.3373493975903614,96,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_4__seed_42,42,R0,60,none

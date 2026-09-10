@@ -62,6 +62,11 @@ def preprocess_block(
         return []
     transformed = [dict(row) for row in rows]
     detected = [row["face_detected"] == "1" for row in rows]
+    # Indicadores sem detecção válida não podem reaproveitar valores residuais.
+    for row, valid in zip(transformed, detected):
+        if not valid:
+            for metric in METRICS:
+                row[metric] = ""
     short_gap_max = int(config.get("short_gap_max_frames", 0))
     method = str(config.get("short_gap_method", "linear"))
     if short_gap_max and method != "linear":

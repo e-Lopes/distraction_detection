@@ -72,6 +72,14 @@ def _sha256(path: Path) -> str:
 def pipeline_fingerprint(config_path: Path, config: Mapping[str, object]) -> str:
     """Hash somente da configuração e dos pequenos manifestos canônicos."""
     digest = hashlib.sha256(config_path.read_bytes())
+    digest.update(b"incremental_pipeline_v2")
+    for video in config["data"]["videos"]:
+        series_path = Path(config["data"]["facial_series"]) / f"{video}.csv"
+        if series_path.is_file():
+            metadata = series_path.stat()
+            digest.update(f"{video}:{metadata.st_size}:{metadata.st_mtime_ns}".encode())
+        else:
+            digest.update(f"{video}:missing".encode())
     paths = (
         Path(config["data"]["manifest"]),
         Path(config["data"]["annotations"]),
@@ -214,8 +222,10 @@ def _matches_filters(run_family: str, run_scope: str, run_paradigm: str, *,
 
 
 def _dtw_pair_count(config: Mapping[str, object], fold: int, window: int) -> tuple[int, int, int]:
-    rows = [row for row in _read_csv(Path(config["outputs"]["window_counts"]))
-            if int(row["fold"]) == fold and int(row["window_size_frames"]) == window]
+    current = Path(config["outputs"]["root"]) / "window_counts.csv"
+    rows = [row for row in _read_csv(current if current.is_file() else Path(config["outputs"]["window_counts"]))
+            if int(row["fold"]) == fold and int(row["window_size_frames"]) == window
+            and row.get("label") != "mixed"]
     counts = {subset: sum(int(row["num_windows"]) for row in rows if row["subset"] == subset)
               for subset in ("train", "validation", "test")}
     evaluations = counts["validation"] + counts["test"]
@@ -224,7 +234,8 @@ def _dtw_pair_count(config: Mapping[str, object], fold: int, window: int) -> tup
 
 def _new_run_status(old: Mapping[str, str] | None, fingerprint: str, *,
                     dependency_ok: bool, blocked_reason: str = "") -> tuple[str, str, str]:
-    if old and old.get("fingerprint") == fingerprint and old.get("status") in {"completed", "reused"}:
+    if (old and old.get("fingerprint") == fingerprint and old.get("status") in {"completed", "reused"}
+            and Path(old.get("artifact", "")).is_file()):
         return old["status"], old.get("source", "reused"), old.get("artifact", "")
     if not dependency_ok:
         return "dependency_missing", "new", ""
@@ -232,6 +243,18 @@ def _new_run_status(old: Mapping[str, str] | None, fingerprint: str, *,
         return "blocked", "new", ""
     source = "resumed" if old and old.get("artifact") else "new"
     return "pending", source, old.get("artifact", "") if old else ""
+
+
+def _checked_record(config, old):
+    if not old or old.get("status") != "completed":
+        return old
+    artifact = Path(old.get("artifact", ""))
+    prefix = artifact.parent.name if artifact.suffix == ".pt" else old["run_id"]
+    predictions = Path(config["outputs"].get("predictions", ""))
+    if not artifact.is_file() or not all((predictions / f"{prefix}__{s}.csv").is_file()
+                                        for s in ("validation", "test")):
+        return {**old, "status": "pending"}
+    return old
 
 
 def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
@@ -277,7 +300,7 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                         if pairs > maximum:
                             blocked_reason = reason
                     status, source, artifact = _new_run_status(
-                        existing.get(run_id), fingerprint, dependency_ok=dependency_ok,
+                        _checked_record(config, existing.get(run_id)), fingerprint, dependency_ok=dependency_ok,
                         blocked_reason=blocked_reason)
                     if status == "dependency_missing":
                         reason = 'sktime absent; python -m pip install -e "fase_2[tsc]"'
@@ -288,6 +311,8 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
 
     promotion_file = Path(config["training"]["confirmation"]["promotion_file"])
     promoted = promotion_file.is_file()
+    newly_extracted = any((Path(config["data"]["facial_series"]) / f"{video}.extraction.json").is_file()
+                          for video in config["data"]["videos"])
     for candidate in config["training"]["confirmation"]["candidates"]:
         if not candidate.get("enabled", False):
             continue
@@ -306,13 +331,14 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                 representation = str(candidate["representation"])
                 run_id = (f"final__confirmation__{candidate['model']}__{representation.lower()}__"
                           f"w{candidate['window']}__{candidate['balancing']}__fold_{fold}__seed_{candidate_seed}")
-                historical = _historical_compatible(str(candidate["model"]),
-                                                     str(candidate["balancing"]), fold, candidate_seed)
-                old = existing.get(run_id)
+                historical = (None if newly_extracted else _historical_compatible(str(candidate["model"]),
+                                                     str(candidate["balancing"]), fold, candidate_seed))
+                old = _checked_record(config, existing.get(run_id))
                 if historical:
                     status, source, artifact = "reused", "reused", historical
                     reason = "historical compatible result"
-                elif old and old.get("fingerprint") == fingerprint and old.get("status") == "completed":
+                elif (old and old.get("fingerprint") == fingerprint and old.get("status") == "completed"
+                      and Path(old.get("artifact", "")).is_file()):
                     status, source, artifact = "completed", old.get("source", "new"), old.get("artifact", "")
                     reason = ""
                 elif not promoted:
@@ -475,10 +501,15 @@ def _validate_series(path: Path, expected_rows: int, fps: float) -> tuple[int, i
         if missing:
             raise ValueError(f"{path}: colunas ausentes {sorted(missing)}")
         for expected_index, row in enumerate(reader):
+            if row["video_id"] != path.stem:
+                raise ValueError(f"{path}: video_id incorreto no frame {expected_index}")
+            if row["face_detected"] not in {"0", "1"}:
+                raise ValueError(f"{path}: face_detected deve ser 0 ou 1")
             if int(row["frame_index"]) != expected_index:
                 raise ValueError(f"{path}: frame_index descontínuo em {expected_index}")
             timestamp = float(row["timestamp_seconds"])
-            if not math.isfinite(timestamp) or timestamp < previous_timestamp:
+            if (not math.isfinite(timestamp) or timestamp <= previous_timestamp
+                    or abs(timestamp - expected_index / fps) > max(0.05, 1 / fps)):
                 raise ValueError(f"{path}: timestamp inconsistent at frame {expected_index}")
             previous_timestamp = timestamp
             is_detected = row["face_detected"] == "1"
@@ -498,6 +529,11 @@ def _validate_series(path: Path, expected_rows: int, fps: float) -> tuple[int, i
 
 def prepare(config_path: str | Path, *, force: bool = False) -> int:
     from .data.splits import SplitBlock, validate_split_blocks
+    from .data_audit import audit
+
+    checked = audit(config_path)
+    if checked["errors"]:
+        raise ValueError("Corrija os dados antes de continuar:\n" + "\n".join(checked["errors"]))
 
     path = Path(config_path)
     config = load_config(path)
@@ -544,17 +580,9 @@ def prepare(config_path: str | Path, *, force: bool = False) -> int:
         series_summary.append({"video_id": row["video_id"], "frames": count,
                                "detected": detected, "missing_rate": 1 - detected / count})
 
-    print("[PREPARE 4/7] Reutilizando diagnóstico de missingness")
-    missingness_paths = [Path("fase_2/outputs/metrics/facial_missingness.csv"),
-                         Path("fase_2/outputs/metrics/facial_missingness_by_class.csv"),
-                         Path("fase_2/outputs/metrics/facial_missingness_by_window.csv"),
-                         Path("fase_2/outputs/metrics/window_distribution.csv"),
-                         Path("fase_2/outputs/metrics/split_window_distribution.csv"),
-                         Path("fase_2/outputs/metrics/preprocessing_comparison_summary.csv"),
-                         Path("fase_2/src/features/temporal_window_features.py"),
-                         Path(config["features"]["temporal_behavior_v1"]["config"])]
-    if not all(item.is_file() for item in missingness_paths):
-        raise FileNotFoundError("Diagnóstico de missingness incompleto; gere-o pelo pipeline legado")
+    print("[PREPARE 4/7] Conferindo configuração das medidas por trecho")
+    if not Path(config["features"]["temporal_behavior_v1"]["config"]).is_file():
+        raise FileNotFoundError("Configuração das medidas temporais ausente.")
 
     print("[PREPARE 5/7] Validando folds e purge gap")
     blocks = [SplitBlock(fold=int(row["fold"]), subset=row["subset"], video_id=row["video_id"],
@@ -563,6 +591,20 @@ def prepare(config_path: str | Path, *, force: bool = False) -> int:
     errors = validate_split_blocks(blocks, purge_gap_frames=int(config["splits"]["purge_gap_frames"]))
     if errors:
         raise ValueError("Splits inválidos: " + "; ".join(errors))
+
+    from .preprocessing.missingness import (
+        expand_behavior_labels, load_detection_series, summarize_by_class, summarize_windows,
+    )
+    detections = dict(load_detection_series(series_dir / f"{v}.csv") for v in expected_ids)
+    labels = expand_behavior_labels({v: len(rows) for v, rows in detections.items()}, intervals)
+    by_class = summarize_by_class(labels, detections, behavior_classes=allowed)
+    _, by_window = summarize_windows(labels, detections,
+        sizes_frames=config["windowing"]["sizes_frames"],
+        stride_frames=int(config["windowing"]["stride_frames"]), behavior_classes=allowed,
+        minimum_proportion=float(config["windowing"]["minimum_target_proportion"]), split_blocks=blocks)
+    _write_csv_atomic(output_root / "missingness_by_class.csv", [asdict(r) for r in by_class])
+    _write_csv_atomic(output_root / "window_counts.csv",
+                      [asdict(r) for r in by_window if r.video_id == "dataset"])
 
     print("[PREPARE 6/7] Auditando duração real das janelas por FPS")
     durations = []
@@ -682,12 +724,13 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
     pending = [run for run in runs if run.family == "temporal" and (force or run.status == "pending")]
     if not pending:
         return
-    groups: dict[tuple[str, int, str], list[PlannedRun]] = {}
-    for run in pending:
-        groups.setdefault((run.model, run.window_size_frames, run.balancing), []).append(run)
-    for group_index, ((model, window, balancing), selected) in enumerate(groups.items(), 1):
+    for group_index, run in enumerate(pending, 1):
+        model, window, balancing = run.model, run.window_size_frames, run.balancing
+        selected = [run]
         seeds = sorted({run.seed for run in selected})
         runtime = {
+            "input_fingerprint": pipeline_fingerprint(config_path, config),
+            "extraction_manifest": config["data"]["extraction_manifest"],
             "experiment_name": "final_confirmation",
             "generation": "final",
             "configuration_id": f"confirmation_{model}_{balancing}_w{window}",
@@ -713,27 +756,42 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
         }
         resolved = Path(config["outputs"]["resolved"]) / f"temporal_{model}_{balancing}_w{window}.yaml"
         resolved.parent.mkdir(parents=True, exist_ok=True)
+        data_path = resolved.parent / "temporal_data.yaml"
+        data_path.write_text(yaml.safe_dump({"windowing": config["windowing"]}), encoding="utf-8")
+        preprocessing_path = resolved.parent / f"preprocessing_{run.representation}.yaml"
+        preprocessing_path.write_text(yaml.safe_dump(
+            config["preprocessing"]["historical_representations"][run.representation]), encoding="utf-8")
+        runtime["preprocessing_config"] = str(preprocessing_path)
         resolved.write_text(yaml.safe_dump(runtime, sort_keys=False), encoding="utf-8")
         for run in selected:
             update_registry(config, run, "running")
         started = time.perf_counter()
         arguments = ["--experiment-config", str(resolved), "--checkpoint-dir", config["outputs"]["checkpoints"],
+                     "--data-config", str(data_path), "--input-dir", config["data"]["facial_series"],
+                     "--frame-intervals", config["data"]["annotations"],
+                     "--splits", config["splits"]["manifest"], "--fold", str(run.fold),
                      "--run-dir", str(Path(config["outputs"]["root"]) / "runs"),
                      "--prediction-dir", config["outputs"]["predictions"],
-                     "--output-dir", str(Path(config["outputs"]["root"]) / "temporal_metrics"),
-                     "--figure-dir", str(Path(config["outputs"]["figures"]) / f"{model}_{balancing}_w{window}"),
+                     "--output-dir", str(Path(config["outputs"]["root"]) / "temporal_metrics" / run.run_id),
+                     "--figure-dir", str(Path(config["outputs"]["figures"]) / run.run_id),
                      "--max-runs", str(len(selected))]
         for seed in seeds:
             arguments.extend(["--seed", str(seed)])
         if force:
             arguments.append("--no-resume")
         try:
-            print(f"[TRAIN GROUP {group_index}/{len(groups)}] model={model} seeds={seeds}")
-            temporal_main(arguments)
+            print(f"Treino {group_index}/{len(pending)}: {model}, divisão {run.fold}, repetição {run.seed}.")
+            code = temporal_main(arguments)
+            run_name = (f"final__{runtime['configuration_id']}__{model}__"
+                        f"{run.representation.lower()}__w{window}__fold_{run.fold}__seed_{run.seed}")
+            checkpoint = Path(config["outputs"]["checkpoints"]) / run_name / "best_macro_f1.pt"
+            result_path = Path(config["outputs"]["root"]) / "runs" / f"{run_name}.json"
+            if code or not checkpoint.is_file() or not result_path.is_file():
+                raise RuntimeError("O treino terminou sem salvar todos os resultados esperados.")
             elapsed = time.perf_counter() - started
             per_run = elapsed / len(selected)
             for run in selected:
-                update_registry(config, run, "completed", artifact=str(resolved),
+                update_registry(config, run, "completed", artifact=str(checkpoint),
                                 duration_seconds=f"{per_run:.3f}")
         except Exception as exc:
             for run in selected:
@@ -742,8 +800,34 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
 
 
 def _screening_candidate(config: Mapping[str, object], run: PlannedRun) -> Mapping[str, object]:
+    if run.scope == "confirmation" and run.family == "classical":
+        return {"parameters": config["models"]["classical"][run.model]}
     section = config["models"]["screening"][run.paradigm]
     return next(item for item in section["candidates"] if item["model"] == run.model)
+
+
+def _fit_or_resume(model, x_train, y_train, config, run, *, force=False):
+    """Salva o ajuste antes da avaliação; uma interrupção não exige novo fit."""
+    import joblib
+
+    target = Path(config["outputs"]["checkpoints"]) / f"{run.run_id}.joblib"
+    metadata = target.with_suffix(".json")
+    if not force and target.is_file() and metadata.is_file():
+        saved = json.loads(metadata.read_text(encoding="utf-8"))
+        if saved.get("fingerprint") == run.fingerprint:
+            print(f"Modelo salvo encontrado. Continuando avaliação: {run.model}, divisão {run.fold}.")
+            return joblib.load(target)
+    model.fit(x_train, y_train)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_suffix(".joblib.tmp")
+    joblib.dump(model, temporary)
+    temporary.replace(target)
+    temporary = metadata.with_suffix(".json.tmp")
+    temporary.write_text(json.dumps({"fingerprint": run.fingerprint, "stage": "fitted"}),
+                         encoding="utf-8")
+    temporary.replace(metadata)
+    print(f"Progresso salvo: {target}", flush=True)
+    return model
 
 
 def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *,
@@ -782,9 +866,11 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                     for row in _read_csv(Path(config["data"]["manifest"]))}
     feature_config = yaml.safe_load(Path(config["features"]["temporal_behavior_v1"]["config"])
                                     .read_text(encoding="utf-8"))
-    feature_windows = None
+    feature_windows = {}
     sequence_cache = {}
-    metric_path = Path(config["outputs"]["root"]) / "screening_metrics.csv"
+    stage = runs[0].scope if runs else "screening"
+    metric_path = Path(config["outputs"]["root"]) / (
+        "screening_metrics.csv" if stage == "screening" else "confirmation_classical_metrics.csv")
     metric_rows = _read_csv(metric_path)
 
     for index, run in enumerate(executable, 1):
@@ -794,20 +880,20 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
         started = time.perf_counter()
         try:
             candidate = _screening_candidate(config, run)
-            if run.paradigm == "feature":
-                if feature_windows is None:
-                    feature_windows = build_temporal_feature_windows(
+            if run.paradigm == "feature" and run.representation != "R0_flat":
+                if run.window_size_frames not in feature_windows:
+                    feature_windows[run.window_size_frames] = build_temporal_feature_windows(
                         series, labels, size_frames=run.window_size_frames,
                         stride_frames=int(config["windowing"]["stride_frames"]),
                         minimum_proportion=float(config["windowing"]["minimum_target_proportion"]),
                         groups=feature_config["groups"], thresholds=feature_config["thresholds"],
                         fps_by_video=fps_by_video)
-                subsets = split_windows(feature_windows, blocks, run.fold)
+                subsets = split_windows(feature_windows[run.window_size_frames], blocks, run.fold)
                 indices = range(len(subsets["train"][0].values))
                 x_train, y_train = feature_matrix(subsets["train"], indices)
                 model = feature_classifier(run.model, candidate["parameters"], seed=run.seed,
                                            balancing=run.balancing)
-                model.fit(x_train, y_train)
+                model = _fit_or_resume(model, x_train, y_train, config, run, force=force)
                 evaluation = {name: feature_matrix(subsets[name], indices)
                               for name in ("validation", "test")}
                 metadata = {name: subsets[name] for name in ("validation", "test")}
@@ -820,11 +906,25 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                         fold=run.fold, size_frames=run.window_size_frames,
                         stride_frames=int(config["windowing"]["stride_frames"]),
                         minimum_proportion=float(config["windowing"]["minimum_target_proportion"]),
-                        representation="R0")[0]
-                subsets = sequence_cache[key]
+                        representation="R0")
+                subsets, sequence_scaler, training_medians = sequence_cache[key]
+                preprocessing_path = Path(config["outputs"]["checkpoints"]) / f"{run.run_id}__preprocessing.json"
+                preprocessing_path.parent.mkdir(parents=True, exist_ok=True)
+                temporary = preprocessing_path.with_suffix(".json.tmp")
+                temporary.write_text(json.dumps({"mean": sequence_scaler.mean,
+                    "scale": sequence_scaler.scale, "training_medians": training_medians,
+                    "fingerprint": run.fingerprint}), encoding="utf-8")
+                temporary.replace(preprocessing_path)
                 x_train = subsets["train"].values
                 y_train = np.asarray([CLASSES[int(value)] for value in subsets["train"].labels])
-                if run.paradigm == "distance":
+                if run.representation == "R0_flat" and run.model == "svm":
+                    from sklearn.svm import SVC
+                    if run.balancing not in {"none", "class_weights"}:
+                        raise ValueError("Confirmação SVM aceita none ou class_weights.")
+                    x_train = x_train.reshape(len(x_train), -1)
+                    model = SVC(**candidate["parameters"], random_state=run.seed,
+                                class_weight="balanced" if run.balancing == "class_weights" else None)
+                elif run.paradigm == "distance":
                     parameters = candidate["parameters"]
                     cost = estimate_dtw_cost(len(x_train),
                                              len(subsets["validation"].values) + len(subsets["test"].values),
@@ -841,15 +941,17 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                     print(f"[MINIROCKET] window={run.window_size_frames} fold={run.fold} "
                           f"kernels={candidate['parameters']['num_kernels']}")
                     model = MiniRocketRidgeAdapter(candidate["parameters"], seed=run.seed)
-                model.fit(x_train, y_train)
+                model = _fit_or_resume(model, x_train, y_train, config, run, force=force)
                 evaluation = {name: (subsets[name].values,
                                      np.asarray([CLASSES[int(value)] for value in subsets[name].labels]))
                               for name in ("validation", "test")}
+                if run.representation == "R0_flat":
+                    evaluation = {name: (values.reshape(len(values), -1), expected)
+                                  for name, (values, expected) in evaluation.items()}
                 metadata = {name: subsets[name].metadata for name in ("validation", "test")}
 
             checkpoint = Path(config["outputs"]["checkpoints"]) / f"{run.run_id}.joblib"
             checkpoint.parent.mkdir(parents=True, exist_ok=True)
-            joblib.dump(model, checkpoint)
             if run.paradigm == "shapelet":
                 write_shapelet_metadata(checkpoint.with_suffix(".shapelets.json"), model)
             for subset_name, (values, expected) in evaluation.items():
@@ -857,7 +959,7 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                     model.cache_path = (Path(config["outputs"]["root"]) / "distance_cache"
                                         / f"{run.run_id}__{subset_name}.npy")
                 predicted = model.predict(values)
-                summary, _, _ = evaluate_predictions(
+                summary, per_class, confusion = evaluate_predictions(
                     model_name=run.model, ablation=run.representation, fold=run.fold,
                     subset=subset_name, expected=expected, predicted=predicted,
                     train_seconds=time.perf_counter() - started, resumed=run.source == "resumed")
@@ -880,8 +982,22 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                                     "predicted": prediction}
                                    for item, actual, prediction in zip(
                                        metadata[subset_name], expected, predicted, strict=True)]
+                if hasattr(model, "predict_proba") and hasattr(model, "classes_"):
+                    probabilities = model.predict_proba(values)
+                    class_order = list(model.classes_)
+                    for row, probability in zip(prediction_rows, probabilities, strict=True):
+                        for label in CLASSES:
+                            row[f"prob_{label}"] = (float(probability[class_order.index(label)])
+                                                     if label in class_order else 0.0)
                 _write_csv_atomic(Path(config["outputs"]["predictions"])
                                   / f"{run.run_id}__{subset_name}.csv", prediction_rows)
+                details = Path(config["outputs"]["root"]) / f"{stage}_details"
+                for suffix, rows in (("per_class", per_class), ("confusion", confusion)):
+                    for row in rows:
+                        row.update(run_id=run.run_id, seed=run.seed, representation=run.representation,
+                                   window_size_frames=run.window_size_frames, balancing=run.balancing)
+                    _write_csv_atomic(details / f"{run.run_id}__{subset_name}__{suffix}.csv", rows)
+                _write_csv_atomic(metric_path, metric_rows)
             _write_csv_atomic(metric_path, metric_rows)
             elapsed = time.perf_counter() - started
             update_registry(config, run, "completed", artifact=str(checkpoint),
@@ -898,11 +1014,13 @@ def train(config_path: str | Path, family: str, *, scope: str = "screening",
     path = Path(config_path)
     config = load_config(path)
     state = Path(config["outputs"]["root"]) / "prepare_state.json"
-    if not state.is_file():
-        raise RuntimeError("Execute `python -m fase_2 prepare` antes do treinamento")
-    prepared = json.loads(state.read_text(encoding="utf-8"))
-    if prepared.get("fingerprint") != pipeline_fingerprint(path, config):
-        raise RuntimeError("Cache prepare desatualizado; execute `python -m fase_2 prepare` novamente")
+    prepared = json.loads(state.read_text(encoding="utf-8")) if state.is_file() else {}
+    if (prepared.get("status") != "completed"
+            or prepared.get("fingerprint") != pipeline_fingerprint(path, config)):
+        print("Os dados mudaram desde a última verificação. Atualizando a preparação...", flush=True)
+        code = prepare(path)
+        if code:
+            return code
     plan = sync_plan_registry(path, family, scope, paradigm)
     if scope in {"screening", "all"}:
         _train_screening(config, [run for run in plan if run.scope == "screening"],
@@ -912,6 +1030,9 @@ def train(config_path: str | Path, family: str, *, scope: str = "screening",
     if blocked:
         print(f"[TRAIN][confirmation][blocked] {len(blocked)} runs aguardam promocao do screening")
     runnable_confirmation = [run for run in confirmation if run.status in {"pending", "running"}]
+    if runnable_confirmation and family in {"classical", "all"}:
+        _train_screening(config, [r for r in runnable_confirmation if r.family == "classical"],
+                         force=force, allow_expensive=allow_expensive)
     if runnable_confirmation and family in {"temporal", "all"}:
         _train_temporal(path, config, runnable_confirmation, force)
     print("[DONE] train; resultados históricos compatíveis foram reutilizados")

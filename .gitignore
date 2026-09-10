@@ -5,6 +5,15 @@
 # Dados intermediários e processados
 /data/interim/
 /data/processed/
+/fase_2/data/raw/videos/
+/fase_2/data/interim/
+/fase_2/outputs/final/checkpoints/
+/fase_2/outputs/final/predictions/
+/fase_2/outputs/final/runs/
+/fase_2/outputs/final/resolved/
+/fase_2/outputs/final/distance_cache/
+/fase_2/outputs/final/chain_state.json
+/fase_2/outputs/final/data_audit.json
 
 # Modelos treinados
 *.pt

@@ -2,6 +2,27 @@
 
 ## Classificação de fadiga e distração por indicadores faciais
 
+### Ponto de entrada operacional
+
+Na raiz do repositório, use `python3 -m fase_2 interface` para organizar a execução
+deste protocolo pela interface desktop. A janela reúne pendências, protocolo, plano, preparação,
+treino e relatório, usando `configs/final_experiment.yaml` como configuração canônica.
+Use `python3 -m fase_2 interface --summary` para uma consulta sem alterar artefatos.
+
+| Etapa deste protocolo | Acesso na interface | Evidência a revisar |
+|---|---|---|
+| A — Auditoria | Visão geral / Preparar dados | Manifestos, séries e diagnóstico de qualidade |
+| B — Janelas | Preparar dados / Plano de execução | Configuração, splits, purge e duração das janelas |
+| C/D — Representações e algoritmos | Escopo screening / Paradigma / Treinar seleção | Resultados da validação interna e condições comparáveis |
+| E — Pipelines por família | Escopo confirmation / Plano de execução | Promoção documentada e seeds; sem seleção pelo teste |
+| F — Avaliação final | Gerar relatório / Ler relatório | OOF, episódios, incerteza e custo |
+
+A disponibilidade de um arquivo não comprova que a etapa está concluída. A interface
+preserva as pendências científicas: promoção após screening, probabilidades OOF,
+congelamento dos parâmetros de episódios, confirmação multi-seed e análise de
+incerteza/custo. Esses itens precisam de evidência antes de preencher o checklist
+de validade da seção 18. A interface não promove candidatos automaticamente.
+
 ## 1. Objetivo
 
 Este documento define um protocolo experimental para comparar algoritmos de classificação aplicados a séries temporais formadas por indicadores extraídos de landmarks faciais.
@@ -711,4 +732,3 @@ Exemplo quando os resultados são próximos:
 - [Scikit-learn — Probability calibration](https://scikit-learn.org/stable/modules/calibration.html)
 - [Bake Off Redux: avaliação de algoritmos de classificação de séries temporais](https://arxiv.org/abs/2304.13029)
 - [UEA Multivariate Time Series Classification Archive](https://arxiv.org/abs/1811.00075)
-

@@ -25,7 +25,6 @@ from sklearn.metrics import (
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from xgboost import XGBClassifier
 
 from ..data.config import load_yaml, repository_path
 from ..data.splits import SplitBlock, window_subset
@@ -149,6 +148,7 @@ def build_model(
     if name == "random_forest":
         return RandomForestClassifier(**parameters, random_state=seed)
     if name == "xgboost":
+        from xgboost import XGBClassifier
         return XGBClassifier(**parameters, device=xgb_device, random_state=seed)
     raise ValueError(f"Modelo desconhecido: {name}")
 

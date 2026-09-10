@@ -127,15 +127,71 @@ def test_public_parser_exposes_only_expected_commands():
     subcommands = next(action for action in parser._actions
                        if isinstance(action, __import__("argparse")._SubParsersAction))
 
-    assert set(subcommands.choices) == {"status", "prepare", "train", "report", "all"}
+    assert set(subcommands.choices) == {"interface", "status", "prepare", "train", "report", "all",
+                                        "chain", "check-data", "extract"}
     args = parser.parse_args(["train", "--family", "temporal", "--plan"])
     assert args.family == "temporal" and args.plan is True
     args = parser.parse_args(["train", "--scope", "screening", "--paradigm", "shapelet", "--plan"])
     assert args.scope == "screening" and args.paradigm == "shapelet"
 
 
+def test_interface_summary_is_read_only_and_reports_missing_inputs(tmp_path):
+    from fase_2.src.terminal import overview
+
+    config = _config(tmp_path)
+    before = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    output = overview(config)
+    after = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+
+    assert before == after
+    assert "séries ausentes = video_01" in output
+    assert "cache desatualizado" in output
+    assert "minimum_iou" in output
+    assert "screening:" in output and "confirmation:" in output
+
+
+def test_interface_keeps_filters_and_survives_action_failure(tmp_path, monkeypatch):
+    from fase_2.src import terminal
+
+    config = _config(tmp_path)
+    choices = iter(["8", "9", "deep", "3", "5", "0"])
+    monkeypatch.setattr("builtins.input", lambda _: next(choices))
+    calls = []
+
+    def action(path, arguments):
+        calls.append(arguments)
+        return 1
+
+    monkeypatch.setattr(terminal, "run_action", action)
+    assert terminal.main(config) == 0
+    assert calls == [
+        ["train", "--plan", "--scope", "confirmation", "--paradigm", "deep"],
+        ["train", "--scope", "confirmation", "--paradigm", "deep"],
+    ]
+
+
+def test_interface_eof_exits_without_running(tmp_path, monkeypatch):
+    from fase_2.src import terminal
+
+    def eof(_):
+        raise EOFError
+
+    monkeypatch.setattr("builtins.input", eof)
+    monkeypatch.setattr(terminal, "run_action", lambda *_: pytest.fail("unexpected action"))
+    assert terminal.main(_config(tmp_path)) == 0
+
+
+def test_all_stops_if_prepare_fails(monkeypatch):
+    from fase_2 import __main__ as cli
+
+    monkeypatch.setattr(cli, "prepare", lambda *a, **kw: 2)
+    monkeypatch.setattr(cli, "train", lambda *a, **kw: pytest.fail("unexpected training"))
+    monkeypatch.setattr(cli, "generate_report", lambda *a, **kw: pytest.fail("unexpected report"))
+    assert cli.main(["all"]) == 2
+
+
 def test_series_validation_rejects_bad_timestamps(tmp_path):
-    series = tmp_path / "series.csv"
+    series = tmp_path / "video_01.csv"
     header = ["video_id", "frame_index", "timestamp_seconds", "ear", "mar", "pitch", "yaw",
               "roll", "face_detected"]
     series.parent.mkdir(parents=True, exist_ok=True)

@@ -463,6 +463,11 @@ def train_model(
                 metadata={**metadata, "training_seconds": training_seconds},
                 train_generator_state=train_loader.generator.get_state(),
             )
+        save_run_result(checkpoint_dir / "progress.json", {
+            "epoch": epoch, "best_epoch": best_epoch, "best_metric": best_metric,
+            "fingerprint": fingerprint, "history": history,
+            "training_seconds": training_seconds,
+        })
         checkpoint_every = int(training["checkpoint_every_epochs"])
         if checkpoint_every and epoch % checkpoint_every == 0:
             save_training_checkpoint(

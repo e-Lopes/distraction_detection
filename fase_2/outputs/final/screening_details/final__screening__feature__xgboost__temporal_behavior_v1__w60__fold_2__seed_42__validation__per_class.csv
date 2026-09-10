@@ -1,0 +1,4 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+xgboost,temporal_behavior_v1,2,validation,alert,0.9385964912280702,0.8916666666666667,0.9145299145299145,1080,final__screening__feature__xgboost__temporal_behavior_v1__w60__fold_2__seed_42,42,temporal_behavior_v1,60,class_weights
+xgboost,temporal_behavior_v1,2,validation,fatigue,0.0,0.0,0.0,17,final__screening__feature__xgboost__temporal_behavior_v1__w60__fold_2__seed_42,42,temporal_behavior_v1,60,class_weights
+xgboost,temporal_behavior_v1,2,validation,distraction,0.20689655172413793,0.39473684210526316,0.27149321266968324,76,final__screening__feature__xgboost__temporal_behavior_v1__w60__fold_2__seed_42,42,temporal_behavior_v1,60,class_weights

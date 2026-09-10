@@ -47,10 +47,12 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
     if not rows:
         raise ValueError(f"Nenhuma linha para gravar: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as stream:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+    temporary.replace(path)
 
 
 def git_commit() -> str:
@@ -195,7 +197,8 @@ def plot_metric_variability(seed_rows: list[dict[str, object]], output: Path) ->
         ]
         for model in models
     ]
-    axis.boxplot(values, tick_labels=[model.upper() for model in models], showmeans=True)
+    axis.boxplot(values, showmeans=True)
+    axis.set_xticks(range(1, len(models) + 1), [model.upper() for model in models])
     for index, model_values in enumerate(values, start=1):
         axis.scatter(
             np.full(len(model_values), index),
@@ -426,18 +429,24 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _runtime_path(value: str | Path) -> Path:
+    """Aceita caminhos explícitos da CLI e preserva os defaults relativos à raiz."""
+    path = Path(value)
+    return path if path.is_absolute() else repository_path(path)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    experiment_path = repository_path(args.experiment_config)
-    data_path = repository_path(args.data_config)
-    interval_path = repository_path(args.frame_intervals)
-    split_path = repository_path(args.splits)
-    input_dir = repository_path(args.input_dir)
+    experiment_path = _runtime_path(args.experiment_config)
+    data_path = _runtime_path(args.data_config)
+    interval_path = _runtime_path(args.frame_intervals)
+    split_path = _runtime_path(args.splits)
+    input_dir = _runtime_path(args.input_dir)
     experiment = load_yaml(experiment_path)
     if bool(experiment.get("training", {}).get("deterministic", False)):
         os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     data_config = load_yaml(data_path)
-    preprocessing_path = repository_path(experiment["preprocessing_config"])
+    preprocessing_path = _runtime_path(experiment["preprocessing_config"])
     preprocessing = load_yaml(preprocessing_path)
     generation = str(experiment.get("generation", "unversioned"))
     configuration_id = str(experiment.get("configuration_id", experiment["experiment_name"]))
@@ -529,7 +538,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             preprocessing_path,
             interval_path,
             split_path,
-            input_dir / "extraction_manifest.csv",
+            _runtime_path(experiment.get("extraction_manifest", str(input_dir / "extraction_manifest.csv"))),
         ],
         {
             "mode": "temporal_multiseed",
@@ -543,9 +552,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     class_rows: list[dict[str, object]] = []
     confusion_rows: list[dict[str, object]] = []
     history_rows: list[dict[str, object]] = []
-    checkpoint_root = repository_path(args.checkpoint_dir)
-    run_root = repository_path(args.run_dir)
-    prediction_root = repository_path(args.prediction_dir)
+    checkpoint_root = _runtime_path(args.checkpoint_dir)
+    run_root = _runtime_path(args.run_dir)
+    prediction_root = _runtime_path(args.prediction_dir)
     for fold in folds:
         augmentation_records: list[dict[str, object]] = []
         balancing = str(experiment["training"].get("balancing", "none"))
@@ -567,7 +576,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         if augmentation_records:
             _write_csv(
-                repository_path(args.augmentation_audit_dir)
+                _runtime_path(args.augmentation_audit_dir)
                 / f"{configuration_id}__w{size}__fold_{fold}.csv",
                 augmentation_records,
             )
@@ -587,7 +596,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 completed = None
                 if not args.no_resume and result_path.exists():
                     candidate = json.loads(result_path.read_text(encoding="utf-8"))
-                    if candidate.get("fingerprint") == fingerprint:
+                    if (candidate.get("fingerprint") == fingerprint and candidate.get("completed")
+                            and all((prediction_root / f"{run_name}__{subset}.csv").is_file()
+                                    for subset in evaluation_subsets)):
                         completed = candidate
                 if completed is None:
                     result = train_model(
@@ -750,9 +761,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "confusion": run_confusion,
                         "metadata": metadata,
                     }
-                    save_run_result(result_path, completed)
                     for subset, rows in run_predictions.items():
                         _write_csv(prediction_root / f"{run_name}__{subset}.csv", rows)
+                    # Só marca conclusão após persistir todas as predições.
+                    save_run_result(result_path, completed)
                 history_rows.extend(completed["history"])
                 summary_rows.extend(completed["summary"])
                 class_rows.extend(completed["per_class"])
@@ -761,7 +773,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     seed_rows = aggregate_by_seed(summary_rows)
     statistics = aggregate_statistics(seed_rows)
     per_fold_statistics = fold_seed_statistics(summary_rows)
-    output_dir = repository_path(args.output_dir)
+    output_dir = _runtime_path(args.output_dir)
     prefix = configuration_id
     _write_csv(output_dir / f"{prefix}__runs.csv", summary_rows)
     _write_csv(output_dir / f"{prefix}__history.csv", history_rows)
@@ -771,7 +783,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     _write_csv(output_dir / f"{prefix}__statistics.csv", statistics)
     _write_csv(output_dir / f"{prefix}__fold_statistics.csv", per_fold_statistics)
     write_report(output_dir / f"{prefix}.md", statistics, seeds, folds)
-    figure_dir = repository_path(args.figure_dir)
+    figure_dir = _runtime_path(args.figure_dir)
     figure_dir.mkdir(parents=True, exist_ok=True)
     plot_metric_variability(seed_rows, figure_dir / "metric_variability.png")
     plot_validation_curves(history_rows, figure_dir / "validation_curves.png")

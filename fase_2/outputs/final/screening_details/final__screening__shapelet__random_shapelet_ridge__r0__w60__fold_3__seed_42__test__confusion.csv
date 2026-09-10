@@ -1,0 +1,10 @@
+model,ablation,fold,subset,actual,predicted,count,run_id,seed,representation,window_size_frames,balancing
+random_shapelet_ridge,R0,3,test,alert,alert,1202,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,alert,fatigue,44,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,alert,distraction,121,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,fatigue,alert,16,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,fatigue,fatigue,1,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,fatigue,distraction,4,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,distraction,alert,30,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,distraction,fatigue,21,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none
+random_shapelet_ridge,R0,3,test,distraction,distraction,61,final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_3__seed_42,42,R0,60,none

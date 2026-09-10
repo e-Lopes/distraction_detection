@@ -1,38 +1,33 @@
 {
   "status": "completed",
-  "fingerprint": "226a6c5686e1fc59868d67141d6388a0c74d692cd5e7ac05ea0cf2e1dec86599",
-  "updated_at": "2026-09-09T21:04:06+00:00",
-  "videos_available": 0,
-  "videos_missing_but_series_reused": [
-    "fase_2/data/raw/videos/1.mp4",
-    "fase_2/data/raw/videos/2.mp4",
-    "fase_2/data/raw/videos/3.mp4",
-    "fase_2/data/raw/videos/4.mp4"
-  ],
+  "fingerprint": "2c1c0624ff66d54647edc51193b0873848bbf64c23155fb7a2ca43775c79241e",
+  "updated_at": "2026-09-10T18:18:09+00:00",
+  "videos_available": 4,
+  "videos_missing_but_series_reused": [],
   "series": [
     {
       "video_id": "video_01",
       "frames": 32013,
-      "detected": 18241,
-      "missing_rate": 0.43020023115609285
+      "detected": 18264,
+      "missing_rate": 0.4294817730297067
     },
     {
       "video_id": "video_02",
       "frames": 28200,
-      "detected": 23602,
-      "missing_rate": 0.16304964539007094
+      "detected": 23597,
+      "missing_rate": 0.16322695035460988
     },
     {
       "video_id": "video_03",
       "frames": 30334,
-      "detected": 20468,
-      "missing_rate": 0.32524559899782424
+      "detected": 20462,
+      "missing_rate": 0.32544339684842094
     },
     {
       "video_id": "video_04",
       "frames": 31790,
-      "detected": 13349,
-      "missing_rate": 0.5800880780119535
+      "detected": 13303,
+      "missing_rate": 0.5815350739226172
     }
   ],
   "resampling": "not_required_for_historical_baseline",

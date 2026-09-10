@@ -1,0 +1,4 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+svm,temporal_behavior_v1,1,test,alert,0.7978208232445521,0.6056985294117647,0.6886102403343782,1088,final__screening__feature__svm__temporal_behavior_v1__w60__fold_1__seed_42,42,temporal_behavior_v1,60,class_weights
+svm,temporal_behavior_v1,1,test,fatigue,0.17647058823529413,0.04477611940298507,0.07142857142857142,67,final__screening__feature__svm__temporal_behavior_v1__w60__fold_1__seed_42,42,temporal_behavior_v1,60,class_weights
+svm,temporal_behavior_v1,1,test,distraction,0.3429811866859624,0.6253298153034301,0.44299065420560746,379,final__screening__feature__svm__temporal_behavior_v1__w60__fold_1__seed_42,42,temporal_behavior_v1,60,class_weights

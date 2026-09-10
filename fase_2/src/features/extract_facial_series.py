@@ -328,9 +328,9 @@ def extract_video(
                 if not success:
                     break
                 frame_index = processed_frames
-                timestamp = float(capture.get(cv2.CAP_PROP_POS_MSEC)) / 1000.0
-                if timestamp <= 0 and frame_index > 0 and fps > 0:
-                    timestamp = frame_index / fps
+                # POS_MSEC é inconsistente em alguns contêineres deste conjunto.
+                timestamp = frame_index / fps if fps > 0 else float(
+                    capture.get(cv2.CAP_PROP_POS_MSEC)) / 1000.0
 
                 if roi is None:
                     region = frame

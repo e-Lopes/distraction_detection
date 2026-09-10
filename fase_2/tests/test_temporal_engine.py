@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 import numpy as np
 import pytest
@@ -66,6 +67,8 @@ def test_engine_saves_best_last_periodic_and_records_epochs(tmp_path: Path):
     assert (tmp_path / "best_macro_f1.pt").exists()
     assert (tmp_path / "last.pt").exists()
     assert (tmp_path / "epoch_001.pt").exists()
+    progress = json.loads((tmp_path / "progress.json").read_text())
+    assert progress["epoch"] == 2 and len(progress["history"]) == 2
     checkpoint = load_training_checkpoint(
         tmp_path / "last.pt", fingerprint="test", device=torch.device("cpu")
     )

@@ -1,0 +1,4 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+minirocket_ridge,R0,4,test,alert,0.9068181818181819,0.8435517970401691,0.8740416210295728,946,final__screening__transform__minirocket_ridge__r0__w150__fold_4__seed_42,42,R0,150,none
+minirocket_ridge,R0,4,test,fatigue,,,,0,final__screening__transform__minirocket_ridge__r0__w150__fold_4__seed_42,42,R0,150,none
+minirocket_ridge,R0,4,test,distraction,0.25,0.36153846153846153,0.29559748427672955,130,final__screening__transform__minirocket_ridge__r0__w150__fold_4__seed_42,42,R0,150,none

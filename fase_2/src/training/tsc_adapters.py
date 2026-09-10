@@ -20,7 +20,6 @@ from sklearn.linear_model import LogisticRegression, RidgeClassifier, RidgeClass
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from xgboost import XGBClassifier
 
 from ..data.windowing import build_windows
 from ..features.temporal_window_features import extract_temporal_window_features
@@ -145,6 +144,7 @@ class DependentDTW1NN:
 
 class XGBoostLabelAdapter:
     def __init__(self, parameters: Mapping[str, object], *, seed: int, balancing: str):
+        from xgboost import XGBClassifier
         self.model = XGBClassifier(**dict(parameters), random_state=seed)
         self.balancing = balancing
 

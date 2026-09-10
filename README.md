@@ -42,6 +42,9 @@ Esses indicadores são organizados em janelas temporais e utilizados para compar
 
 Mais informações: [`fase_2/README.md`](fase_2/README.md).
 
+Acesse o protocolo, as pendências e a execução pela interface desktop,
+a partir da raiz do repositório: `python3 -m fase_2 interface`.
+
 ## Classes estudadas
 
 - **Alert:** operador em estado normal de atenção.
@@ -74,4 +77,3 @@ Mestrado em Informática — Pontifícia Universidade Católica do Paraná (PUCP
 
 Orientador: Prof. Dr. Marcelo Eduardo Pellenz  
 Coorientador: Prof. Dr. Marco Antonio Simões Teixeira
-

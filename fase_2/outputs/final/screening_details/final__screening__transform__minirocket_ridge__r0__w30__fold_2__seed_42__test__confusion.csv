@@ -1,0 +1,10 @@
+model,ablation,fold,subset,actual,predicted,count,run_id,seed,representation,window_size_frames,balancing
+minirocket_ridge,R0,2,test,alert,alert,1418,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,alert,fatigue,8,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,alert,distraction,154,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,fatigue,alert,0,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,fatigue,fatigue,0,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,fatigue,distraction,0,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,distraction,alert,104,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,distraction,fatigue,3,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none
+minirocket_ridge,R0,2,test,distraction,distraction,188,final__screening__transform__minirocket_ridge__r0__w30__fold_2__seed_42,42,R0,30,none

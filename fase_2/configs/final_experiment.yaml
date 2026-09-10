@@ -4,10 +4,12 @@ primary_metric: macro_f1_oof
 delta_macro_f1: 0.01
 
 data:
+  video_dir: fase_2/data/raw
   manifest: fase_2/data/manifests/videos.csv
   annotations: fase_2/data/manifests/annotation_frame_intervals.csv
   facial_series: fase_2/data/interim/legacy_extraction
   extraction_manifest: fase_2/data/interim/legacy_extraction/extraction_manifest.csv
+  roi_config: fase_1/roi_config_temporal.example.json
   classes: [alert, fatigue, distraction]
   indicators: [ear, mar, pitch, yaw, roll]
   videos: [video_01, video_02, video_03, video_04]
@@ -62,6 +64,7 @@ models:
   classical:
     historical: [dummy, fixed_rules, svm, random_forest, xgboost]
     new: [logistic_regression]
+    svm: {C: 1.0, kernel: linear, probability: true}
     logistic_regression:
       C: 1.0
       class_weight: null

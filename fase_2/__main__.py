@@ -16,6 +16,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m fase_2", description="Pipeline temporal unificado")
     commands = parser.add_subparsers(dest="command", required=True)
 
+    interface_parser = commands.add_parser("interface", help="central desktop do protocolo")
+    _config_argument(interface_parser)
+    interface_parser.add_argument("--summary", action="store_true",
+                                  help="mostra pendências e encerra, sem alterar artefatos")
+
+    audit_parser = commands.add_parser("check-data", help="confere os dados antes de treinar")
+    _config_argument(audit_parser)
+    extract_parser = commands.add_parser("extract", help="extrai e salva os indicadores dos vídeos")
+    _config_argument(extract_parser)
+    extract_parser.add_argument("--video-dir", help="pasta dos vídeos originais")
+    chain_parser = commands.add_parser("chain", help="verifica os dados e treina em sequência")
+    _config_argument(chain_parser)
+    chain_parser.add_argument("--video-dir", help="pasta dos vídeos originais")
+    chain_parser.add_argument("--scope", choices=("screening", "confirmation"), default="screening")
+    chain_parser.add_argument("--paradigm", choices=("all", "feature", "distance", "shapelet", "transform", "deep"), default="all")
+
     status_parser = commands.add_parser("status", help="mostra dados, artefatos e runs pendentes")
     _config_argument(status_parser)
 
@@ -49,6 +65,20 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(arguments: list[str] | None = None) -> int:
     args = build_parser().parse_args(arguments)
+    if args.command == "check-data":
+        from .src.data_audit import main as audit_main
+        return audit_main(args.config)
+    if args.command in {"extract", "chain"}:
+        from .src.workflow import chain, extract
+        if args.command == "extract":
+            return extract(args.config, video_dir=args.video_dir)
+        return chain(args.config, video_dir=args.video_dir, scope=args.scope, paradigm=args.paradigm)
+    if args.command == "interface":
+        if args.summary:
+            from .src.terminal import main as terminal_main
+            return terminal_main(args.config, summary=True)
+        from .src.desktop import main as desktop_main
+        return desktop_main(args.config)
     if args.command == "status":
         print(status(args.config))
         return 0
@@ -67,8 +97,12 @@ def main(arguments: list[str] | None = None) -> int:
         if args.plan:
             print(format_plan(args.config, "all", "all", "all"))
             return 0
-        prepare(args.config, force=args.force)
-        train(args.config, "all", scope="all", paradigm="all", force=args.force)
+        code = prepare(args.config, force=args.force)
+        if code:
+            return code
+        code = train(args.config, "all", scope="all", paradigm="all", force=args.force)
+        if code:
+            return code
         return generate_report(args.config)
     raise AssertionError(args.command)
 
