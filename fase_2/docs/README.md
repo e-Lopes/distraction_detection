@@ -17,6 +17,9 @@ Em caso de divergência, usar a seguinte ordem:
 
 ## Mapa da documentação
 
+Auditoria atual: [prontidão em 14/09/2026](../reports/experimental_readiness_2026-09-14.md).
+Próxima etapa condicionada: [rodada temporal](temporal_next_round_protocol.md).
+
 | Documento | Finalidade |
 |---|---|
 | `qualification_baseline.md` | Relacionar a qualificação aos ativos encontrados e ao trabalho restante. |
@@ -36,7 +39,21 @@ Em caso de divergência, usar a seguinte ordem:
 | `months/mes_01_dados_protocolo.md` | Checklist operacional do mês atual. |
 | `decisions/` | Decisões metodológicas que prevalecem sobre propostas anteriores. |
 
-## Política para a fase 1
+## Ampliação moderna (2026)
+
+O [protocolo de famílias modernas](modern_families_protocol.md) descreve auditoria,
+matriz de 32 fits de desenvolvimento, limites de interpretação e execução posterior
+na RTX 4060. Configuração: `configs/modern_experiment.yaml`; execução sequencial
+com progresso e log: `bash fase_2/scripts/run_modern_experiment.sh`, na raiz.
+Nenhum treinamento oficial foi iniciado durante a implementação.
+
+## Qualidade das medições faciais (2026)
+
+[Protocolo controlado de qualidade](measurement_quality_protocol.md): auditoria de ROI,
+EAR por olho, pose, máscaras e tratamentos temporais; amostras pequenas de desenvolvimento,
+matriz limitada SVM/LSTM e comandos futuros. Perfil `configs/measurement_experiment.yaml`.
+
+## Histórico preservado
 
 A fase 1 é histórica e permanece congelada. Nenhum arquivo entra automaticamente na fase 2.
 Código relevante deve ser reimplementado com configuração, testes e caminhos relativos. Dados

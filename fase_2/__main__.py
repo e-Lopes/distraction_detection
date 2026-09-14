@@ -16,6 +16,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m fase_2", description="Pipeline temporal unificado")
     commands = parser.add_subparsers(dest="command", required=True)
 
+    measurement = commands.add_parser('measurement-extract', help='extração bruta auditável; amostra limitada por padrão')
+    _config_argument(measurement)
+    measurement.add_argument('--video', required=True)
+    measurement.add_argument('--start-frame', type=int, default=0)
+    measurement.add_argument('--max-frames', type=int, default=90)
+    measurement.add_argument('--full', action='store_true', help='extração completa explícita, exige âncora do operador verificada')
+    measurement.add_argument('--output')
+
     interface_parser = commands.add_parser("interface", help="central desktop do protocolo")
     _config_argument(interface_parser)
     interface_parser.add_argument("--summary", action="store_true",
@@ -65,6 +73,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(arguments: list[str] | None = None) -> int:
     args = build_parser().parse_args(arguments)
+    if args.command == 'measurement-extract':
+        from .src.pipeline import load_config
+        from .src.features.measurement_raw import extract
+        extract(load_config(args.config), video=args.video, start_frame=args.start_frame,
+                max_frames=args.max_frames, full=args.full, output=args.output)
+        return 0
     if args.command == "check-data":
         from .src.data_audit import main as audit_main
         return audit_main(args.config)

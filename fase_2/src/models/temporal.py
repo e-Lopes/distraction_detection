@@ -208,6 +208,9 @@ def build_temporal_model(
     num_classes: int,
     parameters: Mapping[str, object],
 ) -> nn.Module:
+    if name == "inception_individual":
+        from .inception import IndividualInceptionClassifier
+        return IndividualInceptionClassifier(input_dim, num_classes, **parameters)
     if name == "lstm":
         return LSTMClassifier(input_dim, num_classes, **parameters)
     if name == "tcn":

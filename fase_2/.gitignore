@@ -39,5 +39,9 @@ venv/
 .DS_Store
 Thumbs.db
 .env
+outputs/modern_v1/
+outputs/measurement_v1/
+outputs/measurement_samples/
+data/interim/measurement_raw_v1/
 *.key
 *.pem

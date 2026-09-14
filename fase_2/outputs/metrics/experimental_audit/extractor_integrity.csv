@@ -1,0 +1,13 @@
+extractor,video_id,expected_frames,frames,detected,status,artifact
+mediapipe,video_01,32013,32013,18264,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/mediapipe/video_01.csv
+mediapipe,video_02,28200,28200,23591,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/mediapipe/video_02.csv
+mediapipe,video_03,30334,30334,20462,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/mediapipe/video_03.csv
+mediapipe,video_04,31790,31790,13302,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/mediapipe/video_04.csv
+insightface,video_01,32013,32013,22294,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/insightface/video_01.csv
+insightface,video_02,28200,28200,26419,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/insightface/video_02.csv
+insightface,video_03,30334,30334,21439,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/insightface/video_03.csv
+insightface,video_04,31790,31790,15125,structurally_complete,fase_2/outputs/G48A_all_frames/metrics/insightface/video_04.csv
+openface,video_01,32013,32013,0,suspect_zero_detection,fase_2/outputs/G48A_all_frames/metrics/openface/video_01.csv
+openface,video_02,28200,28200,0,suspect_zero_detection,fase_2/outputs/G48A_all_frames/metrics/openface/video_02.csv
+openface,video_03,30334,30334,0,suspect_zero_detection,fase_2/outputs/G48A_all_frames/metrics/openface/video_03.csv
+openface,video_04,31790,0,0,missing_final,fase_2/outputs/G48A_all_frames/metrics/openface/video_04.csv

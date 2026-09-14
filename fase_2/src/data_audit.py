@@ -66,7 +66,11 @@ def audit(config_path, *, save=True):
         for row in videos:
             series = Path(config["data"]["facial_series"]) / f"{row['video_id']}.csv"
             try:
-                _validate_series(series, counts[row["video_id"]], float(row["fps"]))
+                if config.get('measurement_protocol'):
+                    from .measurement_reporting import validate_raw
+                    validate_raw(series, counts[row['video_id']])
+                else:
+                    _validate_series(series, counts[row["video_id"]], float(row["fps"]))
             except (OSError, ValueError, KeyError) as error:
                 errors.append(f"Série facial {row['video_id']}: {error}")
         # Esta regra histórica usa apenas imagens anotadas no denominador.

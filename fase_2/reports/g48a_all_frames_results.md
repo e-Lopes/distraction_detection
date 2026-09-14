@@ -1,5 +1,8 @@
 # Resultado direto — comparação de extratores faciais
 
+> Registro histórico: os arquivos atuais não reproduzem esta extração do vídeo 4.
+> Não usar para promover os três braços. Ver [auditoria de 14/09/2026](experimental_readiness_2026-09-14.md).
+
 ## Resultado principal
 
 No **video_04**, foram avaliados **31.790 frames**. O resultado abaixo mede

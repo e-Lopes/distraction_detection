@@ -1,0 +1,74 @@
+# Same public pipeline, inherited canonical data/splits; isolated results.
+extends: final_experiment.yaml
+name: modern_families_v1
+version: 1
+modern_protocol:
+  evaluation: development
+  selection_lock: {}
+  historical_reuse: descriptive_only
+  max_configs_per_model: 1
+  ram_budget_gib: 10
+  vram_budget_gib: 5
+  fit_time_budget_seconds: 1800
+  optional_disabled: [litemv, inceptiontime_ensemble, mantis_v2, moment, hivecote_v2, timee]
+models:
+  screening:
+    feature:
+      enabled: true
+      representation: R0_flat
+      windows: [60]
+      balancing: class_weights
+      candidates:
+        - {model: svm, parameters: {C: 1.0, kernel: linear, probability: false}}
+    distance: {enabled: false}
+    shapelet: {enabled: false}
+    transform:
+      enabled: true
+      representation: R0
+      windows: [60]
+      balancing: class_weights
+      candidates:
+        - model: multirocket_ridge
+          parameters: {n_kernels: 840, alpha: 1.0, n_jobs: 2, batch_size: 64}
+        - model: hydra_multirocket_ridge
+          parameters: {n_kernels: 840, n_groups: 16, alpha: 1.0, n_jobs: 2, batch_size: 64}
+        - model: mantis_frozen_ridge
+          parameters:
+            checkpoint: paris-noah/Mantis-8M
+            revision: bc7d5ab40c02133386a28e2c127f35c17c86901d
+            device: cuda
+            batch_size: 16
+            alpha: 1.0
+            resampling: linear_512_align_corners_false
+            channels: independent_embedding_concatenation
+    deep:
+      enabled: true
+      representation: R0
+      windows: [60]
+      balancing: class_weights
+      candidates:
+        - model: lstm
+          parameters: {hidden_dim: 64, num_layers: 2, bidirectional: false, dropout: 0.25, pooling: last}
+        - model: tcn
+          parameters: {channels: [32, 64, 64], kernel_size: 3, dropout: 0.25, pooling: mean}
+        - model: transformer
+          parameters: {model_dim: 32, num_heads: 4, num_layers: 2, feedforward_dim: 64, dropout: 0.25, pooling: mean, max_length: 150}
+        - model: inception_individual
+          parameters: {filters: 32, depth: 6, bottleneck: 32, kernel_size: 40}
+training:
+  device: cuda
+  screening: {expected_runs: 32}
+  confirmation:
+    candidates: []
+    promotion_file: fase_2/outputs/modern_v1/selection.yaml
+  batch_size: 64
+outputs:
+  root: fase_2/outputs/modern_v1
+  registry: fase_2/outputs/modern_v1/run_registry.csv
+  metrics: fase_2/outputs/modern_v1/metrics_long.csv
+  event_metrics: fase_2/outputs/modern_v1/event_metrics.csv
+  figures: fase_2/outputs/modern_v1/figures
+  checkpoints: fase_2/outputs/modern_v1/checkpoints
+  predictions: fase_2/outputs/modern_v1/predictions
+  resolved: fase_2/outputs/modern_v1/resolved
+  report: fase_2/reports/modern_experiment_report.md

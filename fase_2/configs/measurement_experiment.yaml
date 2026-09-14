@@ -1,0 +1,72 @@
+extends: final_experiment.yaml
+name: measurement_quality_v1
+version: 1
+measurement_protocol:
+  development_fold: 1
+  evaluation: development
+  predominant_eye: null
+  quality: {min_eye_width_px: 8, min_mouth_width_px: 12, max_pose_rmse_px: 15}
+  extraction:
+    coordinate_policy: original_pixels_letterbox_inverse
+    intrinsics: approximate_full_frame_fx_fy_width_zero_distortion
+    pose_convention: object_to_camera_Rz_Ry_Rx_columns_Y_Z_X_degrees
+    contrast_enhancement: disabled
+    resize: [640, 640]
+    min_detection_confidence: 0.5
+    minimum_tracking_iou: 0.25
+    max_sample_frames: 90
+    progress_every: 15
+    sample_output: fase_2/outputs/measurement_samples/v1
+    videos:
+      video_01: {path: fase_2/data/raw/videos/1.mp4, roi: [1145, 521, 538, 491], verified_anchors: {}}
+      video_02: {path: fase_2/data/raw/videos/2.mp4, roi: [1145, 521, 538, 491], verified_anchors: {}}
+      video_03: {path: fase_2/data/raw/videos/3.mp4, roi: [1145, 521, 538, 491], verified_anchors: {}}
+      video_04: {path: fase_2/data/raw/videos/4.mp4, roi: [1145, 521, 538, 491], verified_anchors: {}}
+  variants:
+    QA: {enabled: true, policy: {reference_r0: true, reject_quality: false, eye: mean, interpolation_seconds: 0, smoothing_seconds: 0}}
+    QB0: {enabled: true, policy: {reject_quality: false, eye: mean, interpolation_seconds: 0, smoothing_seconds: 0}}
+    QB: {enabled: true, policy: {reject_quality: true, eye: mean, interpolation_seconds: 0, smoothing_seconds: 0}}
+    QC: {enabled: true, policy: {reject_quality: true, eye: predominant, interpolation_seconds: 0, smoothing_seconds: 0}}
+    QD: {enabled: false, policy: {reject_quality: true, eye: predominant, reference_rotation: null}}
+    QE01: {enabled: true, policy: {reject_quality: true, eye: predominant, interpolation_seconds: 0.1, smoothing_seconds: 0}}
+    QE02: {enabled: true, policy: {reject_quality: true, eye: predominant, interpolation_seconds: 0.2, smoothing_seconds: 0}}
+    QES: {enabled: true, policy: {reject_quality: true, eye: predominant, interpolation_seconds: 0, smoothing_seconds: 0.1}}
+  budget: {max_fits: 60, seeds: [42], windows_frames: [60], combined_filter: false}
+data:
+  facial_series: fase_2/data/interim/measurement_raw_v1
+  extraction_manifest: fase_2/data/interim/measurement_raw_v1/extraction_manifest.csv
+models:
+  screening:
+    feature:
+      enabled: true
+      representation: QA
+      windows: [60]
+      balancing: class_weights
+      candidates:
+        - {model: svm, parameters: {C: 1.0, kernel: linear, probability: false}}
+        - {model: missingness_logistic, variants: [QB], parameters: {C: 1.0, max_iter: 1000}}
+    distance: {enabled: false}
+    shapelet: {enabled: false}
+    transform: {enabled: false}
+    deep:
+      enabled: true
+      representation: QA
+      windows: [60]
+      balancing: class_weights
+      candidates:
+        - model: lstm
+          parameters: {hidden_dim: 64, num_layers: 2, bidirectional: false, dropout: 0.25, pooling: last}
+training:
+  screening: {expected_runs: 60}
+  confirmation: {candidates: []}
+  device: cuda
+outputs:
+  root: fase_2/outputs/measurement_v1
+  registry: fase_2/outputs/measurement_v1/run_registry.csv
+  metrics: fase_2/outputs/measurement_v1/metrics_long.csv
+  event_metrics: fase_2/outputs/measurement_v1/event_metrics.csv
+  figures: fase_2/outputs/measurement_v1/figures
+  checkpoints: fase_2/outputs/measurement_v1/checkpoints
+  predictions: fase_2/outputs/measurement_v1/predictions
+  resolved: fase_2/outputs/measurement_v1/resolved
+  report: fase_2/reports/measurement_experiment_report.md

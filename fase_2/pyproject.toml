@@ -21,6 +21,8 @@ dev = ["pytest", "ruff"]
 extraction = ["mediapipe>=0.10.18,<=0.10.21"]
 temporal = ["torch>=2.5,<3"]
 tsc = ["sktime[classification]>=1.0"]
+modern = ["aeon==1.3.0", "torch>=2.5,<3"]
+foundation = ["mantis-tsfm==1.1.0"]
 explainability = ["shap"]
 g47 = ["mediapipe>=0.10.18,<=0.10.21", "ultralytics==8.4.115", "psutil"]
 

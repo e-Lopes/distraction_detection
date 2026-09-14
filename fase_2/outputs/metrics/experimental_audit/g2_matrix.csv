@@ -1,0 +1,10 @@
+model,window,seed,runs,complete
+lstm,30,42,4,True
+lstm,60,42,4,True
+lstm,150,42,4,True
+tcn,30,42,4,True
+tcn,60,42,4,True
+tcn,150,42,4,True
+transformer,30,42,4,True
+transformer,60,42,4,True
+transformer,150,42,4,True

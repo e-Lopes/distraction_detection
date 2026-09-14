@@ -50,7 +50,7 @@ def _append_overall(rows: list[dict[str, object]], path: str, source: str) -> No
 def _append_per_class(rows: list[dict[str, object]], path: str, source: str) -> None:
     for item in _read_csv(Path(path)):
         model = item.get("model", "")
-        for metric in ("precision", "recall", "f1"):
+        for metric in ("precision", "recall", "f1", "support"):
             if item.get(metric, "") != "":
                 rows.append({
                     "source": source, "scientific_status": "reused_valid",
@@ -119,10 +119,16 @@ def consolidate_metrics(config: Mapping[str, object]) -> list[dict[str, object]]
     for path in (Path(config["outputs"]["root"]) / "temporal_metrics").rglob("*__per_class.csv"):
         _append_per_class(rows, str(path), "confirmation")
     unique: dict[tuple[object, ...], dict[str, object]] = {}
+    if config.get('modern_protocol') or config.get('measurement_protocol'):
+        rows = [row for row in rows if row['source'] in {'screening', 'confirmation', 'final'}]
     for row in rows:
         key = tuple(row[field] for field in METRIC_FIELDS[2:-1]) + (row["metric"],)
         unique.setdefault(key, row)
     result = list(unique.values())
+    if config.get('measurement_protocol'):
+        for row in result:
+            row['scientific_status'] = 'development_only'
+            row['source'] = 'measurement_v1'
     _write_csv_atomic(Path(config["outputs"]["metrics"]), result, METRIC_FIELDS)
     return result
 
@@ -278,7 +284,7 @@ def _report_text(config: Mapping[str, object], metrics: list[dict[str, object]],
     figure_links = "\n".join(f"- `{Path(item).name}`" for item in figures)
     return f"""# Relatorio final do experimento temporal
 
-> Estado: primeira consolidacao. Resultados historicos validos foram reutilizados; nenhum novo treinamento oficial foi executado. O teste externo nunca foi usado para selecao.
+> Resultados históricos são exploratórios. O histórico de acesso ao teste deve ser considerado; não se presume teste intocado. Consulte o registro de execução para distinguir resultados novos e reutilizados.
 
 ## 1. Resumo executivo
 
@@ -448,15 +454,28 @@ def generate_report(config_path: str | Path) -> int:
     print(f"[REPORT 2/8] Consolidando metricas globais e por classe (novos registros={imported})")
     metrics = consolidate_metrics(config)
     print(f"[REPORT 3/8] Consolidando {len(metrics)} metricas canonicas")
-    events = consolidate_event_metrics(config)
+    events = [] if config.get('measurement_protocol') else consolidate_event_metrics(config)
+    if config.get('measurement_protocol'):
+        _write_csv_atomic(Path(config['outputs']['event_metrics']), [], ['source','scientific_status','model','metric','value'])
     print(f"[REPORT 4/8] Consolidando metricas por episodio ({len(events)} proxies)")
     print("[REPORT 5/8] Auditando FPS, duracoes e missingness")
     print("[REPORT 6/8] Gerando somente figuras suportadas pelos dados")
-    figures = _plot_figures(config, metrics)
+    if config.get('measurement_protocol'):
+        from .measurement_reporting import measurement_figures
+        figures = measurement_figures(config, metrics)
+    else:
+        figures = _plot_figures(config, metrics)
     print("[REPORT 7/8] Registrando limitacoes e inconsistencias documentais")
     report = Path(config["outputs"]["report"])
     report.parent.mkdir(parents=True, exist_ok=True)
-    report.write_text(_report_text(config, metrics, figures), encoding="utf-8")
+    content = ('' if config.get('measurement_protocol') else _report_text(config, metrics, figures))
+    if config.get('modern_protocol'):
+        from .modern_reporting import modern_report
+        content += modern_report(config, metrics)
+    if config.get('measurement_protocol'):
+        from .measurement_reporting import measurement_report
+        content += measurement_report(config, metrics)
+    report.write_text(content, encoding="utf-8")
     screening = Path(config["outputs"]["root"]) / "screening_metrics.csv"
     if screening.is_file():
         from .progress_table import generate_binary_attention_table, generate_progress_table

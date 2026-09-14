@@ -112,6 +112,9 @@ def limit_sequence_split(
 
 
 def representation_features(representation: str) -> tuple[str, ...]:
+    if representation.upper().startswith('Q'):
+        from ..preprocessing.measurement_quality import FEATURES
+        return SIGNAL_FEATURES if representation.upper() == 'QA' else FEATURES
     try:
         return REPRESENTATION_FEATURES[representation.upper()]
     except KeyError as error:
@@ -196,6 +199,13 @@ def build_sequence_fold(
     augmentation_audit: list[dict[str, object]] | None = None,
 ) -> tuple[dict[str, SequenceSplit], SequenceScaler, dict[str, float]]:
     representation = representation.upper()
+    if representation.startswith('Q'):
+        if training_augmentation is not None:
+            raise ValueError('Quality experiment does not permit augmentation')
+        from .measurement_data import build_measurement_fold
+        return build_measurement_fold(series, labels_by_video, blocks, preprocessing,
+            fold=fold, size_frames=size_frames, stride_frames=stride_frames,
+            minimum_proportion=minimum_proportion, representation=representation)
     features = representation_features(representation)
     short_gap_max = int(preprocessing.get("short_gap_max_frames", 0))
     if representation == "R0" and short_gap_max != 0:
