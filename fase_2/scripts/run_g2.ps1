@@ -19,7 +19,7 @@ foreach ($item in $configs) {
         --run-dir fase_2/outputs/logs/G2 `
         --prediction-dir fase_2/outputs/predictions/G2 `
         --output-dir fase_2/outputs/metrics/G2 `
-        --figure-dir "fase_2/outputs/figures/G2/w$window" `
+        --figure-dir "fase_2/results/historical/G2/figures/w$window" `
         --max-runs 12 *>> $logPath
     if ($LASTEXITCODE -ne 0) {
         "FAILED window=$window exit=$LASTEXITCODE" | Add-Content $logPath

@@ -2,6 +2,39 @@
 
 Pipeline experimental para classificar `Alert`, `Fatigue` e `Distraction` a partir de EAR, MAR, Pitch, Yaw e Roll. A central desktop reúne o protocolo e as três etapas: `prepare`, `train` e `report`. Os nomes G1-G48 identificam artefatos históricos preservados.
 
+## Comece por aqui
+
+| Ordem | Pasta | O que consultar ou fazer |
+|---|---|---|
+| 1 | [docs/](docs/README.md) | Planejamento, protocolos, descrição dos dados e decisões. |
+| 2 | [data/](data/README.md) | Disponibilizar vídeos, anotações e manifestos. |
+| 3 | [configs/](configs/README.md) | Escolher o experimento e seus parâmetros. |
+| 4 | [src/](src/README.md) e [scripts/](scripts/README.md) | Executar o pipeline pela interface ou CLI. |
+| 5 | [results/](results/README.md) | Consultar relatórios e gráficos por experimento. |
+| 6 | [outputs/](outputs/README.md) | Conferir métricas, registros, predições e checkpoints. |
+| 7 | `tests/` | Verificar o funcionamento do código. |
+| Auxiliar | [tools/](tools/README.md) | Containers e benchmark facial independente. |
+
+**Gráficos:** abra [a galeria local](results/index.html), com filtro de experimento,
+busca por nome e acesso às versões PNG/SVG. Atualize-a com `python -m fase_2 results`.
+
+```text
+fase_2/
+├── docs/       planning/ · protocols/ · data/ · decisions/
+├── data/       dados locais e manifestos
+├── configs/    perfis atuais e configurações dos estudos históricos
+├── src/        código do pipeline
+├── scripts/    execução e auditorias auxiliares
+├── results/    current/ · historical/ · audits/ · summaries/ · index.html
+├── outputs/    artefatos técnicos de execução
+├── tests/      testes automatizados
+└── tools/      docker/ · facial-landmarks-benchmark/
+```
+
+Pastas de entrada ou saída surgem quando são necessárias. Não é preciso criar
+pastas vazias para funcionalidades ainda não implementadas. A orientação para
+notebooks exploratórios está em [docs/exploration.md](docs/exploration.md).
+
 ## Interface desktop
 
 Na raiz do repositório, execute:
@@ -12,13 +45,15 @@ python3 -m fase_2 interface
 
 A tela principal segue três passos:
 
-1. **Pasta dos vídeos:** o caminho fixo `fase_2/data/raw` contém `1.mp4`, `2.mp4`, `3.mp4` e `4.mp4`.
+1. **Experimento:** selecione o perfil no topo da janela.
 2. **Verificar dados:** confira as medidas já extraídas e as divisões de avaliação.
 3. **Iniciar / continuar:** extraia os vídeos que faltam, prepare os dados e treine em sequência.
 
-As abas **Início**, **Treinamentos**, **Como funciona**, **Resultados** e
-**Acompanhamento** usam explicações simples. Os filtros e documentos científicos
-ficam em **Mostrar opções avançadas**. O padrão é comparar modelos; a confirmação
+As três abas são **Experimentos**, **Resultados** e **Logs**. A primeira mostra
+contadores e execuções; selecione uma linha para consultar seu motivo de bloqueio.
+**Resultados** reúne as avaliações compatíveis, o relatório e os gráficos.
+Em **Opções**, ficam configuração YAML, filtros, caminhos, preparação, protocolo e
+extração de medidas. O padrão é comparar modelos; a confirmação
 dos escolhidos continua dependendo da promoção documentada pela validação interna.
 
 Os processos executam em segundo plano e os logs aparecem na janela. Apenas uma
@@ -39,7 +74,7 @@ A adequação desse enquadramento ao operador deve ser conferida nos vídeos rea
 Cada vídeo concluído recebe um registro de extração e um hash do arquivo salvo.
 Ao retomar, o vídeo interrompido é refeito; os vídeos concluídos e compatíveis são reutilizados.
 Após cada vídeo, são gerados um painel com os cinco indicadores e cinco gráficos individuais,
-em PNG e SVG, dentro de `outputs/final/figures/facial_indicators`.
+em PNG e SVG, dentro de `results/current/final/figures/facial_indicators`.
 
 O comando de verificação checa identificação, sequência e tempos das imagens,
 valores faciais, limites das anotações e isolamento de treino, validação e teste.
@@ -84,10 +119,13 @@ bloqueios de promoção e custo do pipeline; abrir a janela não inicia treiname
 
 ## Estrutura
 
-- `configs/final_experiment.yaml`: unica configuracao para novas execucoes;
+- `configs/final_experiment.yaml`: referência histórica e comparação final;
+- `configs/measurement_experiment.yaml`: qualidade das medidas faciais;
+- `configs/modern_experiment.yaml`: comparação de famílias modernas;
 - `src/`: componentes reutilizaveis e orquestracao;
-- `outputs/final/`: registro, metricas, predicoes, checkpoints e figuras finais;
-- `reports/final_experiment_report.md`: relatorio cientifico canonico;
+- `outputs/final/`: registro, métricas, predições e checkpoints;
+- `results/current/final/figures/`: gráficos da comparação final;
+- `results/current/final/final_experiment_report.md`: relatorio cientifico canonico;
 - `docs/` e `outputs/metrics/G*/`: metodologia e resultados historicos.
 
 ## Pre-requisitos
@@ -128,8 +166,32 @@ O DTW possui uma protecao adicional de custo. Runs acima do limite ficam bloquea
 
 O terminal mostra etapa/run, modelo, janela, fold, seed, tempo e motivo de reutilizacao ou falha. Use `python -m fase_2 status` para conferir o que existe e o que falta. O registro incremental fica em `outputs/final/run_registry.csv`.
 
-O resultado consolidado fica em [reports/final_experiment_report.md](reports/final_experiment_report.md). Gere-o novamente depois de novos treinos com o comando `report`; esse comando nunca treina modelos.
+O resultado consolidado fica no [relatório final](results/current/final/final_experiment_report.md). Gere-o novamente depois de novos treinos com o comando `report`; esse comando nunca treina modelos.
 
 ## Reprodutibilidade historica
 
 Os runners, configuracoes e relatorios G1-G48 permanecem no repositorio para auditoria. Eles nao fazem parte do fluxo normal e seus resultados validos sao importados automaticamente, sem retreinamento. Consulte [docs/README.md](docs/README.md) e o apendice do relatorio final.
+## Experimentos planejados em 14/09/2026 na interface
+
+Na raiz do repositório, execute `python -m fase_2 interface` no ambiente Python
+com as dependências do experimento. No seletor superior, escolha **Qualidade das
+medidas · 14/09** ou **Famílias modernas · 14/09**. Também é possível abrir uma
+configuração YAML própria, mantendo os caminhos relativos à raiz do repositório.
+
+1. Consulte **Opções → Protocolo** quando precisar dos detalhes científicos.
+2. Use **Verificar dados** e, se necessário, **Opções → Preparar entradas**.
+   Confira os bloqueios selecionando uma linha em **Experimentos**.
+3. Use **Iniciar / continuar** para treinar e **Resultados → Gerar relatório** para consolidar.
+   **Opções** permite filtrar a família e a etapa de avaliação.
+
+No experimento de medidas, abra **Opções** e selecione vídeo, frame inicial e tamanho da amostra
+(até 90 frames, dentro de um bloco de treino do fold de desenvolvimento).
+**Extrair** usa a extração bruta do protocolo. Para repetir uma amostra,
+informe uma pasta de saída nova. A opção de vídeo completo exige âncora do operador
+verificada no frame zero, registrada no YAML. Amostras não liberam treinamento;
+o pipeline valida os dados completos e as condições de cada tratamento.
+
+Os novos perfis mantêm resultados em suas pastas próprias e não executam a
+extração legada automaticamente. A referência histórica continua disponível no
+seletor. A próxima rodada temporal com novos extratores ainda depende do saneamento
+descrito em [auditoria de prontidão](results/audits/experimental_readiness_2026-09-14.md).

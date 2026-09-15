@@ -45,7 +45,7 @@ downstream:
 
 outputs:
   metrics: "fase_2/outputs/metrics/G48"
-  figures: "fase_2/outputs/figures/G48"
+  figures: "fase_2/results/historical/G48/figures"
   models: "fase_2/outputs/models/G48"
   predictions: "fase_2/outputs/predictions/G48"
   logs: "fase_2/outputs/logs/G48"

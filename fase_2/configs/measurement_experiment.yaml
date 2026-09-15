@@ -65,8 +65,8 @@ outputs:
   registry: fase_2/outputs/measurement_v1/run_registry.csv
   metrics: fase_2/outputs/measurement_v1/metrics_long.csv
   event_metrics: fase_2/outputs/measurement_v1/event_metrics.csv
-  figures: fase_2/outputs/measurement_v1/figures
+  figures: fase_2/results/current/measurement_v1/figures
   checkpoints: fase_2/outputs/measurement_v1/checkpoints
   predictions: fase_2/outputs/measurement_v1/predictions
   resolved: fase_2/outputs/measurement_v1/resolved
-  report: fase_2/reports/measurement_experiment_report.md
+  report: fase_2/results/current/measurement_v1/measurement_experiment_report.md

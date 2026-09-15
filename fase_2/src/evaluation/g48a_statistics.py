@@ -357,9 +357,9 @@ def main() -> int:
                         default=Path("fase_2/data/manifests/annotation_frame_intervals.csv"))
     parser.add_argument("--output", type=Path, default=Path("fase_2/outputs/metrics/G48A"))
     parser.add_argument("--figure-output", type=Path,
-                        default=Path("fase_2/outputs/figures/G48A/g48a_detection_summary.png"))
+                        default=Path("fase_2/results/historical/G48A/figures/g48a_detection_summary.png"))
     parser.add_argument("--report-output", type=Path,
-                        default=Path("fase_2/reports/g48a_all_frames_results.md"))
+                        default=Path("fase_2/results/historical/G48A/g48a_all_frames_results.md"))
     args = parser.parse_args()
     frames = load_frames(args.root, args.video_id)
     state = load_operational_state(args.annotations, args.video_id, frames["mediapipe"].index)

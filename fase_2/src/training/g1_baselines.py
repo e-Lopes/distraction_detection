@@ -597,7 +597,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--checkpoint-dir", default="fase_2/outputs/models/G1")
     parser.add_argument("--prediction-dir", default="fase_2/outputs/predictions/G1")
     parser.add_argument("--output-dir", default="fase_2/outputs/metrics/G1")
-    parser.add_argument("--figure-dir", default="fase_2/outputs/figures/G1")
+    parser.add_argument("--figure-dir", default="fase_2/results/historical/G1/figures")
     parser.add_argument("--window", type=int, action="append")
     parser.add_argument("--fold", type=int, action="append")
     parser.add_argument("--model", action="append")

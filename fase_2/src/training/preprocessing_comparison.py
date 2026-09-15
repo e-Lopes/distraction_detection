@@ -356,7 +356,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output-dir", default="fase_2/outputs/metrics")
     parser.add_argument(
-        "--figure-dir", default="fase_2/outputs/figures/preprocessing_comparison"
+        "--figure-dir", default="fase_2/results/historical/preprocessing_comparison/figures"
     )
     parser.add_argument("--xgb-device", choices=("cpu", "cuda"))
     parser.add_argument("--no-resume", action="store_true")

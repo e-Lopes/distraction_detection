@@ -128,7 +128,7 @@ def test_public_parser_exposes_only_expected_commands():
                        if isinstance(action, __import__("argparse")._SubParsersAction))
 
     assert set(subcommands.choices) == {"interface", "status", "prepare", "train", "report", "all",
-                                        "chain", "check-data", "extract", "measurement-extract"}
+                                        "chain", "check-data", "extract", "measurement-extract", "results"}
     args = parser.parse_args(["train", "--family", "temporal", "--plan"])
     assert args.family == "temporal" and args.plan is True
     args = parser.parse_args(["train", "--scope", "screening", "--paradigm", "shapelet", "--plan"])

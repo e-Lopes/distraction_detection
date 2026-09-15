@@ -40,5 +40,5 @@ def modern_report(config, metrics):
         'Média entre sessões e Macro F1 de predições externas concatenadas respondem a perguntas distintas.',
         'Deltas devem parear mesmo fold/seed/entrada. Não usar janelas sobrepostas como réplicas independentes.',
         'Com quatro sessões, a inferência estatística é frágil. Nenhuma conclusão de superioridade sem confirmação.',
-        'Protocolo, orçamento e referências: `docs/modern_families_protocol.md`.', '']
+        'Protocolo, orçamento e referências: `docs/protocols/modern_families_protocol.md`.', '']
     return '\n'.join(lines)

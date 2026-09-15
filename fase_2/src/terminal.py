@@ -12,7 +12,7 @@ import sys
 from .pipeline import build_plan, load_config, pipeline_fingerprint
 
 
-PROTOCOL = Path(__file__).resolve().parents[1] / "protocolo_final_validacao_series_temporais.md"
+PROTOCOL = Path(__file__).resolve().parents[1] / "docs/protocols/protocolo_final_validacao_series_temporais.md"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 

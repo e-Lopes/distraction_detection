@@ -178,7 +178,7 @@ def main() -> int:
                         default=Path("fase_2/outputs/metrics/G48A"))
     parser.add_argument("--video-id", default="video_04")
     parser.add_argument("--output", type=Path,
-                        default=Path("fase_2/outputs/figures/G48A/decision"))
+                        default=Path("fase_2/results/historical/G48A/figures/decision"))
     args = parser.parse_args()
 
     prefix = args.metrics / f"g48a_{args.video_id}"

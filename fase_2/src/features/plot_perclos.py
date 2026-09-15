@@ -97,7 +97,7 @@ def plot_perclos(frame: pd.DataFrame, output: Path, *, window_seconds: float) ->
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", default="fase_2/data/interim/legacy_extraction")
-    parser.add_argument("--output-dir", default="fase_2/outputs/figures/perclos")
+    parser.add_argument("--output-dir", default="fase_2/results/historical/perclos/figures")
     parser.add_argument("--window-seconds", type=float, default=60.0)
     parser.add_argument("--minimum-coverage", type=float, default=0.5)
     args = parser.parse_args(argv)

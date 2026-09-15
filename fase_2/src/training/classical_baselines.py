@@ -529,7 +529,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--splits", default="fase_2/data/manifests/temporal_splits.csv")
     parser.add_argument("--output-dir", default="fase_2/outputs/metrics")
-    parser.add_argument("--figure-dir", default="fase_2/outputs/figures/classical_60")
+    parser.add_argument("--figure-dir", default="fase_2/results/historical/classical_60/figures")
     parser.add_argument("--checkpoint-dir", default="fase_2/outputs/models/classical_60")
     parser.add_argument("--prediction-dir", default="fase_2/outputs/predictions/classical_60")
     parser.add_argument("--window-size", type=int)

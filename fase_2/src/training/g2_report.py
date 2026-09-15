@@ -256,7 +256,7 @@ def main() -> None:
     parser.add_argument("--model-dir", default="fase_2/outputs/models/G2")
     parser.add_argument("--log-dir", default="fase_2/outputs/logs/G2")
     parser.add_argument("--prediction-dir", default="fase_2/outputs/predictions/G2")
-    parser.add_argument("--figure-dir", default="fase_2/outputs/figures/G2/combined")
+    parser.add_argument("--figure-dir", default="fase_2/results/historical/G2/figures/combined")
     args = parser.parse_args()
 
     root = Path.cwd().resolve()

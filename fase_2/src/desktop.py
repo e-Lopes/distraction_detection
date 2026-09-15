@@ -18,60 +18,88 @@ STAGES = {"Comparar modelos": "screening", "Confirmar os escolhidos": "confirmat
 METHODS = {"Todos": "all", "Medidas do rosto": "feature", "Semelhança entre trechos": "distance",
            "Padrões de movimento": "shapelet", "Transformações dos sinais": "transform",
            "Redes neurais": "deep"}
-STATES = {"pending": "Aguardando", "running": "Em andamento", "completed": "Salvo",
-          "reused": "Resultado anterior", "blocked": "Aguarda revisão",
-          "dependency_missing": "Falta instalar componente", "failed": "Precisa de atenção"}
+STATES = {"pending": "Pendente", "running": "Executando", "completed": "Concluída",
+          "reused": "Reutilizada", "blocked": "Bloqueada",
+          "dependency_missing": "Falta dependência", "failed": "Falhou"}
+CONFIG_DIR = PROJECT_ROOT / "fase_2" / "configs"
+EXPERIMENTS = {
+    "Referência histórica": CONFIG_DIR / "final_experiment.yaml",
+    "Qualidade das medidas · 14/09": CONFIG_DIR / "measurement_experiment.yaml",
+    "Famílias modernas · 14/09": CONFIG_DIR / "modern_experiment.yaml",
+}
+
+
+def protocol_path(config):
+    for key, filename in (("measurement_protocol", "measurement_quality_protocol.md"),
+                          ("modern_protocol", "modern_families_protocol.md")):
+        if config.get(key):
+            return PROJECT_ROOT / "fase_2" / "docs" / "protocols" / filename
+    return PROTOCOL
+
+
+def execution_command(path, action, scope, paradigm, video_dir="", *, video="",
+                      start_frame="0", max_frames="90", full=False, output=""):
+    config = load_config(path)
+    if action not in {"prepare", "train", "report", "check-data", "chain", "measurement-extract"}:
+        raise ValueError(action)
+    # Os novos protocolos usam entradas próprias, sem extração legada implícita.
+    if action == "chain" and (config.get("measurement_protocol") or config.get("modern_protocol")):
+        action = "train"
+    arguments = [action]
+    if action in {"train", "chain"}:
+        arguments.extend(["--scope", STAGES.get(scope, scope),
+                          "--paradigm", METHODS.get(paradigm, paradigm)])
+    if action == "chain" and video_dir:
+        arguments.extend(["--video-dir", video_dir])
+    if action == "measurement-extract":
+        settings = config.get("measurement_protocol", {}).get("extraction", {})
+        if video not in settings.get("videos", {}):
+            raise ValueError("Selecione um vídeo do protocolo de qualidade das medidas.")
+        start, count = int(start_frame), int(max_frames)
+        if start < 0 or count <= 0 or (not full and count > settings["max_sample_frames"]):
+            raise ValueError("Frame inicial deve ser não negativo e amostra deve respeitar o limite do protocolo.")
+        if full and start != 0:
+            raise ValueError("Extração completa deve começar no frame zero.")
+        arguments.extend(["--video", video, "--start-frame", str(start), "--max-frames", str(count)])
+        if full:
+            arguments.append("--full")
+        if output.strip():
+            arguments.extend(["--output", output.strip()])
+    return [sys.executable, "-u", "-m", "fase_2", *arguments, "--config", str(path)]
+
+
+def result_rows(path, plan=None):
+    """Only show metrics backed by completed, compatible runs."""
+    config = load_config(path)
+    plan = build_plan(path, "all", "all", "all") if plan is None else plan
+    current = {r.run_id for r in plan if r.status == "completed"}
+    current.update(Path(r.artifact).parent.name for r in plan
+                   if r.status == "completed" and Path(r.artifact).suffix == ".pt")
+    root = Path(config["outputs"]["root"])
+    paths = [root / "screening_metrics.csv", root / "confirmation_classical_metrics.csv",
+             *(root / "temporal_metrics").rglob("*__runs.csv")]
+    return [row for p in paths for row in _read_csv(p) if row.get("run_id") in current]
 
 
 def simple_results(path):
-    config = load_config(path)
-    root = Path(config["outputs"]["root"])
-    current = {r.run_id for r in build_plan(path, "all", "all", "all") if r.status == "completed"}
-    current.update(Path(r.artifact).parent.name for r in build_plan(path, "all", "confirmation", "all")
-                   if r.status == "completed" and Path(r.artifact).suffix == ".pt")
-    paths = [root / "screening_metrics.csv", root / "confirmation_classical_metrics.csv",
-             *(root / "temporal_metrics").rglob("*__runs.csv")]
-    rows = [r for p in paths for r in _read_csv(p) if r.get("run_id") in current]
-    lines = ["RESULTADOS DOS TREINAMENTOS ATUAIS", "",
-             "A pontuação geral (F1) equilibra o reconhecimento dos três comportamentos.",
-             "Quanto mais perto de 1, melhor. Ela não é a porcentagem de acertos.",
-             "Também é preciso conferir fadiga e falsos alarmes antes de escolher um modelo.", ""]
+    rows = result_rows(path)
     if not rows:
-        lines.append("Ainda não há resultados de treinamentos concluídos com a configuração atual.")
-    for row in rows[:100]:
-        subset = "validação durante o desenvolvimento" if row.get("subset") == "validation" else "vídeo separado para teste"
-        value = row.get("macro_f1_all_classes", "")
-        lines.append(f"{row['model']} · divisão {row['fold']} · repetição {row.get('seed', '—')}\n"
-                     f"  Avaliação: {subset}. Pontuação geral: {float(value):.3f}" if value else "Pontuação ainda indisponível.")
-    if len(rows) > 100:
-        lines.append("Mostrando os primeiros 100 resultados. A lista completa está nos arquivos abaixo.")
-    lines.extend(["", f"Resultados completos: {root}",
-                  f"Relatório científico e resultados anteriores: {config['outputs']['report']}"])
-    return "\n".join(lines)
+        return "Sem resultados compatíveis com a configuração atual."
+    return f"{len(rows)} avaliações disponíveis."
 
 
 def simple_overview(path):
     config = load_config(path)
-    series = Path(config["data"]["facial_series"])
-    available = sum((series / f"{v}.csv").is_file() for v in config["data"]["videos"])
     runs = build_plan(path, "all", "screening", "all")
-    done = sum(r.status in {"completed", "reused"} for r in runs)
-    return ("SEU PRÓXIMO PASSO\n\n"
-            + ("Coloque os quatro vídeos na pasta indicada e clique em Iniciar / continuar.\n"
-               if available < len(config["data"]["videos"])
-               else "Clique em Verificar dados ou Iniciar / continuar.\n")
-            + "\nO programa vai:\n"
-            "1. Ler os vídeos e salvar as medidas do rosto.\n"
-            "2. Conferir os dados e separar o que será usado para aprender e avaliar.\n"
-            "3. Treinar um modelo por vez e salvar os resultados antes de seguir.\n\n"
-            f"Vídeos com medidas salvas: {available}/{len(config['data']['videos'])}\n"
-            f"Treinamentos de comparação já salvos: {done}/{len(runs)}\n\n"
-            "Você pode parar e continuar depois. Vídeos concluídos são reaproveitados; "
-            "o vídeo interrompido é lido novamente. Redes neurais retomam da última rodada salva. "
-            "Nos outros modelos, um ajuste interrompido é refeito; um ajuste já salvo é reaproveitado.\n\n"
-            "Se faltar um arquivo ou componente, o programa mostrará o motivo. "
-            "A confirmação dos modelos escolhidos depende de revisar os resultados da comparação.\n\n"
-            f"Medidas salvas em: {series}\nResultados em: {config['outputs']['root']}")
+    return f"{config['name']}\nTreinamentos previstos: {len(runs)}"
+
+
+def plan_counts(plan):
+    from collections import Counter
+    counts = Counter(r.status for r in plan)
+    return {"total": len(plan), "completed": counts['completed'], "reused": counts['reused'],
+            "pending": counts['pending'], "running": counts['running'],
+            "blocked": counts['blocked'] + counts['dependency_missing'] + counts['failed']}
 
 
 class Job:
@@ -122,225 +150,395 @@ class Job:
 
 
 class Desktop:
-    def __init__(self, root, config_path: str | Path) -> None:
+    """Ações diárias em primeiro plano; configuração e documentação sob demanda."""
+
+    def __init__(self, root, config_path):
         import tkinter as tk
         from tkinter import ttk
         from tkinter.scrolledtext import ScrolledText
 
         self.root = root
         self.path = Path(config_path).resolve()
+        self.config = load_config(self.path)
         self.job = Job()
-        self.busy = False
-        self.closing = False
+        self.busy = self.closing = self.stopping = False
         self.last_live_refresh = 0.0
+        self.snapshot_events = Queue()
+        self.snapshot_thread = None
+        self.refresh_pending = False
+        self.snapshot_key = None
+        self.plan = []
+        self.last_outcome = ''
+        self.rows_by_id = {}
+        self.options_window = None
         self.scope = tk.StringVar(value="Comparar modelos")
         self.paradigm = tk.StringVar(value="Todos")
-        configured = load_config(self.path)["data"].get("video_dir", "")
-        self.video_dir = tk.StringVar(value=str(configured))
-        self.message = tk.StringVar(value="Pronto para consultar o protocolo.")
-        root.title("Análise de atenção · Vídeos e treinamentos")
-        root.geometry("1180x800")
-        root.minsize(900, 600)
+        self.experiment = tk.StringVar(value=self.experiment_name())
+        self.video_dir = tk.StringVar(value=str(self.config['data'].get('video_dir', '')))
+        self.video = tk.StringVar(value="")
+        self.start_frame = tk.StringVar(value="0")
+        self.max_frames = tk.StringVar(value="90")
+        self.extraction_output = tk.StringVar(value="")
+        self.full = tk.BooleanVar(value=False)
+        self.message = tk.StringVar(value="")
+        self.detail = tk.StringVar(value="Selecione uma execução para ver os detalhes.")
+        self.selection_label = tk.StringVar()
+        self.result_hint = tk.StringVar(value="")
+        self.counter_vars = {key: tk.StringVar(value="—") for key in
+                             ('total', 'completed', 'reused', 'pending', 'blocked')}
+        root.title("Experimentos · Atenção e fadiga")
+        root.geometry("1080x700")
+        root.minsize(820, 540)
         root.protocol("WM_DELETE_WINDOW", self.close)
         style = ttk.Style(root)
-        style.configure("Title.TLabel", font=("TkDefaultFont", 20, "bold"))
-        style.configure("TButton", padding=(12, 7))
+        style.configure("Title.TLabel", font=("TkDefaultFont", 18, "bold"))
+        style.configure("Value.TLabel", font=("TkDefaultFont", 19, "bold"))
+        style.configure("TButton", padding=(10, 6))
+        style.configure("Treeview", rowheight=29)
+        style.configure("Treeview.Heading", font=("TkDefaultFont", 10, "bold"))
 
-        header = ttk.Frame(root, padding=(20, 16))
+        header = ttk.Frame(root, padding=(20, 16, 20, 10))
         header.pack(fill="x")
-        ttk.Label(header, text="Dos vídeos aos resultados", style="Title.TLabel").pack(anchor="w")
-        ttk.Label(header, text="O programa usa a pasta configurada, confere os dados e salva cada treinamento.").pack(anchor="w")
-        folder = ttk.Frame(root, padding=(20, 0, 20, 8))
-        folder.pack(fill="x")
-        ttk.Label(folder, text="1. Pasta dos vídeos:").pack(side="left")
-        ttk.Label(folder, textvariable=self.video_dir, wraplength=700).pack(side="left", padx=12)
+        ttk.Label(header, text="Experimentos", style="Title.TLabel").pack(side="left")
+        self.options_button = ttk.Button(header, text="Opções…", command=self.open_options)
+        self.options_button.pack(side="right")
+        self.experiment_box = ttk.Combobox(header, textvariable=self.experiment,
+            values=tuple(EXPERIMENTS), state="readonly", width=35)
+        self.experiment_box.pack(side="right", padx=12)
+        self.experiment_box.bind('<<ComboboxSelected>>',
+            lambda _: self.select_config(EXPERIMENTS[self.experiment.get()]))
 
-        controls = ttk.Frame(root, padding=(20, 0, 20, 12))
-        controls.pack(fill="x")
-        advanced = ttk.Frame(root, padding=(20, 0, 20, 12))
-        show_advanced = tk.BooleanVar(value=False)
-        ttk.Checkbutton(header, text="Mostrar opções avançadas", variable=show_advanced,
-                        command=lambda: advanced.pack(fill="x", before=self.tabs) if show_advanced.get()
-                        else advanced.pack_forget()).pack(anchor="w", pady=(8, 0))
-        ttk.Label(advanced, text="Objetivo").pack(side="left")
-        self.scope_box = ttk.Combobox(advanced, textvariable=self.scope, state="readonly",
-                                     values=tuple(STAGES), width=24)
-        self.scope_box.pack(side="left", padx=(6, 16))
-        ttk.Label(advanced, text="Tipo de modelo").pack(side="left")
-        self.paradigm_box = ttk.Combobox(
-            advanced, textvariable=self.paradigm, state="readonly", width=28, values=tuple(METHODS))
-        self.paradigm_box.pack(side="left", padx=6)
-        ttk.Button(advanced, text="Protocolo técnico", command=lambda: self.show_document("protocol", PROTOCOL)).pack(side="left", padx=6)
-        ttk.Button(advanced, text="Relatório técnico", command=lambda: self.show_document(
-            "report", Path(load_config(self.path)["outputs"]["report"]))).pack(side="left")
-        self.scope_box.bind("<<ComboboxSelected>>", lambda _: self.refresh_plan())
-        self.paradigm_box.bind("<<ComboboxSelected>>", lambda _: self.refresh_plan())
+        actions = ttk.Frame(root, padding=(20, 0, 20, 12))
+        actions.pack(fill="x")
         self.buttons = []
-        for label, command in (("2. Verificar dados", lambda: self.execute("check-data")),
-                               ("3. Iniciar / continuar", lambda: self.execute("chain")),
-                               ("Atualizar tela", self.refresh),
-                               ("Atualizar relatório", lambda: self.execute("report"))):
-            button = ttk.Button(controls, text=label, command=command)
-            button.pack(side="left", padx=3)
+        for label, action in (("Verificar dados", "check-data"), ("Iniciar / continuar", "chain")):
+            button = ttk.Button(actions, text=label, command=lambda a=action: self.execute(a))
+            button.pack(side="left", padx=(0, 8))
             self.buttons.append(button)
+        self.stop_button = ttk.Button(actions, text="Parar", command=self.stop, state="disabled")
+        self.stop_button.pack(side="left")
+        self.refresh_button = ttk.Button(actions, text="Atualizar", command=self.refresh)
+        self.refresh_button.pack(side="right")
+
+        stats = ttk.Frame(root, padding=(20, 0, 20, 14))
+        stats.pack(fill="x")
+        for index, (key, label) in enumerate((('total', 'Execuções'), ('completed', 'Concluídas'),
+                ('reused', 'Reutilizadas'), ('pending', 'Pendentes'), ('blocked', 'Impedimentos'))):
+            card = ttk.Frame(stats, padding=(12, 8), relief="groove")
+            card.grid(row=0, column=index, sticky="ew", padx=(0, 8 if index < 4 else 0))
+            stats.columnconfigure(index, weight=1)
+            ttk.Label(card, textvariable=self.counter_vars[key], style="Value.TLabel").pack(anchor="w")
+            ttk.Label(card, text=label).pack(anchor="w")
 
         self.tabs = ttk.Notebook(root)
         self.tabs.pack(fill="both", expand=True, padx=20)
         self.pages = {}
         self.texts = {}
-        for key, title in (("overview", "Início"), ("plan", "Treinamentos"),
-                           ("protocol", "Como funciona"), ("report", "Resultados"),
-                           ("logs", "Acompanhamento")):
-            page = ttk.Frame(self.tabs, padding=10)
+        for key, label in (("plan", "Experimentos"), ("report", "Resultados"), ("logs", "Logs")):
+            page = ttk.Frame(self.tabs, padding=12)
             self.pages[key] = page
-            self.tabs.add(page, text=title)
-            if key != "plan":
-                text = ScrolledText(page, wrap="word", padx=12, pady=12, borderwidth=0,
-                                    font=("TkFixedFont", 11), state="disabled")
-                text.pack(fill="both", expand=True)
-                self.texts[key] = text
-        plan_page = self.pages["plan"]
-        ttk.Label(plan_page, text="Cada linha é um treinamento. O programa salva uma linha por vez, "
-                  "antes de passar para a próxima.").pack(anchor="w", pady=(0, 10))
-        columns = ("status", "model", "window", "fold", "seed", "representation", "reason")
-        table_frame = ttk.Frame(plan_page)
-        table_frame.pack(fill="both", expand=True)
-        self.table = ttk.Treeview(table_frame, columns=columns, show="headings")
-        for column, label, width in zip(columns,
-                ("Situação", "Modelo", "Trecho", "Divisão", "Repetição", "Entrada", "Motivo"),
-                (130, 180, 65, 45, 65, 170, 400)):
-            self.table.heading(column, text=label)
-            self.table.column(column, width=width, minwidth=45, stretch=column == "reason")
-        vertical = ttk.Scrollbar(table_frame, orient="vertical", command=self.table.yview)
-        horizontal = ttk.Scrollbar(table_frame, orient="horizontal", command=self.table.xview)
-        self.table.configure(yscrollcommand=vertical.set, xscrollcommand=horizontal.set)
-        self.table.grid(row=0, column=0, sticky="nsew")
-        vertical.grid(row=0, column=1, sticky="ns")
-        horizontal.grid(row=1, column=0, sticky="ew")
-        table_frame.rowconfigure(0, weight=1)
-        table_frame.columnconfigure(0, weight=1)
+            self.tabs.add(page, text=label)
 
-        footer = ttk.Frame(root, padding=(20, 12))
-        footer.pack(fill="x")
-        self.stop_button = ttk.Button(footer, text="Parar", command=self.stop,
-                                      state="disabled")
-        self.stop_button.pack(side="right")
-        self.progress = ttk.Progressbar(footer, mode="indeterminate", length=120)
-        self.progress.pack(side="right", padx=12)
-        ttk.Label(footer, textvariable=self.message, wraplength=700).pack(side="left")
+        ttk.Label(self.pages['plan'], textvariable=self.selection_label).pack(anchor='w', pady=(0, 8))
+        self.table = self.make_table(self.pages['plan'],
+            ('status', 'model', 'window', 'fold', 'seed', 'representation'),
+            ('Situação', 'Modelo', 'Janela (frames)', 'Fold', 'Seed', 'Entrada'),
+            (150, 230, 120, 60, 60, 150))
+        self.table.bind('<<TreeviewSelect>>', self.select_run)
+        ttk.Label(self.pages['plan'], textvariable=self.detail, wraplength=920).pack(
+            fill='x', pady=(10, 0))
+
+        results_bar = ttk.Frame(self.pages['report'])
+        results_bar.pack(fill='x', pady=(0, 10))
+        self.report_button = ttk.Button(results_bar, text="Gerar relatório", command=lambda: self.execute('report'))
+        self.report_button.pack(side='left', padx=(0, 8))
+        self.buttons.append(self.report_button)
+        ttk.Button(results_bar, text="Abrir relatório", command=lambda: self.show_document(
+            'Relatório', Path(self.config['outputs']['report']))).pack(side='left', padx=(0, 8))
+        ttk.Button(results_bar, text="Gráficos", command=self.open_gallery).pack(side='left')
+        ttk.Label(self.pages['report'], textvariable=self.result_hint, wraplength=900).pack(anchor='w', pady=(0, 8))
+        self.results_table = self.make_table(self.pages['report'],
+            ('model', 'representation', 'window', 'fold', 'seed', 'subset', 'f1'),
+            ('Modelo', 'Entrada', 'Janela', 'Fold', 'Seed', 'Avaliação', 'Macro F1'),
+            (200, 130, 70, 55, 55, 120, 90))
+        log = ScrolledText(self.pages['logs'], wrap='word', state='disabled',
+                           font=('TkFixedFont', 10), borderwidth=0, padx=8, pady=8)
+        log.pack(fill='both', expand=True)
+        self.texts['logs'] = log
+
+        footer = ttk.Frame(root, padding=(20, 10))
+        footer.pack(fill='x')
+        self.progress = ttk.Progressbar(footer, mode='indeterminate', length=100)
+        ttk.Label(footer, textvariable=self.message, wraplength=850).pack(side='left')
         self.refresh()
         self.poll_id = root.after(100, self.poll)
 
-    def set_text(self, key: str, value: str, *, append: bool = False) -> None:
-        widget = self.texts[key]
-        widget.configure(state="normal")
-        if not append:
-            widget.delete("1.0", "end")
-        widget.insert("end", value)
-        if key == "logs":
-            # Mantém a janela responsiva em treinamentos longos.
-            lines = int(widget.index("end-1c").split(".")[0])
-            if lines > 10000:
-                widget.delete("1.0", f"{lines - 10000}.0")
-            widget.see("end")
-        widget.configure(state="disabled")
+    def experiment_name(self):
+        return next((name for name, path in EXPERIMENTS.items() if path.resolve() == self.path),
+                    self.path.stem)
 
-    def refresh_plan(self, *, update_message: bool = True) -> None:
-        try:
-            plan = build_plan(self.path, "all", STAGES.get(self.scope.get(), self.scope.get()),
-                              METHODS.get(self.paradigm.get(), self.paradigm.get()))
-            self.table.delete(*self.table.get_children())
-            for run in plan:
-                reason = ("Precisa instalar o componente de séries temporais." if run.status == "dependency_missing"
-                          else ("Cálculo pesado: " + run.reason.replace("pairs=", "comparações=")
-                                .replace("limit=", "limite=").replace("cache=True", "resultado intermediário será salvo"))
-                          if run.status == "blocked" and run.paradigm == "distance"
-                          else "A confirmação aguarda a escolha dos melhores modelos da comparação."
-                          if run.status == "blocked"
-                          else "Resultado anterior disponível." if run.status == "reused" else run.reason)
-                self.table.insert("", "end", values=(STATES.get(run.status, run.status), run.model,
-                                  f"{run.window_size_frames} imagens", run.fold, run.seed,
-                                  run.representation, reason))
-            if update_message:
-                completed = sum(run.status in {"completed", "reused"} for run in plan)
-                running = sum(run.status == "running" for run in plan)
-                text = f"{completed}/{len(plan)} treinamentos salvos."
-                if running:
-                    text += f" {running} em andamento; ele será salvo quando esta etapa terminar."
-                self.message.set(text)
-        except (OSError, ValueError, KeyError) as error:
-            self.message.set(f"Falha ao consultar plano: {error}")
+    def make_table(self, parent, columns, labels, widths):
+        from tkinter import ttk
+        frame = ttk.Frame(parent)
+        frame.pack(fill='both', expand=True)
+        table = ttk.Treeview(frame, columns=columns, show='headings', selectmode='browse')
+        for key, label, width in zip(columns, labels, widths):
+            table.heading(key, text=label)
+            table.column(key, width=width, minwidth=55, stretch=key in {'model', 'representation'})
+        vertical = ttk.Scrollbar(frame, orient='vertical', command=table.yview)
+        horizontal = ttk.Scrollbar(frame, orient='horizontal', command=table.xview)
+        table.configure(yscrollcommand=vertical.set, xscrollcommand=horizontal.set)
+        table.grid(row=0, column=0, sticky='nsew')
+        vertical.grid(row=0, column=1, sticky='ns')
+        horizontal.grid(row=1, column=0, sticky='ew')
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure(0, weight=1)
+        return table
 
-    def refresh(self) -> None:
-        try:
-            self.set_text("overview", simple_overview(self.path))
-            self.set_text("protocol", "COMO FUNCIONA\n\n"
-                "O programa mede a abertura dos olhos e da boca e os movimentos da cabeça.\n\n"
-                "Os dados são divididos em pequenos trechos. Um modelo aprende com parte dos vídeos "
-                "e é avaliado em outro vídeo que não participou do aprendizado.\n\n"
-                "A comparação ajuda a escolher quais modelos merecem uma avaliação mais completa. "
-                "Essa escolha precisa ser revisada antes da confirmação.\n\n"
-                "O botão Parar preserva as etapas já concluídas. Clique em Iniciar / continuar "
-                "para retomar o trabalho.\n\n"
-                "Um resultado salvo não significa que o modelo já está pronto para uso real. "
-                "Ainda é preciso conferir erros, falsos alarmes e reconhecimento de fadiga.\n\n"
-                f"Protocolo científico completo: {PROTOCOL}")
-            self.set_text("report", simple_results(self.path))
-            self.refresh_plan()
-        except (OSError, ValueError, KeyError) as error:
-            self.message.set(f"Falha na consulta: {error}")
-
-    def set_busy(self, busy: bool) -> None:
-        self.busy = busy
-        for button in self.buttons:
-            button.configure(state="disabled" if busy else "normal")
-        for box in (self.scope_box, self.paradigm_box):
-            box.configure(state="disabled" if busy else "readonly")
-        self.stop_button.configure(state="normal" if busy else "disabled")
-        if busy:
-            self.progress.start()
-        else:
-            self.progress.stop()
-
-    def execute(self, action: str) -> None:
+    def select_config(self, path):
         if self.busy:
             return
-        if action not in {"prepare", "train", "report", "check-data", "chain"}:
-            raise ValueError(action)
-        arguments = [action]
-        if action in {"train", "chain"}:
-            arguments.extend(["--scope", STAGES.get(self.scope.get(), self.scope.get()),
-                              "--paradigm", METHODS.get(self.paradigm.get(), self.paradigm.get())])
-        if action == "chain" and self.video_dir.get():
-            arguments.extend(["--video-dir", self.video_dir.get()])
-        command = [sys.executable, "-u", "-m", "fase_2", *arguments, "--config", str(self.path)]
-        self.tabs.select(self.pages["logs"])
-        self.set_text("logs", f"\nIniciando {action} · {self.scope.get()} / {self.paradigm.get()}\n", append=True)
         try:
-            self.job.start(command)
-        except (OSError, RuntimeError) as error:
-            self.set_text("logs", f"Falha ao iniciar: {error}\n", append=True)
-            self.message.set("Não foi possível iniciar a execução.")
+            config = load_config(path)
+        except Exception as error:
+            self.message.set(f"Configuração inválida: {error}")
+            self.experiment.set(self.experiment_name())
             return
-        self.set_busy(True)
-        self.message.set("Trabalho em andamento. Veja a aba Acompanhamento.")
+        self.path, self.config = Path(path).resolve(), config
+        self.last_outcome = ''
+        self.experiment.set(self.experiment_name())
+        self.scope.set('Comparar modelos')
+        self.paradigm.set('Todos')
+        self.video_dir.set(str(config['data'].get('video_dir', '')))
+        self.full.set(False)
+        self.start_frame.set('0')
+        self.max_frames.set('90')
+        self.video.set('')
+        self.extraction_output.set('')
+        if self.options_window is not None:
+            self.options_window.destroy()
+            self.options_window = None
+        self.refresh()
 
-    def show_document(self, page, path):
+    def choose_config(self):
+        from tkinter import filedialog
+        path = filedialog.askopenfilename(parent=self.root, initialdir=CONFIG_DIR,
+            filetypes=[('Configuração YAML', '*.yaml *.yml')])
+        if path:
+            self.select_config(path)
+
+    def open_options(self):
+        import tkinter as tk
+        from tkinter import ttk
+        if self.busy:
+            return
+        if self.options_window is not None and self.options_window.winfo_exists():
+            self.options_window.lift()
+            return
+        window = tk.Toplevel(self.root)
+        self.options_window = window
+        window.title('Opções do experimento')
+        window.transient(self.root)
+        window.resizable(True, True)
+        body = ttk.Frame(window, padding=18)
+        body.pack(fill='both', expand=True)
+        body.columnconfigure(1, weight=1)
+        ttk.Label(body, text='Configuração').grid(row=0, column=0, sticky='w', padx=(0, 12))
+        ttk.Label(body, text=self.path.name).grid(row=0, column=1, sticky='w')
+        ttk.Button(body, text='Abrir YAML…', command=self.choose_config).grid(row=0, column=2)
+        for row, label, variable, values in ((1, 'Etapa', self.scope, tuple(STAGES)),
+                (2, 'Família', self.paradigm, tuple(METHODS))):
+            ttk.Label(body, text=label).grid(row=row, column=0, sticky='w')
+            box = ttk.Combobox(body, textvariable=variable, values=values, state='readonly', width=32)
+            box.grid(row=row, column=1, columnspan=2, sticky='ew', pady=5)
+            box.bind('<<ComboboxSelected>>', lambda _: self.refresh())
+        paths = ttk.LabelFrame(body, text='Arquivos', padding=10)
+        paths.grid(row=3, column=0, columnspan=3, sticky='ew', pady=10)
+        for label, value in (('Entradas', self.config['data']['facial_series']),
+                             ('Saídas', self.config['outputs']['root']),
+                             ('Python', sys.executable)):
+            ttk.Label(paths, text=f'{label}: {value}', wraplength=620).pack(anchor='w', pady=2)
+        tools = ttk.Frame(body)
+        tools.grid(row=4, column=0, columnspan=3, sticky='w')
+        ttk.Button(tools, text='Preparar entradas', command=lambda: self.execute('prepare')).pack(side='left', padx=(0, 8))
+        ttk.Button(tools, text='Protocolo', command=lambda: self.show_document(
+            'Protocolo', protocol_path(self.config))).pack(side='left')
+
+        if self.config.get('measurement_protocol'):
+            panel = ttk.LabelFrame(body, text='Extração de medidas', padding=12)
+            panel.grid(row=5, column=0, columnspan=3, sticky='ew', pady=(14, 0))
+            panel.columnconfigure(1, weight=1)
+            videos = tuple(self.config['measurement_protocol']['extraction']['videos'])
+            if self.video.get() not in videos:
+                self.video.set(videos[0] if videos else '')
+            ttk.Label(panel, text='Vídeo').grid(row=0, column=0, sticky='w')
+            ttk.Combobox(panel, textvariable=self.video, values=videos, state='readonly').grid(row=0, column=1, sticky='ew')
+            for row, label, variable in ((1, 'Frame inicial', self.start_frame),
+                    (2, 'Frames da amostra', self.max_frames), (3, 'Pasta de saída (opcional)', self.extraction_output)):
+                ttk.Label(panel, text=label).grid(row=row, column=0, sticky='w', padx=(0, 12))
+                ttk.Entry(panel, textvariable=variable).grid(row=row, column=1, sticky='ew', pady=4)
+            ttk.Checkbutton(panel, text='Vídeo completo — exige âncora verificada', variable=self.full).grid(
+                row=4, column=0, columnspan=2, sticky='w', pady=6)
+            ttk.Button(panel, text='Extrair', command=lambda: self.execute('measurement-extract')).grid(
+                row=5, column=1, sticky='e')
+        ttk.Button(body, text='Fechar', command=window.destroy).grid(row=6, column=2, sticky='e', pady=(12, 0))
+        window.bind('<Destroy>', lambda event: setattr(self, 'options_window', None)
+                    if event.widget is window else None)
+
+    def refresh(self):
+        key = (str(self.path), STAGES.get(self.scope.get(), self.scope.get()),
+               METHODS.get(self.paradigm.get(), self.paradigm.get()))
+        if key != self.snapshot_key:
+            self.table.delete(*self.table.get_children())
+            self.results_table.delete(*self.results_table.get_children())
+            self.rows_by_id.clear()
+            self.plan = []
+            self.detail.set('Selecione uma execução para ver os detalhes.')
+            for var in self.counter_vars.values():
+                var.set('—')
+        self.snapshot_key = key
+        self.selection_label.set(f'{self.scope.get()} · {self.paradigm.get()}')
+        if self.snapshot_thread is not None and self.snapshot_thread.is_alive():
+            self.refresh_pending = True
+            return
+        def read_snapshot():
+            try:
+                plan = build_plan(key[0], 'all', key[1], key[2])
+                rows = result_rows(key[0], plan)
+                self.snapshot_events.put((key, plan, rows, None))
+            except Exception as error:
+                self.snapshot_events.put((key, [], [], str(error)))
+        self.snapshot_thread = Thread(target=read_snapshot, daemon=True)
+        self.snapshot_thread.start()
+        self.last_live_refresh = time.monotonic()
+
+    def refresh_plan(self, *, update_message=True):
+        self.refresh()
+
+    def apply_snapshot(self, key, plan, rows, error):
+        current = (str(self.path), STAGES.get(self.scope.get(), self.scope.get()),
+                   METHODS.get(self.paradigm.get(), self.paradigm.get()))
+        if key != current:
+            self.refresh_pending = True
+            return
+        if error:
+            self.message.set(f'Falha ao consultar: {error}')
+            return
+        self.plan = plan
+        selection = self.table.selection()
+        self.table.delete(*self.table.get_children())
+        self.rows_by_id = {r.run_id: r for r in plan}
+        for run in plan:
+            self.table.insert('', 'end', iid=run.run_id, values=(STATES.get(run.status, run.status),
+                run.model, run.window_size_frames, run.fold, run.seed, run.representation))
+        if selection and selection[0] in self.rows_by_id:
+            self.table.selection_set(selection[0])
+        for name, value in plan_counts(plan).items():
+            if name in self.counter_vars:
+                self.counter_vars[name].set(str(value))
+        self.results_table.delete(*self.results_table.get_children())
+        for row in rows:
+            value = row.get('macro_f1_all_classes', '')
+            try:
+                score = f'{float(value):.3f}' if value else '—'
+            except (ValueError, TypeError):
+                score = '—'
+            subset = {'validation': 'Validação', 'test': 'Teste'}.get(row.get('subset'), row.get('subset', '—'))
+            self.results_table.insert('', 'end', values=(row.get('model', '—'),
+                row.get('representation', '—'), row.get('window_size_frames', '—'),
+                row.get('fold', '—'), row.get('seed', '—'), subset, score))
+        self.result_hint.set(f'{len(rows)} avaliações compatíveis com a seleção.' if rows else
+                             'Sem resultados compatíveis nesta seleção. Histórico disponível no relatório e nos gráficos.')
+        if not self.busy:
+            self.message.set(self.last_outcome or ('' if plan else 'Nenhuma execução nesta seleção.'))
+
+    def select_run(self, event=None):
+        selected = self.table.selection()
+        if selected and selected[0] in self.rows_by_id:
+            run = self.rows_by_id[selected[0]]
+            detail = run.reason or ('Resultado disponível.' if run.status in {'completed', 'reused'}
+                                    else 'Aguardando execução.')
+            self.detail.set(f'{run.model} · Fold {run.fold} · Seed {run.seed}: {detail}')
+
+    def set_text(self, key, value, *, append=False):
+        widget = self.texts[key]
+        widget.configure(state='normal')
+        if not append:
+            widget.delete('1.0', 'end')
+        widget.insert('end', value)
+        lines = int(widget.index('end-1c').split('.')[0])
+        if lines > 10000:
+            widget.delete('1.0', f'{lines - 10000}.0')
+        widget.see('end')
+        widget.configure(state='disabled')
+
+    def set_busy(self, busy):
+        self.busy = busy
+        for button in self.buttons + [self.options_button]:
+            button.configure(state='disabled' if busy else 'normal')
+        self.experiment_box.configure(state='disabled' if busy else 'readonly')
+        self.stop_button.configure(state='normal' if busy else 'disabled')
+        if busy:
+            self.progress.pack(side='right', padx=(10, 0))
+            self.progress.start()
+            if self.options_window is not None:
+                self.options_window.destroy()
+        else:
+            self.progress.stop()
+            self.progress.pack_forget()
+
+    def execute(self, action):
+        if self.busy:
+            return
         try:
-            self.set_text(page, path.read_text(encoding="utf-8"))
-            self.tabs.select(self.pages[page])
+            command = execution_command(self.path, action, self.scope.get(), self.paradigm.get(),
+                self.video_dir.get(), video=self.video.get(), start_frame=self.start_frame.get(),
+                max_frames=self.max_frames.get(), full=self.full.get(), output=self.extraction_output.get())
+            self.job.start(command)
+        except Exception as error:
+            self.message.set(f'Não foi possível iniciar: {error}')
+            return
+        self.stopping = False
+        self.last_outcome = ''
+        self.tabs.select(self.pages['logs'])
+        self.set_text('logs', f'\n{command[4]} · {self.experiment.get()} · {self.scope.get()} / {self.paradigm.get()}\n', append=True)
+        self.set_busy(True)
+        self.message.set('Em execução…')
+
+    def show_document(self, title, path):
+        import tkinter as tk
+        from tkinter.scrolledtext import ScrolledText
+        try:
+            content = path.read_text(encoding='utf-8')
         except OSError:
-            self.message.set("Documento ainda não disponível.")
+            self.message.set('Documento ainda não disponível.')
+            return
+        window = tk.Toplevel(self.root)
+        window.title(title)
+        window.geometry('850x620')
+        text = ScrolledText(window, wrap='word', padx=16, pady=16)
+        text.pack(fill='both', expand=True)
+        text.insert('end', content)
+        text.configure(state='disabled')
 
-    def stop(self) -> None:
+    def open_gallery(self):
+        import webbrowser
+        from ..scripts.index_results import generate_index
+        try:
+            target = generate_index(PROJECT_ROOT / 'fase_2/results')
+            if not webbrowser.open(target.as_uri()):
+                self.message.set(f'Galeria: {target}')
+        except OSError as error:
+            self.message.set(f'Não foi possível abrir gráficos: {error}')
+
+    def stop(self):
+        self.stopping = True
         self.job.stop()
-        self.message.set("Interrompendo execução…")
+        self.message.set('Interrompendo…')
         process = self.job.process
-        # O callback só pode encerrar o processo que motivou esta interrupção.
-        self.root.after(3000, lambda: self.job.stop(force=True)
-                        if self.job.process is process else None)
+        self.root.after(3000, lambda: self.job.stop(force=True) if self.job.process is process else None)
 
-    def close(self) -> None:
+    def close(self):
         if self.busy:
             self.closing = True
             self.stop()
@@ -348,33 +546,35 @@ class Desktop:
             self.root.after_cancel(self.poll_id)
             self.root.destroy()
 
-    def poll(self) -> None:
+    def poll(self):
         for _ in range(300):
             try:
                 kind, value = self.job.events.get_nowait()
             except Empty:
                 break
-            if kind == "log":
-                self.set_text("logs", value, append=True)
+            if kind == 'log':
+                self.set_text('logs', value, append=True)
             else:
-                self.set_text("logs", f"\nProcesso encerrado com código {value}. "
-                              "Consulte o plano para runs pendentes ou bloqueados.\n", append=True)
+                self.set_text('logs', f'\nProcesso encerrado: código {value}.\n', append=True)
                 self.set_busy(False)
                 self.refresh()
-                self.message.set("Etapa finalizada. A lista de treinamentos foi atualizada."
-                                 if value == 0 else "Há pendências. Veja o motivo na aba Acompanhamento.")
-        if self.busy and time.monotonic() - self.last_live_refresh >= 3:
-            self.refresh_plan(update_message=False)
-            plan = build_plan(self.path, "all", STAGES.get(self.scope.get(), self.scope.get()),
-                              METHODS.get(self.paradigm.get(), self.paradigm.get()))
-            completed = sum(run.status in {"completed", "reused"} for run in plan)
-            running = sum(run.status == "running" for run in plan)
-            self.message.set(f"{completed}/{len(plan)} salvos"
-                             + (f" · {running} em andamento" if running else ""))
-            self.last_live_refresh = time.monotonic()
+                self.last_outcome = ('Execução interrompida.' if self.stopping else
+                    'Comando finalizado. Consulte o plano.' if value == 0 else 'Falha na execução. Consulte os logs.')
+                self.message.set(self.last_outcome)
+        while True:
+            try:
+                snapshot = self.snapshot_events.get_nowait()
+            except Empty:
+                break
+            self.apply_snapshot(*snapshot)
         if self.closing and not self.busy:
             self.root.destroy()
             return
+        if self.refresh_pending and (self.snapshot_thread is None or not self.snapshot_thread.is_alive()):
+            self.refresh_pending = False
+            self.refresh()
+        elif self.busy and time.monotonic() - self.last_live_refresh >= 5:
+            self.refresh()
         self.poll_id = self.root.after(100, self.poll)
 
 

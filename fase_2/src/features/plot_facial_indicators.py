@@ -108,7 +108,7 @@ def plot_video(source: Path, output: Path, *, smoothing_seconds: float = 5.0) ->
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", default="fase_2/data/interim/legacy_extraction")
-    parser.add_argument("--output-dir", default="fase_2/outputs/figures/facial_indicators")
+    parser.add_argument("--output-dir", default="fase_2/results/historical/facial_indicators/figures")
     parser.add_argument("--smoothing-seconds", type=float, default=5.0)
     args = parser.parse_args(argv)
     if args.smoothing_seconds <= 0:

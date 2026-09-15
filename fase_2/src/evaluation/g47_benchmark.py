@@ -355,7 +355,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--schema", type=Path, default=Path("fase_2/configs/features/g47_face_landmarks.yaml")
     )
     parser.add_argument("--output-dir", type=Path, default=Path("fase_2/outputs/metrics/G47"))
-    parser.add_argument("--figure-dir", type=Path, default=Path("fase_2/outputs/figures/G47"))
+    parser.add_argument("--figure-dir", type=Path, default=Path("fase_2/results/historical/G47/figures"))
     parser.add_argument("--warmup-frames", type=int, default=200)
     parser.add_argument("--start-frame", type=int, default=0)
     parser.add_argument("--max-frames", type=int)

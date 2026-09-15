@@ -232,5 +232,5 @@ def measurement_report(config, metrics):
         'Limiar geométrico é heurística de desenvolvimento; EAR baixo e MAR alto não são rejeitados pelo seu valor.',
         'Pose com intrínsecos aproximados; erro baixo de reprojeção não comprova acurácia.',
         'Interpolação usa futuro, não representa fechamento ocular observado. Mediana trailing 0,1s pode apagar eventos curtos e precisa de inspeção.',
-        'Protocolos e comandos: docs/measurement_quality_protocol.md.', '']
+        'Protocolos e comandos: docs/protocols/measurement_quality_protocol.md.', '']
     return '\n'.join(lines)

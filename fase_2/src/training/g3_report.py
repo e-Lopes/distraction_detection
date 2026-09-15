@@ -523,7 +523,7 @@ def write_report(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser=argparse.ArgumentParser(description=__doc__); parser.add_argument("--metrics-dir",default="fase_2/outputs/metrics/G3"); parser.add_argument("--figure-dir",default="fase_2/outputs/figures/G3/combined"); args=parser.parse_args(argv)
+    parser=argparse.ArgumentParser(description=__doc__); parser.add_argument("--metrics-dir",default="fase_2/outputs/metrics/G3"); parser.add_argument("--figure-dir",default="fase_2/results/historical/G3/figures/combined"); args=parser.parse_args(argv)
     root=Path.cwd().resolve(); metrics=repository_path(args.metrics_dir); figures=repository_path(args.figure_dir)
     g2=repository_path("fase_2/outputs/metrics/G2")
     g3_prefixes=("qualification_r1_w60_b1024","qualification_r2_w60_b1024","qualification_r1_w150_b1024","qualification_r2_w150_b1024")

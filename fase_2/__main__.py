@@ -15,6 +15,7 @@ def _config_argument(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m fase_2", description="Pipeline temporal unificado")
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("results", help="atualiza a galeria local de resultados e figuras")
 
     measurement = commands.add_parser('measurement-extract', help='extração bruta auditável; amostra limitada por padrão')
     _config_argument(measurement)
@@ -73,6 +74,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(arguments: list[str] | None = None) -> int:
     args = build_parser().parse_args(arguments)
+    if args.command == "results":
+        from .scripts.index_results import main as index_main
+        return index_main([])
     if args.command == 'measurement-extract':
         from .src.pipeline import load_config
         from .src.features.measurement_raw import extract

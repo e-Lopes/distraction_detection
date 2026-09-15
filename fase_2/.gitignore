@@ -18,6 +18,10 @@ outputs/G48A_framework_smoke/**
 outputs/G48A_all_frames/**
 outputs/metrics/G3_smoke/**
 outputs/figures/G3_smoke/**
+results/historical/G3_smoke/figures/**
+results/current/modern_v1/figures/**
+results/current/measurement_v1/figures/**
+results/index.html
 !outputs/**/.gitkeep
 
 # Python

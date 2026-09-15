@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 ROOT = Path.cwd().resolve()
 METRICS = ROOT / "fase_2/outputs/metrics/G4"
-FIGURES = ROOT / "fase_2/outputs/figures/G4"
+FIGURES = ROOT / "fase_2/results/historical/G4/figures"
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -195,7 +195,7 @@ def plot_bars(stats,classes,operational,deltas,histories,confusion):
 
 def manifest() -> list[dict[str,object]]:
     rows=[]
-    roots=[ROOT/"fase_2/configs/experiment",ROOT/"fase_2/src/training",ROOT/"fase_2/docs",ROOT/"fase_2/outputs/models/G4",ROOT/"fase_2/outputs/logs/G4",ROOT/"fase_2/outputs/predictions/G4",METRICS,FIGURES,ROOT/"fase_2/reports"]
+    roots=[ROOT/"fase_2/configs/experiment",ROOT/"fase_2/src/training",ROOT/"fase_2/docs",ROOT/"fase_2/outputs/models/G4",ROOT/"fase_2/outputs/logs/G4",ROOT/"fase_2/outputs/predictions/G4",METRICS,FIGURES,ROOT/"fase_2/results/historical/G4"]
     for base in roots:
         for path in sorted(base.rglob("*")):
             if path.is_file() and "smoke" not in path.as_posix().lower() and path.name!="g4_artifact_manifest.csv":
@@ -250,7 +250,7 @@ def main() -> int:
     lines=["# G4 — Mitigação isolada do desbalanceamento","","## Resultado executivo","",f"Foram consolidados **48 runs novos** e **16 reutilizados**, totalizando **64 comparações**. O maior Macro F1 médio de validação foi **{float(best['mean']):.4f} ± {float(best['std']):.4f}**, em **{best['model']} / cenário {best['scenario']} ({best['strategy']})**. O F1 médio de Fatigue nessa configuração foi **{float(best_fat['mean']):.4f} ± {float(best_fat['std']):.4f}**.","",f"Esse máximo não resolve a classe rara: augmentation manteve Fatigue em zero nos temporais. O compromisso temporal mais equilibrado foi **LSTM/B**, com Macro F1 **{macro[('lstm','B')]['mean']:.4f} ± {macro[('lstm','B')]['std']:.4f}**, F1 de Fatigue **{fatigue_f1[('lstm','B')]['mean']:.4f} ± {fatigue_f1[('lstm','B')]['std']:.4f}**, recall **{fatigue_recall[('lstm','B')]['mean']:.4f}** e **{false_rate[('lstm','B')]['mean']:.2f}** falsos episódios/hora.","","Os resultados permanecem qualificatórios: há somente a seed 42. H3 não é confirmada antes das cinco seeds dos finalistas.","","## Desenho e controles","","- R0, folds, janelas, arquiteturas, hiperparâmetros e orçamento foram congelados.","- A foi reutilizado após verificação de hashes; B, C e D foram aplicados isoladamente e apenas no treino.","- SVM/60 atuou como controle clássico nas quatro condições.","- Validação e teste não receberam sampling ou augmentation.","","## Ranking de validação (média ± DP entre quatro folds)",""]
     for row in ranking: lines.append(f"- {row['model']} / {row['scenario']}: {float(row['mean']):.4f} ± {float(row['std']):.4f}")
     lines += ["","## Interpretação científica","",f"B e C recuperaram Fatigue nos temporais, mas reduziram o Macro F1. TCN/C obteve o maior recall médio de Fatigue (**{fatigue_recall[('tcn','C')]['mean']:.4f}**), ao custo de Macro F1 **{macro[('tcn','C')]['mean']:.4f}** e **{false_rate[('tcn','C')]['mean']:.2f}** falsos episódios/hora. D preservou o Macro F1, porém não recuperou Fatigue nos temporais. A comparação principal usa médias entre folds e deltas pareados contra A; nenhum melhor fold isolado determina a seleção.","","Para a comparação arquitetural justa, LSTM/B superou o controle SVM/B tanto em Macro F1 quanto em F1 de Fatigue, mas não superou o melhor SVM sem tratamento/augmentation. Portanto, há evidência preliminar favorável à modelagem temporal sob a mesma estratégia B, mas H3 continua aberta.","","## Reprodutibilidade e limitação","","Cada temporal possui checkpoints `last.pt` e `best_macro_f1.pt`, histórico por epoch, configuração resolvida, fingerprint e predições. O PyTorch advertiu que a atenção memory-efficient do Transformer em CUDA não é bit a bit determinística; esta limitação está registrada e deve ser considerada ao interpretar/repetir Transformer.","","## Decisão","","A seleção Pareto recomendada para a futura etapa de cinco seeds é **LSTM/B** como candidato primário, acompanhado de **SVM/B** como controle clássico pareado. **TCN/C** e **SVM/C** ficam como análise secundária de alta sensibilidade a Fatigue, devido ao custo operacional elevado. SVM/D é preservado como melhor Macro F1 observado, mas não é tratado como solução do desbalanceamento porque praticamente reproduziu A. A G5 não foi iniciada.",""]
-    report=ROOT/"fase_2/reports/g4_imbalance_results.md"; report.write_text("\n".join(lines),encoding="utf-8")
+    report=ROOT/"fase_2/results/historical/G4/g4_imbalance_results.md"; report.write_text("\n".join(lines),encoding="utf-8")
     write_csv(METRICS/"g4_artifact_manifest.csv",manifest())
     print(f"G4 consolidada: 64 comparacoes; melhor={best['model']}/{best['scenario']} {float(best['mean']):.4f}"); return 0
 

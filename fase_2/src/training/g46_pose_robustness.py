@@ -228,7 +228,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", default="fase_2/data/interim/geometry_v2")
     parser.add_argument("--output-dir", default="fase_2/outputs/metrics/G46")
-    parser.add_argument("--figure-dir", default="fase_2/outputs/figures/G46")
+    parser.add_argument("--figure-dir", default="fase_2/results/historical/G46/figures")
     parser.add_argument("--fold", type=int, action="append")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)

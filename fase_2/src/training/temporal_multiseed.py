@@ -412,7 +412,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-dir", default="fase_2/outputs/logs/temporal_multiseed")
     parser.add_argument("--prediction-dir", default="fase_2/outputs/predictions/temporal_multiseed")
     parser.add_argument("--output-dir", default="fase_2/outputs/metrics")
-    parser.add_argument("--figure-dir", default="fase_2/outputs/figures/temporal_multiseed")
+    parser.add_argument("--figure-dir", default="fase_2/results/historical/temporal_multiseed/figures")
     parser.add_argument("--augmentation-audit-dir", default="fase_2/outputs/metrics/G4/augmentation")
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--fold", type=int, action="append", help="Filtra folds; repetivel")

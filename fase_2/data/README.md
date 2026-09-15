@@ -29,5 +29,5 @@ Cada CSV facial usa `video_id` anônimo e índice de frame iniciado em zero. Aus
 representada por `face_detected=0`, `operational_state=face_missing` e métricas vazias, não por
 zeros inventados.
 
-Consulte [Inventário e proveniência](../docs/data_sources_and_provenance.md) para saber o papel
+Consulte [Inventário e proveniência](../docs/data/data_sources_and_provenance.md) para saber o papel
 de cada fonte e as limitações de reutilização.
