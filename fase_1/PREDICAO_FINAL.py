@@ -11,7 +11,7 @@ import os
 #USAR o interpreter 3.11.13 (yolo_env)
 
 # ========= CONFIGURAÇÕES =========
-PATH_VIDEOS = "/home/edu/Desktop/distraction_detection/distraction_detection/videos"
+PATH_VIDEOS = "fase_2/data/raw"
 FRAMES_SKIP = 2  # Pula 2 frames a cada 1 processado (3x mais rápido)
 SHOW_ROI_ONLY = True  # Mostra apenas a área dentro da ROI
 
@@ -36,12 +36,12 @@ pose = mp_pose.Pose(min_detection_confidence=MIN_POSE_CONFIDENCE,
                     min_tracking_confidence=MIN_POSE_CONFIDENCE)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = YOLO("/home/edu/Desktop/distraction_detection/distraction_detection/yolov11x.pt").to(device)
+model = YOLO("fase_1/yolo26x.pt").to(device)
 
 # ========= FUNÇÕES =========
 def load_config():
     try:
-        with open("/home/edu/Desktop/distraction_detection/distraction_detection/roi_config.json") as f:
+        with open("fase_1/roi_config.json") as f:
             config = json.load(f)
         return config['roi_cadeira']
     except Exception as e:
