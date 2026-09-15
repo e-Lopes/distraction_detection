@@ -1,0 +1,346 @@
+[
+  {
+    "importance": 0.302777413524,
+    "length": 6,
+    "start": 53,
+    "channel": 4,
+    "training_index": 1981,
+    "class": "attention"
+  },
+  {
+    "importance": 0.297223450385,
+    "length": 7,
+    "start": 28,
+    "channel": 0,
+    "training_index": 1996,
+    "class": "attention"
+  },
+  {
+    "importance": 0.295842971876,
+    "length": 8,
+    "start": 37,
+    "channel": 3,
+    "training_index": 1292,
+    "class": "attention"
+  },
+  {
+    "importance": 0.29446564848,
+    "length": 9,
+    "start": 49,
+    "channel": 2,
+    "training_index": 1989,
+    "class": "attention"
+  },
+  {
+    "importance": 0.291720370361,
+    "length": 11,
+    "start": 32,
+    "channel": 2,
+    "training_index": 1950,
+    "class": "attention"
+  },
+  {
+    "importance": 0.291720370361,
+    "length": 10,
+    "start": 42,
+    "channel": 2,
+    "training_index": 1960,
+    "class": "attention"
+  },
+  {
+    "importance": 0.288987426201,
+    "length": 13,
+    "start": 42,
+    "channel": 0,
+    "training_index": 808,
+    "class": "attention"
+  },
+  {
+    "importance": 0.288987426201,
+    "length": 12,
+    "start": 32,
+    "channel": 0,
+    "training_index": 1282,
+    "class": "attention"
+  },
+  {
+    "importance": 0.286266631606,
+    "length": 14,
+    "start": 42,
+    "channel": 2,
+    "training_index": 1290,
+    "class": "attention"
+  },
+  {
+    "importance": 0.28491073420199997,
+    "length": 15,
+    "start": 40,
+    "channel": 1,
+    "training_index": 1956,
+    "class": "attention"
+  },
+  {
+    "importance": 0.282207829544,
+    "length": 16,
+    "start": 38,
+    "channel": 1,
+    "training_index": 667,
+    "class": "attention"
+  },
+  {
+    "importance": 0.278175378072,
+    "length": 17,
+    "start": 37,
+    "channel": 2,
+    "training_index": 1293,
+    "class": "attention"
+  },
+  {
+    "importance": 0.271511671096,
+    "length": 18,
+    "start": 39,
+    "channel": 4,
+    "training_index": 649,
+    "class": "attention"
+  },
+  {
+    "importance": 0.268865693972,
+    "length": 19,
+    "start": 33,
+    "channel": 2,
+    "training_index": 1994,
+    "class": "attention"
+  },
+  {
+    "importance": 0.26623063547,
+    "length": 20,
+    "start": 17,
+    "channel": 2,
+    "training_index": 1955,
+    "class": "attention"
+  },
+  {
+    "importance": 0.26360634928,
+    "length": 21,
+    "start": 25,
+    "channel": 2,
+    "training_index": 1284,
+    "class": "attention"
+  },
+  {
+    "importance": 0.258389526905,
+    "length": 22,
+    "start": 34,
+    "channel": 0,
+    "training_index": 1295,
+    "class": "attention"
+  },
+  {
+    "importance": 0.257091835432,
+    "length": 24,
+    "start": 29,
+    "channel": 0,
+    "training_index": 1997,
+    "class": "attention"
+  },
+  {
+    "importance": 0.257091835432,
+    "length": 23,
+    "start": 7,
+    "channel": 2,
+    "training_index": 1978,
+    "class": "attention"
+  },
+  {
+    "importance": 0.251926626604,
+    "length": 26,
+    "start": 20,
+    "channel": 2,
+    "training_index": 800,
+    "class": "attention"
+  },
+  {
+    "importance": 0.251926626604,
+    "length": 25,
+    "start": 30,
+    "channel": 0,
+    "training_index": 1285,
+    "class": "attention"
+  },
+  {
+    "importance": 0.249359131053,
+    "length": 27,
+    "start": 24,
+    "channel": 2,
+    "training_index": 806,
+    "class": "attention"
+  },
+  {
+    "importance": 0.193286847228,
+    "length": 9,
+    "start": 11,
+    "channel": 3,
+    "training_index": 1371,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.192820564777,
+    "length": 7,
+    "start": 19,
+    "channel": 2,
+    "training_index": 1369,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.188552149054,
+    "length": 11,
+    "start": 37,
+    "channel": 4,
+    "training_index": 913,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.188534645182,
+    "length": 6,
+    "start": 20,
+    "channel": 2,
+    "training_index": 925,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.185767689498,
+    "length": 8,
+    "start": 7,
+    "channel": 1,
+    "training_index": 922,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.185767689498,
+    "length": 8,
+    "start": 5,
+    "channel": 0,
+    "training_index": 1361,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.184598787485,
+    "length": 6,
+    "start": 46,
+    "channel": 4,
+    "training_index": 909,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.18343174048799998,
+    "length": 6,
+    "start": 49,
+    "channel": 3,
+    "training_index": 158,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.183139879108,
+    "length": 10,
+    "start": 36,
+    "channel": 4,
+    "training_index": 1359,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.181872804279,
+    "length": 7,
+    "start": 27,
+    "channel": 0,
+    "training_index": 915,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.181372944068,
+    "length": 9,
+    "start": 49,
+    "channel": 2,
+    "training_index": 1365,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.180302364765,
+    "length": 11,
+    "start": 8,
+    "channel": 3,
+    "training_index": 914,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.178022202057,
+    "length": 8,
+    "start": 42,
+    "channel": 0,
+    "training_index": 924,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.17529952170899998,
+    "length": 11,
+    "start": 30,
+    "channel": 3,
+    "training_index": 534,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.170950271318,
+    "length": 9,
+    "start": 2,
+    "channel": 4,
+    "training_index": 1357,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.167310817212,
+    "length": 10,
+    "start": 33,
+    "channel": 1,
+    "training_index": 1341,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.160467549319,
+    "length": 12,
+    "start": 39,
+    "channel": 4,
+    "training_index": 927,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.157003084749,
+    "length": 11,
+    "start": 6,
+    "channel": 2,
+    "training_index": 911,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.151196729664,
+    "length": 12,
+    "start": 25,
+    "channel": 4,
+    "training_index": 811,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.142309954527,
+    "length": 13,
+    "start": 43,
+    "channel": 1,
+    "training_index": 1367,
+    "class": "distraction"
+  },
+  {
+    "importance": 0.141355434295,
+    "length": 11,
+    "start": 6,
+    "channel": 3,
+    "training_index": 1355,
+    "class": "distraction"
+  }
+]

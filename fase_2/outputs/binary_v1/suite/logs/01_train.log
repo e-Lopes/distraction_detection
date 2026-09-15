@@ -184,3 +184,7 @@ Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screenin
 [DONE] run_id=final__screening__feature__xgboost__r0_flat__w150__fold_4__seed_42 time=6.8s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_4__seed_42.joblib
 [TRAIN][screening][61/124] paradigm=shapelet model=random_shapelet_ridge window=60 fold=1 seed=42
 [SHAPELET] fold=1 candidates=2000
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_1__seed_42 time=1109.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__shapelet__random_shapelet_ridge__r0__w60__fold_1__seed_42.joblib
+[TRAIN][screening][62/124] paradigm=shapelet model=random_shapelet_ridge window=60 fold=2 seed=42
+[SHAPELET] fold=2 candidates=2000
