@@ -21,6 +21,42 @@ NON_BEHAVIOR_LABELS = {
 }
 
 
+ATTENTION_CLASSES = ("attention", "distraction")
+ATTENTION_MAPPING = {"alert": "attention", "fatigue": "distraction",
+                     "distraction": "distraction"}
+
+
+def target_classes(config):
+    return tuple(config.get("target", {}).get("classes", BEHAVIOR_CLASSES))
+
+
+def validate_target(config):
+    target = config.get("target")
+    if not target:
+        return
+    if (tuple(target.get("classes", ())) != ATTENTION_CLASSES
+            or target.get("mapping") != ATTENTION_MAPPING):
+        raise ValueError("Target binário exige attention/distraction e alert → attention; "
+                         "fatigue + distraction → distraction.")
+    if target.get("map_before_windowing") is not True:
+        raise ValueError("O target deve ser aplicado antes do janelamento.")
+
+
+def map_target_labels(labels_by_video, config):
+    """Map source annotations before majority voting; never modify source files."""
+    validate_target(config)
+    if not config.get("target"):
+        return labels_by_video
+    def convert(label):
+        if label is None or label == "" or label in NON_BEHAVIOR_LABELS:
+            return None
+        if label not in ATTENTION_MAPPING:
+            raise ValueError(f"Rótulo de origem desconhecido: {label}")
+        return ATTENTION_MAPPING[label]
+    return {video: [convert(label) for label in labels]
+            for video, labels in labels_by_video.items()}
+
+
 def personalized_binary_label(label: str | None) -> str | None:
     """Converte um rótulo comportamental para o alvo binário personalizado.
 

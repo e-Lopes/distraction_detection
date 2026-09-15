@@ -119,7 +119,7 @@ def consolidate_metrics(config: Mapping[str, object]) -> list[dict[str, object]]
     for path in (Path(config["outputs"]["root"]) / "temporal_metrics").rglob("*__per_class.csv"):
         _append_per_class(rows, str(path), "confirmation")
     unique: dict[tuple[object, ...], dict[str, object]] = {}
-    if config.get('modern_protocol') or config.get('measurement_protocol'):
+    if config.get('modern_protocol') or config.get('measurement_protocol') or config.get('target'):
         rows = [row for row in rows if row['source'] in {'screening', 'confirmation', 'final'}]
     for row in rows:
         key = tuple(row[field] for field in METRIC_FIELDS[2:-1]) + (row["metric"],)
@@ -449,6 +449,9 @@ Figuras que exigem OOF/multi-seed (confusao OOF final, resultado por video, dist
 
 def generate_report(config_path: str | Path) -> int:
     config = load_config(config_path)
+    if config.get("target"):
+        from .binary_reporting import generate
+        return generate(config_path)
     print("[REPORT 1/8] Importando registro historico")
     imported = sync_historical_registry(config_path)
     print(f"[REPORT 2/8] Consolidando metricas globais e por classe (novos registros={imported})")

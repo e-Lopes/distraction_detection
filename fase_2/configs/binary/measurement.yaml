@@ -1,0 +1,22 @@
+extends: ../measurement_experiment.yaml
+name: Qualidade das medidas · binário
+target:
+  name: attention_distraction
+  version: 1
+  classes:
+  - attention
+  - distraction
+  display_names:
+    attention: Atenção
+    distraction: Distração
+  mapping:
+    alert: attention
+    fatigue: distraction
+    distraction: distraction
+  map_before_windowing: true
+  evaluation: development
+outputs:
+  root: fase_2/outputs/binary_v1/measurement
+training:
+  confirmation:
+    candidates: []

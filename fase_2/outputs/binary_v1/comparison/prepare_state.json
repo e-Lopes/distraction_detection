@@ -1,0 +1,35 @@
+{
+  "status": "completed",
+  "fingerprint": "e79b8c78782d44dea3041f2f12b08aa1ffd8453798647464b319cd20697abb85",
+  "updated_at": "2026-09-15T18:36:42+00:00",
+  "videos_available": 4,
+  "videos_missing_but_series_reused": [],
+  "series": [
+    {
+      "video_id": "video_01",
+      "frames": 32013,
+      "detected": 18264,
+      "missing_rate": 0.4294817730297067
+    },
+    {
+      "video_id": "video_02",
+      "frames": 28200,
+      "detected": 23597,
+      "missing_rate": 0.16322695035460988
+    },
+    {
+      "video_id": "video_03",
+      "frames": 30334,
+      "detected": 20462,
+      "missing_rate": 0.32544339684842094
+    },
+    {
+      "video_id": "video_04",
+      "frames": 31790,
+      "detected": 13303,
+      "missing_rate": 0.5815350739226172
+    }
+  ],
+  "resampling": "not_required_for_historical_baseline",
+  "note": "As durações variam por FPS; o baseline de 30/60/150 frames foi preservado."
+}

@@ -15,7 +15,7 @@ from .pipeline import _read_csv, build_plan, load_config
 from .terminal import PROJECT_ROOT, PROTOCOL
 
 STAGES = {"Comparar modelos": "screening", "Confirmar os escolhidos": "confirmation"}
-METHODS = {"Todos": "all", "Medidas do rosto": "feature", "Semelhança entre trechos": "distance",
+METHODS = {"Todos": "all", "Regras fixas": "rule", "Medidas do rosto": "feature", "Semelhança entre trechos": "distance",
            "Padrões de movimento": "shapelet", "Transformações dos sinais": "transform",
            "Redes neurais": "deep"}
 STATES = {"pending": "Pendente", "running": "Executando", "completed": "Concluída",
@@ -23,13 +23,22 @@ STATES = {"pending": "Pendente", "running": "Executando", "completed": "Concluí
           "dependency_missing": "Falta dependência", "failed": "Falhou"}
 CONFIG_DIR = PROJECT_ROOT / "fase_2" / "configs"
 EXPERIMENTS = {
+    "Bateria binária completa": CONFIG_DIR / "binary_suite.yaml",
+    "Binário · Comparação de modelos": CONFIG_DIR / "binary_experiment.yaml",
     "Referência histórica": CONFIG_DIR / "final_experiment.yaml",
     "Qualidade das medidas · 14/09": CONFIG_DIR / "measurement_experiment.yaml",
     "Famílias modernas · 14/09": CONFIG_DIR / "modern_experiment.yaml",
 }
 
+# All binary profiles are discoverable without editing YAML in the desktop.
+import yaml
+for _profile in yaml.safe_load((CONFIG_DIR / 'binary_suite.yaml').read_text())['suite']['profiles'][1:]:
+    EXPERIMENTS['Binário · ' + _profile['label']] = PROJECT_ROOT / _profile['config']
+
 
 def protocol_path(config):
+    if config.get("target"):
+        return PROJECT_ROOT / "fase_2/docs/protocols/binary_experiment_protocol.md"
     for key, filename in (("measurement_protocol", "measurement_quality_protocol.md"),
                           ("modern_protocol", "modern_families_protocol.md")):
         if config.get(key):
@@ -38,10 +47,17 @@ def protocol_path(config):
 
 
 def execution_command(path, action, scope, paradigm, video_dir="", *, video="",
-                      start_frame="0", max_frames="90", full=False, output=""):
+                      start_frame="0", max_frames="90", full=False, output="", allow_expensive=False):
     config = load_config(path)
-    if action not in {"prepare", "train", "report", "check-data", "chain", "measurement-extract"}:
+    if action not in {"prepare", "train", "report", "check-data", "chain", "measurement-extract", "extract"}:
         raise ValueError(action)
+    if config.get('suite') or (config.get('target') and action == 'chain'):
+        args = [sys.executable, '-u', '-m', 'fase_2', 'suite', '--action', action,
+                '--scope', STAGES.get(scope, scope), '--paradigm', METHODS.get(paradigm, paradigm),
+                '--config', str(path)]
+        if allow_expensive:
+            args.append('--allow-expensive')
+        return args
     # Os novos protocolos usam entradas próprias, sem extração legada implícita.
     if action == "chain" and (config.get("measurement_protocol") or config.get("modern_protocol")):
         action = "train"
@@ -49,7 +65,7 @@ def execution_command(path, action, scope, paradigm, video_dir="", *, video="",
     if action in {"train", "chain"}:
         arguments.extend(["--scope", STAGES.get(scope, scope),
                           "--paradigm", METHODS.get(paradigm, paradigm)])
-    if action == "chain" and video_dir:
+    if action in {"chain", "extract"} and video_dir:
         arguments.extend(["--video-dir", video_dir])
     if action == "measurement-extract":
         settings = config.get("measurement_protocol", {}).get("extraction", {})
@@ -65,12 +81,18 @@ def execution_command(path, action, scope, paradigm, video_dir="", *, video="",
             arguments.append("--full")
         if output.strip():
             arguments.extend(["--output", output.strip()])
+    if action == "train" and allow_expensive:
+        arguments.append("--allow-expensive")
     return [sys.executable, "-u", "-m", "fase_2", *arguments, "--config", str(path)]
 
 
 def result_rows(path, plan=None):
     """Only show metrics backed by completed, compatible runs."""
     config = load_config(path)
+    if config.get('suite'):
+        from .binary_suite import profiles
+        return [dict(row, experiment=item['label']) for item in profiles(path)
+                for row in result_rows(item['config'])]
     plan = build_plan(path, "all", "all", "all") if plan is None else plan
     current = {r.run_id for r in plan if r.status == "completed"}
     current.update(Path(r.artifact).parent.name for r in plan
@@ -180,13 +202,14 @@ class Desktop:
         self.max_frames = tk.StringVar(value="90")
         self.extraction_output = tk.StringVar(value="")
         self.full = tk.BooleanVar(value=False)
+        self.allow_expensive = tk.BooleanVar(value=False)
         self.message = tk.StringVar(value="")
         self.detail = tk.StringVar(value="Selecione uma execução para ver os detalhes.")
         self.selection_label = tk.StringVar()
         self.result_hint = tk.StringVar(value="")
         self.counter_vars = {key: tk.StringVar(value="—") for key in
                              ('total', 'completed', 'reused', 'pending', 'blocked')}
-        root.title("Experimentos · Atenção e fadiga")
+        root.title("Experimentos · Atenção e Distração")
         root.geometry("1080x700")
         root.minsize(820, 540)
         root.protocol("WM_DELETE_WINDOW", self.close)
@@ -215,6 +238,9 @@ class Desktop:
             button = ttk.Button(actions, text=label, command=lambda a=action: self.execute(a))
             button.pack(side="left", padx=(0, 8))
             self.buttons.append(button)
+        self.new_round_button = ttk.Button(actions, text="Nova rodada binária (do zero)", command=self.create_round)
+        self.new_round_button.pack(side='left', padx=(0,8))
+        self.buttons.append(self.new_round_button)
         self.stop_button = ttk.Button(actions, text="Parar", command=self.stop, state="disabled")
         self.stop_button.pack(side="left")
         self.refresh_button = ttk.Button(actions, text="Atualizar", command=self.refresh)
@@ -241,10 +267,14 @@ class Desktop:
 
         ttk.Label(self.pages['plan'], textvariable=self.selection_label).pack(anchor='w', pady=(0, 8))
         self.table = self.make_table(self.pages['plan'],
-            ('status', 'model', 'window', 'fold', 'seed', 'representation'),
-            ('Situação', 'Modelo', 'Janela (frames)', 'Fold', 'Seed', 'Entrada'),
-            (150, 230, 120, 60, 60, 150))
+            ('status', 'experiment', 'model', 'window', 'fold', 'seed', 'representation'),
+            ('Situação', 'Experimento', 'Modelo', 'Janela (frames)', 'Fold', 'Seed', 'Entrada'),
+            (130, 190, 180, 100, 55, 55, 100))
         self.table.bind('<<TreeviewSelect>>', self.select_run)
+        self.confirm_button = ttk.Button(self.pages['plan'], text='Confirmar candidato selecionado',
+                                         command=self.confirm_candidate)
+        self.confirm_button.pack(anchor='w',pady=(8,0))
+        self.buttons.append(self.confirm_button)
         ttk.Label(self.pages['plan'], textvariable=self.detail, wraplength=920).pack(
             fill='x', pady=(10, 0))
 
@@ -258,9 +288,9 @@ class Desktop:
         ttk.Button(results_bar, text="Gráficos", command=self.open_gallery).pack(side='left')
         ttk.Label(self.pages['report'], textvariable=self.result_hint, wraplength=900).pack(anchor='w', pady=(0, 8))
         self.results_table = self.make_table(self.pages['report'],
-            ('model', 'representation', 'window', 'fold', 'seed', 'subset', 'f1'),
-            ('Modelo', 'Entrada', 'Janela', 'Fold', 'Seed', 'Avaliação', 'Macro F1'),
-            (200, 130, 70, 55, 55, 120, 90))
+            ('experiment', 'model', 'representation', 'window', 'fold', 'seed', 'subset', 'f1'),
+            ('Experimento', 'Modelo', 'Entrada', 'Janela', 'Fold', 'Seed', 'Avaliação', 'Macro F1'),
+            (180, 160, 100, 65, 55, 55, 100, 80))
         log = ScrolledText(self.pages['logs'], wrap='word', state='disabled',
                            font=('TkFixedFont', 10), borderwidth=0, padx=8, pady=8)
         log.pack(fill='both', expand=True)
@@ -320,6 +350,43 @@ class Desktop:
             self.options_window = None
         self.refresh()
 
+    def confirm_candidate(self):
+        if self.busy:
+            return
+        selection=self.table.selection()
+        if not selection:
+            self.message.set('Selecione um candidato na tabela de experimentos.')
+            return
+        from .binary_suite import create_confirmation
+        try:
+            path=create_confirmation(self.path,selection[0])
+            name=load_config(path)['name']
+            EXPERIMENTS[name]=path.resolve()
+            self.experiment_box.configure(values=tuple(EXPERIMENTS))
+            self.select_config(path)
+            self.scope.set('Confirmar os escolhidos')
+            self.refresh()
+            self.message.set('Candidato congelado pela validação. Iniciar / continuar executará a confirmação; redes usam cinco seeds.')
+        except Exception as error:
+            self.message.set(f'Não foi possível confirmar: {error}')
+
+    def create_round(self):
+        if self.busy:
+            return
+        if not self.config.get('target'):
+            self.message.set('Selecione a bateria binária para criar uma nova rodada.')
+            return
+        from .binary_suite import new_round
+        try:
+            path = new_round(self.path)
+            name = load_config(path)['name']
+            EXPERIMENTS[name] = path.resolve()
+            self.experiment_box.configure(values=tuple(EXPERIMENTS))
+            self.select_config(path)
+            self.message.set('Nova rodada vazia criada. Clique em Iniciar / continuar para treinar do zero.')
+        except Exception as error:
+            self.message.set(f'Não foi possível criar a rodada: {error}')
+
     def choose_config(self):
         from tkinter import filedialog
         path = filedialog.askopenfilename(parent=self.root, initialdir=CONFIG_DIR,
@@ -364,6 +431,11 @@ class Desktop:
         ttk.Button(tools, text='Protocolo', command=lambda: self.show_document(
             'Protocolo', protocol_path(self.config))).pack(side='left')
 
+        if self.config.get('target') and not self.config.get('suite') and not self.config.get('measurement_protocol'):
+            ttk.Label(body, text='Pasta dos vídeos').grid(row=5,column=0,sticky='w')
+            ttk.Entry(body,textvariable=self.video_dir).grid(row=5,column=1,sticky='ew')
+            ttk.Button(body,text='Extrair indicadores',command=lambda:self.execute('extract')).grid(row=5,column=2)
+
         if self.config.get('measurement_protocol'):
             panel = ttk.LabelFrame(body, text='Extração de medidas', padding=12)
             panel.grid(row=5, column=0, columnspan=3, sticky='ew', pady=(14, 0))
@@ -381,6 +453,8 @@ class Desktop:
                 row=4, column=0, columnspan=2, sticky='w', pady=6)
             ttk.Button(panel, text='Extrair', command=lambda: self.execute('measurement-extract')).grid(
                 row=5, column=1, sticky='e')
+        ttk.Checkbutton(body, text='Executar DTW mesmo acima do orçamento de pares (pode demorar horas)',
+                        variable=self.allow_expensive).grid(row=7, column=0, columnspan=3, sticky='w', pady=8)
         ttk.Button(body, text='Fechar', command=window.destroy).grid(row=6, column=2, sticky='e', pady=(12, 0))
         window.bind('<Destroy>', lambda event: setattr(self, 'options_window', None)
                     if event.widget is window else None)
@@ -397,7 +471,7 @@ class Desktop:
             for var in self.counter_vars.values():
                 var.set('—')
         self.snapshot_key = key
-        self.selection_label.set(f'{self.scope.get()} · {self.paradigm.get()}')
+        self.selection_label.set(('Atenção = alert · Distração = fatigue + distraction · ' if self.config.get('target') else 'Três classes · ') + f'{self.scope.get()} · {self.paradigm.get()}')
         if self.snapshot_thread is not None and self.snapshot_thread.is_alive():
             self.refresh_pending = True
             return
@@ -430,6 +504,7 @@ class Desktop:
         self.rows_by_id = {r.run_id: r for r in plan}
         for run in plan:
             self.table.insert('', 'end', iid=run.run_id, values=(STATES.get(run.status, run.status),
+                run.run_id.split('::')[0] if '::' in run.run_id else self.config['name'],
                 run.model, run.window_size_frames, run.fold, run.seed, run.representation))
         if selection and selection[0] in self.rows_by_id:
             self.table.selection_set(selection[0])
@@ -444,7 +519,7 @@ class Desktop:
             except (ValueError, TypeError):
                 score = '—'
             subset = {'validation': 'Validação', 'test': 'Teste'}.get(row.get('subset'), row.get('subset', '—'))
-            self.results_table.insert('', 'end', values=(row.get('model', '—'),
+            self.results_table.insert('', 'end', values=(row.get('experiment',self.config['name']), row.get('model', '—'),
                 row.get('representation', '—'), row.get('window_size_frames', '—'),
                 row.get('fold', '—'), row.get('seed', '—'), subset, score))
         self.result_hint.set(f'{len(rows)} avaliações compatíveis com a seleção.' if rows else
@@ -493,7 +568,8 @@ class Desktop:
         try:
             command = execution_command(self.path, action, self.scope.get(), self.paradigm.get(),
                 self.video_dir.get(), video=self.video.get(), start_frame=self.start_frame.get(),
-                max_frames=self.max_frames.get(), full=self.full.get(), output=self.extraction_output.get())
+                max_frames=self.max_frames.get(), full=self.full.get(), output=self.extraction_output.get(),
+                allow_expensive=self.allow_expensive.get())
             self.job.start(command)
         except Exception as error:
             self.message.set(f'Não foi possível iniciar: {error}')

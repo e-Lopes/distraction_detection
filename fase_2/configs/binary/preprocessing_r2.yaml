@@ -1,0 +1,65 @@
+extends: ../binary_experiment.yaml
+name: G3 · Pré-processamento R2
+models:
+  screening:
+    rule:
+      enabled: false
+    feature:
+      enabled: true
+      representation: R2
+      windows: &id001
+      - 30
+      - 60
+      - 150
+      balancing: none
+      candidates:
+      - model: logistic_regression
+        parameters:
+          C: 1.0
+          max_iter: 1000
+      - model: svm
+        parameters:
+          C: 1.0
+          kernel: linear
+          probability: true
+    distance:
+      enabled: false
+    shapelet:
+      enabled: false
+    transform:
+      enabled: false
+    deep:
+      enabled: true
+      representation: R2
+      windows: *id001
+      balancing: none
+      candidates:
+      - model: lstm
+        parameters:
+          hidden_dim: 64
+          num_layers: 2
+          bidirectional: false
+          dropout: 0.25
+          pooling: last
+      - model: tcn
+        parameters:
+          channels:
+          - 32
+          - 64
+          - 64
+          kernel_size: 3
+          dropout: 0.25
+          pooling: mean
+      - model: transformer
+        parameters:
+          model_dim: 32
+          num_heads: 4
+          num_layers: 2
+          feedforward_dim: 64
+          dropout: 0.25
+          pooling: mean
+          max_length: 150
+    ensemble:
+      enabled: false
+outputs:
+  root: fase_2/outputs/binary_v1/preprocessing_r2

@@ -131,9 +131,10 @@ def light_augment_training_windows(
     values: Sequence[np.ndarray], labels: Sequence[int], metadata: Sequence[SequenceMetadata],
     features: Sequence[str], config: Mapping[str, object], *, seed: int,
     audit_records: list[dict[str, object]] | None = None,
+    classes=CLASSES,
 ) -> tuple[list[np.ndarray], list[int], list[SequenceMetadata]]:
     """Materializa uma copia leve por janela minoritaria antes da padronizacao."""
-    class_to_index = {label: index for index, label in enumerate(CLASSES)}
+    class_to_index = {label: index for index, label in enumerate(classes)}
     minority = {class_to_index[str(name)] for name in config.get("minority_classes", ())}
     if not minority or int(config.get("copies_per_minority_window", 1)) != 1:
         raise ValueError("G4 exige uma copia por janela minoritaria")
@@ -169,7 +170,7 @@ def light_augment_training_windows(
         out_metadata.append(item)
         if audit_records is not None:
             audit_records.append({
-                "source_index": source_index, "class": CLASSES[int(label)],
+                "source_index": source_index, "class": classes[int(label)],
                 "video_id": item.video_id, "start_frame": item.start_frame,
                 "end_frame": item.end_frame, "seed": seed,
                 "operations": "scaling+jitter" + ("+masking" if mask_length else ""),
@@ -197,6 +198,7 @@ def build_sequence_fold(
     training_augmentation: Mapping[str, object] | None = None,
     augmentation_seed: int = 42,
     augmentation_audit: list[dict[str, object]] | None = None,
+    classes=CLASSES,
 ) -> tuple[dict[str, SequenceSplit], SequenceScaler, dict[str, float]]:
     representation = representation.upper()
     if representation.startswith('Q'):
@@ -205,7 +207,7 @@ def build_sequence_fold(
         from .measurement_data import build_measurement_fold
         return build_measurement_fold(series, labels_by_video, blocks, preprocessing,
             fold=fold, size_frames=size_frames, stride_frames=stride_frames,
-            minimum_proportion=minimum_proportion, representation=representation)
+            minimum_proportion=minimum_proportion, representation=representation, classes=classes)
     features = representation_features(representation)
     short_gap_max = int(preprocessing.get("short_gap_max_frames", 0))
     if representation == "R0" and short_gap_max != 0:
@@ -240,13 +242,13 @@ def build_sequence_fold(
         labels_by_video,
         size_frames=size_frames,
         stride_frames=stride_frames,
-        behavior_classes=set(CLASSES),
+        behavior_classes=set(classes),
         minimum_proportion=minimum_proportion,
     )
     raw: dict[str, list[np.ndarray]] = {name: [] for name in ("train", "validation", "test")}
     labels: dict[str, list[int]] = {name: [] for name in raw}
     metadata: dict[str, list[SequenceMetadata]] = {name: [] for name in raw}
-    class_to_index = {label: index for index, label in enumerate(CLASSES)}
+    class_to_index = {label: index for index, label in enumerate(classes)}
     for window in windows:
         if window.label == "mixed":
             continue
@@ -298,7 +300,7 @@ def build_sequence_fold(
         raw["train"], labels["train"], metadata["train"] = light_augment_training_windows(
             raw["train"], labels["train"], metadata["train"], features,
             training_augmentation, seed=augmentation_seed,
-            audit_records=augmentation_audit,
+            audit_records=augmentation_audit, classes=classes,
         )
 
     train_values = np.asarray(raw["train"], dtype=np.float32)

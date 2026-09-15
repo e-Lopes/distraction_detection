@@ -1,0 +1,28 @@
+extends: binary_experiment.yaml
+name: Bateria binária completa
+suite:
+  profiles:
+  - label: Atenção × Distração — comparação completa
+    config: fase_2/configs/binary_experiment.yaml
+  - label: Características temporais
+    config: fase_2/configs/binary/behavior_features.yaml
+  - label: G2 · Temporais R0 sem balanceamento
+    config: fase_2/configs/binary/temporal_r0.yaml
+  - label: G3 · Pré-processamento R1
+    config: fase_2/configs/binary/preprocessing_r1.yaml
+  - label: G3 · Pré-processamento R2
+    config: fase_2/configs/binary/preprocessing_r2.yaml
+  - label: G4 · Pesos de classe
+    config: fase_2/configs/binary/balance_class_weights.yaml
+  - label: G4 · Amostragem ponderada
+    config: fase_2/configs/binary/balance_weighted_sampling.yaml
+  - label: G4 · Aumento de dados
+    config: fase_2/configs/binary/balance_augmentation.yaml
+  - label: G4.5 · Focal Loss
+    config: fase_2/configs/binary/focal.yaml
+  - label: Qualidade das medidas · binário
+    config: fase_2/configs/binary/measurement.yaml
+  - label: G4.6 · Robustez à pose
+    config: fase_2/configs/binary/pose.yaml
+outputs:
+  root: fase_2/outputs/binary_v1/suite

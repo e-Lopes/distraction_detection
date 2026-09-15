@@ -41,8 +41,8 @@ class FocalLoss(nn.Module):
 
     def __init__(self, alpha: torch.Tensor, *, gamma: float) -> None:
         super().__init__()
-        if alpha.ndim != 1 or len(alpha) != len(CLASSES):
-            raise ValueError(f"alpha deve possuir {len(CLASSES)} valores")
+        if alpha.ndim != 1 or len(alpha) < 2:
+            raise ValueError("alpha deve possuir pelo menos dois valores")
         if not torch.isfinite(alpha).all() or torch.any(alpha <= 0):
             raise ValueError("alpha deve ser positivo e finito")
         if not np.isfinite(gamma) or gamma < 0:
@@ -89,8 +89,8 @@ def class_weights(labels: np.ndarray, *, num_classes: int | None = None) -> np.n
     return len(labels) / (class_count * counts)
 
 
-def sample_weights(labels: np.ndarray) -> np.ndarray:
-    weights = class_weights(labels)
+def sample_weights(labels: np.ndarray, *, num_classes=None) -> np.ndarray:
+    weights = class_weights(labels, num_classes=num_classes)
     return weights[np.asarray(labels, dtype=int)]
 
 
@@ -109,6 +109,7 @@ def make_loader(
     num_workers: int,
     pin_memory: bool,
     weighted_sampling: bool = False,
+    num_classes: int | None = None,
 ) -> DataLoader:
     generator = torch.Generator().manual_seed(seed)
     sampler = None
@@ -116,7 +117,7 @@ def make_loader(
         if not shuffle:
             raise ValueError("weighted sampling e exclusivo do loader de treino")
         sampler = WeightedRandomSampler(
-            torch.as_tensor(sample_weights(split.labels), dtype=torch.double),
+            torch.as_tensor(sample_weights(split.labels, num_classes=num_classes), dtype=torch.double),
             len(split.labels),
             replacement=True,
             generator=generator,
@@ -295,7 +296,7 @@ def train_model(
         if balancing != "none":
             raise ValueError("Focal Loss G4.5B não pode ser combinada com balanceamento")
         alpha = torch.tensor(
-            class_weights(splits["train"].labels), dtype=torch.float32, device=device
+            class_weights(splits["train"].labels, num_classes=output_classes), dtype=torch.float32, device=device
         )
         criterion = FocalLoss(alpha, gamma=float(training.get("focal_gamma", 2.0)))
     else:
@@ -317,6 +318,7 @@ def train_model(
         num_workers=int(training["num_workers"]),
         pin_memory=pin_memory,
         weighted_sampling=balancing == "weighted_sampling",
+        num_classes=output_classes,
     )
     validation_loader = make_loader(
         splits["validation"],

@@ -51,6 +51,8 @@ def prepare_measurements(config_path, config):
         if meta.get('extraction_code_sha256') != sha256_file(Path(__file__).parent/'features'/'measurement_raw.py'):
             raise ValueError('Raw extraction code changed; review provenance before reusing measurements')
     labels = expand_behavior_labels({k:len(v) for k,v in series.items()}, _read_csv(Path(config['data']['annotations'])))
+    from .data.targets import map_target_labels, target_classes
+    labels = map_target_labels(labels, config)
     blocks = [SplitBlock(int(r['fold']), r['subset'], r['video_id'], int(r['start_frame']), int(r['end_frame'])) for r in _read_csv(Path(config['splits']['manifest']))]
     coverage, window_rows, rejection_rows, gap_rows = [], [], [], []
     variants = config['measurement_protocol']['variants']
@@ -92,7 +94,7 @@ def prepare_measurements(config_path, config):
                     rejection_rows.extend(dict(variant=name,fold=fold,subset=b.subset,video_id=b.video_id,label=label,reason=k,count=v) for k,v in reasons.items())
             splits, _, _ = build_measurement_fold(series, labels, blocks, pre, fold=fold,
                 size_frames=60, stride_frames=config['windowing']['stride_frames'],
-                minimum_proportion=config['windowing']['minimum_target_proportion'], representation=name)
+                minimum_proportion=config['windowing']['minimum_target_proportion'], representation=name, classes=target_classes(config))
             for subset in ('train','validation'):
                 for item in splits[subset].metadata:
                     window_rows.append(dict(variant=name,fold=fold,subset=subset,video_id=item.video_id,

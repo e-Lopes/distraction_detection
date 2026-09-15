@@ -1,0 +1,62 @@
+extends: ../binary_experiment.yaml
+name: G4 · Pesos de classe
+models:
+  screening:
+    rule:
+      enabled: false
+    feature:
+      enabled: true
+      representation: R0_flat
+      windows:
+      - 60
+      - 150
+      balancing: class_weights
+      candidates:
+      - model: svm
+        parameters:
+          C: 1.0
+          kernel: linear
+          probability: true
+    distance:
+      enabled: false
+    shapelet:
+      enabled: false
+    transform:
+      enabled: false
+    deep:
+      enabled: true
+      representation: R0
+      windows:
+      - 60
+      - 150
+      balancing: class_weights
+      candidates:
+      - model: lstm
+        parameters:
+          hidden_dim: 64
+          num_layers: 2
+          bidirectional: false
+          dropout: 0.25
+          pooling: last
+      - model: tcn
+        parameters:
+          channels:
+          - 32
+          - 64
+          - 64
+          kernel_size: 3
+          dropout: 0.25
+          pooling: mean
+      - model: transformer
+        parameters:
+          model_dim: 32
+          num_heads: 4
+          num_layers: 2
+          feedforward_dim: 64
+          dropout: 0.25
+          pooling: mean
+          max_length: 150
+    ensemble:
+      enabled: false
+outputs:
+  root: fase_2/outputs/binary_v1/balance_class_weights

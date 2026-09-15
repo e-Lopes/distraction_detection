@@ -9,7 +9,7 @@ from .dummy_baseline import CLASSES
 
 
 def build_measurement_fold(series, labels_by_video, blocks, preprocessing, *, fold,
-                           size_frames, stride_frames, minimum_proportion, representation):
+                           size_frames, stride_frames, minimum_proportion, representation, classes=CLASSES):
     from .temporal_data import SequenceSplit, SequenceScaler, SequenceMetadata
     if validate_split_blocks(blocks, purge_gap_frames=0):
         raise ValueError('Invalid or overlapping split blocks')
@@ -44,7 +44,7 @@ def build_measurement_fold(series, labels_by_video, blocks, preprocessing, *, fo
     xs = {s: [] for s in ('train', 'validation', 'test')}
     ys, meta = {s: [] for s in xs}, {s: [] for s in xs}
     windows = build_windows(labels_by_video, size_frames=size_frames, stride_frames=stride_frames,
-                            behavior_classes=set(CLASSES), minimum_proportion=minimum_proportion)
+                            behavior_classes=set(classes), minimum_proportion=minimum_proportion)
     for w in windows:
         if w.label == 'mixed': continue
         matches = [b for b in selected if b.video_id == w.video_id and b.start_frame <= w.start_frame and w.end_frame <= b.end_frame]
@@ -58,7 +58,7 @@ def build_measurement_fold(series, labels_by_video, blocks, preprocessing, *, fo
             x = scaler.transform(x)
         x[~np.isfinite(x)] = 0 # Numeric model placeholder AFTER observed-only scaling.
         xs[b.subset].append(x)
-        ys[b.subset].append(CLASSES.index(w.label))
+        ys[b.subset].append(classes.index(w.label))
         valid = np.array([[r['valid_'+s] == '1' for s in SIGNALS] for r in rows])
         ip = np.array([[r['interpolated_'+s] == '1' for s in SIGNALS] for r in rows])
         meta[b.subset].append(SequenceMetadata(w.video_id, w.start_frame, w.end_frame,

@@ -1,0 +1,186 @@
+[TRAIN][screening][blocked] paradigm=distance model=knn_dtw window=60 fold=1 reason=DTW train=3233 eval=2715 pairs=8,777,595; limit=5,000,000; cache=True
+[TRAIN][screening][blocked] paradigm=distance model=knn_dtw window=60 fold=2 reason=DTW train=2910 eval=3037 pairs=8,837,670; limit=5,000,000; cache=True
+[TRAIN][screening][blocked] paradigm=distance model=knn_dtw window=60 fold=3 reason=DTW train=3307 eval=2652 pairs=8,770,164; limit=5,000,000; cache=True
+[TRAIN][screening][blocked] paradigm=distance model=knn_dtw window=60 fold=4 reason=DTW train=3723 eval=2225 pairs=8,283,675; limit=5,000,000; cache=True
+[TRAIN][screening][1/124] paradigm=feature model=dummy window=30 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w30__fold_1__seed_42 time=1.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_1__seed_42.joblib
+[TRAIN][screening][2/124] paradigm=feature model=dummy window=30 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w30__fold_2__seed_42 time=0.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_2__seed_42.joblib
+[TRAIN][screening][3/124] paradigm=feature model=dummy window=30 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w30__fold_3__seed_42 time=0.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_3__seed_42.joblib
+[TRAIN][screening][4/124] paradigm=feature model=dummy window=30 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w30__fold_4__seed_42 time=0.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w30__fold_4__seed_42.joblib
+[TRAIN][screening][5/124] paradigm=feature model=dummy window=60 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w60__fold_1__seed_42 time=0.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_1__seed_42.joblib
+[TRAIN][screening][6/124] paradigm=feature model=dummy window=60 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w60__fold_2__seed_42 time=0.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_2__seed_42.joblib
+[TRAIN][screening][7/124] paradigm=feature model=dummy window=60 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w60__fold_3__seed_42 time=0.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_3__seed_42.joblib
+[TRAIN][screening][8/124] paradigm=feature model=dummy window=60 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w60__fold_4__seed_42 time=0.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w60__fold_4__seed_42.joblib
+[TRAIN][screening][9/124] paradigm=feature model=dummy window=150 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w150__fold_1__seed_42 time=1.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_1__seed_42.joblib
+[TRAIN][screening][10/124] paradigm=feature model=dummy window=150 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w150__fold_2__seed_42 time=1.3s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_2__seed_42.joblib
+[TRAIN][screening][11/124] paradigm=feature model=dummy window=150 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w150__fold_3__seed_42 time=1.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_3__seed_42.joblib
+[TRAIN][screening][12/124] paradigm=feature model=dummy window=150 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__dummy__r0_flat__w150__fold_4__seed_42 time=1.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__dummy__r0_flat__w150__fold_4__seed_42.joblib
+[TRAIN][screening][13/124] paradigm=feature model=logistic_regression window=30 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w30__fold_1__seed_42 time=0.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_1__seed_42.joblib
+[TRAIN][screening][14/124] paradigm=feature model=logistic_regression window=30 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w30__fold_2__seed_42 time=0.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_2__seed_42.joblib
+[TRAIN][screening][15/124] paradigm=feature model=logistic_regression window=30 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w30__fold_3__seed_42 time=0.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_3__seed_42.joblib
+[TRAIN][screening][16/124] paradigm=feature model=logistic_regression window=30 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w30__fold_4__seed_42 time=0.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w30__fold_4__seed_42.joblib
+[TRAIN][screening][17/124] paradigm=feature model=logistic_regression window=60 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w60__fold_1__seed_42 time=0.1s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_1__seed_42.joblib
+[TRAIN][screening][18/124] paradigm=feature model=logistic_regression window=60 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w60__fold_2__seed_42 time=0.1s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_2__seed_42.joblib
+[TRAIN][screening][19/124] paradigm=feature model=logistic_regression window=60 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w60__fold_3__seed_42 time=0.1s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_3__seed_42.joblib
+[TRAIN][screening][20/124] paradigm=feature model=logistic_regression window=60 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w60__fold_4__seed_42 time=0.1s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w60__fold_4__seed_42.joblib
+[TRAIN][screening][21/124] paradigm=feature model=logistic_regression window=150 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w150__fold_1__seed_42 time=0.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_1__seed_42.joblib
+[TRAIN][screening][22/124] paradigm=feature model=logistic_regression window=150 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w150__fold_2__seed_42 time=0.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_2__seed_42.joblib
+[TRAIN][screening][23/124] paradigm=feature model=logistic_regression window=150 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w150__fold_3__seed_42 time=0.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_3__seed_42.joblib
+[TRAIN][screening][24/124] paradigm=feature model=logistic_regression window=150 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__logistic_regression__r0_flat__w150__fold_4__seed_42 time=0.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__logistic_regression__r0_flat__w150__fold_4__seed_42.joblib
+[TRAIN][screening][25/124] paradigm=feature model=svm window=30 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w30__fold_1__seed_42 time=5.9s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_1__seed_42.joblib
+[TRAIN][screening][26/124] paradigm=feature model=svm window=30 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w30__fold_2__seed_42 time=8.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_2__seed_42.joblib
+[TRAIN][screening][27/124] paradigm=feature model=svm window=30 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w30__fold_3__seed_42 time=10.7s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_3__seed_42.joblib
+[TRAIN][screening][28/124] paradigm=feature model=svm window=30 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w30__fold_4__seed_42 time=12.5s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w30__fold_4__seed_42.joblib
+[TRAIN][screening][29/124] paradigm=feature model=svm window=60 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w60__fold_1__seed_42 time=10.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_1__seed_42.joblib
+[TRAIN][screening][30/124] paradigm=feature model=svm window=60 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w60__fold_2__seed_42 time=21.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_2__seed_42.joblib
+[TRAIN][screening][31/124] paradigm=feature model=svm window=60 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w60__fold_3__seed_42 time=25.3s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_3__seed_42.joblib
+[TRAIN][screening][32/124] paradigm=feature model=svm window=60 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w60__fold_4__seed_42 time=26.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w60__fold_4__seed_42.joblib
+[TRAIN][screening][33/124] paradigm=feature model=svm window=150 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w150__fold_1__seed_42 time=5.1s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_1__seed_42.joblib
+[TRAIN][screening][34/124] paradigm=feature model=svm window=150 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w150__fold_2__seed_42 time=13.7s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_2__seed_42.joblib
+[TRAIN][screening][35/124] paradigm=feature model=svm window=150 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w150__fold_3__seed_42 time=15.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_3__seed_42.joblib
+[TRAIN][screening][36/124] paradigm=feature model=svm window=150 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__svm__r0_flat__w150__fold_4__seed_42 time=9.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__svm__r0_flat__w150__fold_4__seed_42.joblib
+[TRAIN][screening][37/124] paradigm=feature model=random_forest window=30 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w30__fold_1__seed_42 time=4.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_1__seed_42.joblib
+[TRAIN][screening][38/124] paradigm=feature model=random_forest window=30 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42 time=2.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42.joblib
+[TRAIN][screening][39/124] paradigm=feature model=random_forest window=30 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w30__fold_3__seed_42 time=3.9s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_3__seed_42.joblib
+[TRAIN][screening][40/124] paradigm=feature model=random_forest window=30 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w30__fold_4__seed_42 time=4.5s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w30__fold_4__seed_42.joblib
+[TRAIN][screening][41/124] paradigm=feature model=random_forest window=60 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w60__fold_1__seed_42 time=6.1s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_1__seed_42.joblib
+[TRAIN][screening][42/124] paradigm=feature model=random_forest window=60 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w60__fold_2__seed_42 time=3.7s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_2__seed_42.joblib
+[TRAIN][screening][43/124] paradigm=feature model=random_forest window=60 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w60__fold_3__seed_42 time=5.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_3__seed_42.joblib
+[TRAIN][screening][44/124] paradigm=feature model=random_forest window=60 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w60__fold_4__seed_42 time=6.7s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w60__fold_4__seed_42.joblib
+[TRAIN][screening][45/124] paradigm=feature model=random_forest window=150 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w150__fold_1__seed_42 time=8.7s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_1__seed_42.joblib
+[TRAIN][screening][46/124] paradigm=feature model=random_forest window=150 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w150__fold_2__seed_42 time=5.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_2__seed_42.joblib
+[TRAIN][screening][47/124] paradigm=feature model=random_forest window=150 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w150__fold_3__seed_42 time=8.0s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_3__seed_42.joblib
+[TRAIN][screening][48/124] paradigm=feature model=random_forest window=150 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__random_forest__r0_flat__w150__fold_4__seed_42 time=10.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__random_forest__r0_flat__w150__fold_4__seed_42.joblib
+[TRAIN][screening][49/124] paradigm=feature model=xgboost window=30 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w30__fold_1__seed_42 time=1.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_1__seed_42.joblib
+[TRAIN][screening][50/124] paradigm=feature model=xgboost window=30 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w30__fold_2__seed_42 time=1.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_2__seed_42.joblib
+[TRAIN][screening][51/124] paradigm=feature model=xgboost window=30 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w30__fold_3__seed_42 time=1.2s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_3__seed_42.joblib
+[TRAIN][screening][52/124] paradigm=feature model=xgboost window=30 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w30__fold_4__seed_42 time=1.3s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w30__fold_4__seed_42.joblib
+[TRAIN][screening][53/124] paradigm=feature model=xgboost window=60 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w60__fold_1__seed_42 time=2.5s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_1__seed_42.joblib
+[TRAIN][screening][54/124] paradigm=feature model=xgboost window=60 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w60__fold_2__seed_42 time=2.5s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_2__seed_42.joblib
+[TRAIN][screening][55/124] paradigm=feature model=xgboost window=60 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w60__fold_3__seed_42 time=2.5s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_3__seed_42.joblib
+[TRAIN][screening][56/124] paradigm=feature model=xgboost window=60 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w60__fold_4__seed_42 time=2.6s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w60__fold_4__seed_42.joblib
+[TRAIN][screening][57/124] paradigm=feature model=xgboost window=150 fold=1 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_1__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w150__fold_1__seed_42 time=6.4s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_1__seed_42.joblib
+[TRAIN][screening][58/124] paradigm=feature model=xgboost window=150 fold=2 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_2__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w150__fold_2__seed_42 time=6.3s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_2__seed_42.joblib
+[TRAIN][screening][59/124] paradigm=feature model=xgboost window=150 fold=3 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_3__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w150__fold_3__seed_42 time=6.5s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_3__seed_42.joblib
+[TRAIN][screening][60/124] paradigm=feature model=xgboost window=150 fold=4 seed=42
+Progresso salvo: fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_4__seed_42.joblib
+[DONE] run_id=final__screening__feature__xgboost__r0_flat__w150__fold_4__seed_42 time=6.8s checkpoint=fase_2/outputs/binary_v1/comparison/checkpoints/final__screening__feature__xgboost__r0_flat__w150__fold_4__seed_42.joblib
+[TRAIN][screening][61/124] paradigm=shapelet model=random_shapelet_ridge window=60 fold=1 seed=42
+[SHAPELET] fold=1 candidates=2000

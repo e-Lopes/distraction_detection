@@ -1,0 +1,3 @@
+Dados verificados.
+- A regra histórica de rótulo considera apenas imagens anotadas. Trechos parcialmente sem rótulo não são automaticamente descartados.
+- Interpolação linear é retrospectiva dentro do trecho; a configuração principal usa preenchimento com zero, sem interpolação.

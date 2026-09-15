@@ -1,0 +1,3 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+svm,R0_flat,2,validation,attention,0.928928928928929,0.8592592592592593,0.8927368927368927,1080,final__screening__feature__svm__r0_flat__w60__fold_2__seed_42,42,R0_flat,60,none
+svm,R0_flat,2,validation,distraction,0.12643678160919541,0.23655913978494625,0.1647940074906367,93,final__screening__feature__svm__r0_flat__w60__fold_2__seed_42,42,R0_flat,60,none

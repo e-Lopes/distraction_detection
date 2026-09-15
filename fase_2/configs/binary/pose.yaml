@@ -1,0 +1,45 @@
+extends: ../binary_experiment.yaml
+name: G4.6 · Robustez à pose
+data:
+  schema_version: v2
+  facial_series: fase_2/data/interim/binary_geometry_v2
+  extraction_manifest: fase_2/data/interim/binary_geometry_v2/extraction_manifest.csv
+models:
+  screening:
+    rule:
+      enabled: false
+    deep:
+      enabled: false
+    distance:
+      enabled: false
+    shapelet:
+      enabled: false
+    transform:
+      enabled: false
+    feature:
+      enabled: true
+      windows:
+      - 60
+      representation: pose_baseline
+      balancing: none
+      candidates:
+      - model: random_forest
+        representation: pose_baseline
+        parameters:
+          n_estimators: 300
+          n_jobs: 2
+          max_depth: null
+      - model: random_forest
+        representation: pose_geometry_normalized
+        parameters:
+          n_estimators: 300
+          n_jobs: 2
+          max_depth: null
+      - model: random_forest
+        representation: pose_pose_corrected
+        parameters:
+          n_estimators: 300
+          n_jobs: 2
+          max_depth: null
+outputs:
+  root: fase_2/outputs/binary_v1/pose

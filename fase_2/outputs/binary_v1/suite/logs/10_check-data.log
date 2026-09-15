@@ -1,0 +1,7 @@
+Há dados que precisam de correção.
+- Série facial video_01: fase_2/data/interim/measurement_raw_v1/video_01.csv: incomplete raw extraction (0/32013)
+- Série facial video_02: fase_2/data/interim/measurement_raw_v1/video_02.csv: incomplete raw extraction (0/28200)
+- Série facial video_03: fase_2/data/interim/measurement_raw_v1/video_03.csv: incomplete raw extraction (0/30334)
+- Série facial video_04: fase_2/data/interim/measurement_raw_v1/video_04.csv: incomplete raw extraction (0/31790)
+- A regra histórica de rótulo considera apenas imagens anotadas. Trechos parcialmente sem rótulo não são automaticamente descartados.
+- Interpolação linear é retrospectiva dentro do trecho; a configuração principal usa preenchimento com zero, sem interpolação.

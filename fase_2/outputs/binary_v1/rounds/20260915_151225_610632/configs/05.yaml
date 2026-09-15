@@ -1,0 +1,406 @@
+name: G4 · Pesos de classe
+version: 1
+primary_metric: macro_f1_oof
+delta_macro_f1: 0.01
+data:
+  video_dir: fase_2/data/raw
+  manifest: fase_2/data/manifests/videos.csv
+  annotations: fase_2/data/manifests/annotation_frame_intervals.csv
+  facial_series: fase_2/data/interim/legacy_extraction
+  extraction_manifest: fase_2/data/interim/legacy_extraction/extraction_manifest.csv
+  roi_config: fase_1/roi_config_temporal.example.json
+  classes:
+  - alert
+  - fatigue
+  - distraction
+  indicators:
+  - ear
+  - mar
+  - pitch
+  - yaw
+  - roll
+  videos:
+  - video_01
+  - video_02
+  - video_03
+  - video_04
+preprocessing:
+  primary: zero_fill
+  historical_representations:
+    R0:
+      short_gap_max_frames: 0
+      long_gap_fill: zero
+    R1:
+      short_gap_max_frames: 15
+      short_gap_method: linear
+      long_gap_fill: training_median
+    R2:
+      short_gap_max_frames: 15
+      short_gap_method: linear
+      long_gap_fill: training_median
+      flags:
+      - face_detected
+      - was_interpolated
+      - missing_duration_so_far
+  fit_on: train_only
+  preserve_long_gaps: true
+  preserve_operator_absence: true
+windowing:
+  sizes_frames:
+  - 30
+  - 60
+  - 150
+  stride_frames: 15
+  label_rule: majority
+  minimum_target_proportion: 0.6
+  transition_policy: exclude_from_primary_training
+  preserve_frame_baseline: true
+  resampling: disabled
+features:
+  base:
+  - ear
+  - mar
+  - pitch
+  - yaw
+  - roll
+  primary_classical: R0_flat
+  primary_temporal: R0
+  temporal_behavior_v1:
+    enabled: true
+    config: fase_2/configs/features/temporal_behavior_v1.yaml
+    groups:
+    - signal_distribution
+    - signal_dynamics
+    - ocular
+    - oral
+    - head_pose
+    - multivariate
+    - missingness
+  optional_dependencies:
+    minirocket: false
+    catch22: false
+    tsfresh: false
+    tsfel: false
+splits:
+  strategy: leave_one_video_out
+  manifest: fase_2/data/manifests/temporal_splits.csv
+  config: fase_2/configs/splits/leave_one_video_out.yaml
+  folds:
+  - 1
+  - 2
+  - 3
+  - 4
+  purge_gap_frames: 150
+  validation: contiguous_blocks
+  external_test_for_selection: false
+models:
+  classical:
+    historical:
+    - dummy
+    - fixed_rules
+    - svm
+    - random_forest
+    - xgboost
+    new:
+    - logistic_regression
+    svm:
+      C: 1.0
+      kernel: linear
+      probability: true
+    logistic_regression:
+      C: 1.0
+      class_weight: null
+      max_iter: 1000
+      solver: lbfgs
+  temporal:
+    historical:
+    - lstm
+    - tcn
+    - transformer
+    optional:
+      minirocket: false
+    parameters:
+      lstm:
+        hidden_dim: 64
+        num_layers: 2
+        bidirectional: false
+        dropout: 0.25
+        pooling: last
+      tcn:
+        channels:
+        - 32
+        - 64
+        - 64
+        kernel_size: 3
+        dropout: 0.25
+        pooling: mean
+      transformer:
+        model_dim: 32
+        num_heads: 4
+        num_layers: 2
+        feedforward_dim: 64
+        dropout: 0.25
+        pooling: mean
+        max_length: 150
+  screening:
+    feature:
+      enabled: true
+      representation: R0_flat
+      windows:
+      - 60
+      - 150
+      balancing: class_weights
+      candidates:
+      - model: svm
+        parameters:
+          C: 1.0
+          kernel: linear
+          probability: true
+    distance:
+      enabled: false
+      representation: R0
+      windows:
+      - 60
+      candidates:
+      - model: knn_dtw
+        parameters:
+          k: 1
+          dependent: true
+          sakoe_chiba_radius: 6
+        cost:
+          max_pairs_without_confirmation: 5000000
+          cache_distances: true
+    shapelet:
+      enabled: false
+      representation: R0
+      windows:
+      - 60
+      candidates:
+      - model: random_shapelet_ridge
+        parameters:
+          candidate_budget: 2000
+          max_shapelets: 200
+          min_length: 6
+          max_length: 30
+          n_jobs: 1
+    transform:
+      enabled: false
+      representation: R0
+      windows: &id001
+      - 30
+      - 60
+      - 150
+      candidates:
+      - model: minirocket_ridge
+        parameters:
+          num_kernels: 5040
+          max_dilations_per_kernel: 32
+          n_jobs: 1
+          alphas:
+          - 0.01
+          - 0.1
+          - 1.0
+          - 10.0
+      - model: multirocket_ridge
+        parameters:
+          n_kernels: 840
+          alpha: 1.0
+          n_jobs: 2
+          batch_size: 64
+      - model: hydra_multirocket_ridge
+        parameters:
+          n_kernels: 840
+          n_groups: 16
+          alpha: 1.0
+          n_jobs: 2
+          batch_size: 64
+      - model: mantis_frozen_ridge
+        parameters:
+          checkpoint: paris-noah/Mantis-8M
+          revision: bc7d5ab40c02133386a28e2c127f35c17c86901d
+          device: cuda
+          batch_size: 16
+          alpha: 1.0
+          resampling: linear_512_align_corners_false
+          channels: independent_embedding_concatenation
+      disabled_candidates:
+      - model: dwt_svm
+        reason: not_required_for_initial_screening
+      - model: sax
+        reason: information_loss_and_no_initial_scientific_need
+      balancing: none
+    ensemble:
+      enabled: false
+      candidates:
+      - drcif
+      - arsenal
+      - hivecote_v2
+      documented_only:
+      - ts_chief
+    rule:
+      enabled: false
+      representation: R0
+      windows: *id001
+      balancing: none
+      candidates:
+      - model: fixed_rules
+        parameters:
+          ear_threshold: 0.25
+          ear_consecutive_frames: 20
+          mar_threshold: 0.55
+          pitch_threshold: -15.0
+    deep:
+      enabled: true
+      representation: R0
+      windows:
+      - 60
+      - 150
+      balancing: class_weights
+      candidates:
+      - model: lstm
+        parameters:
+          hidden_dim: 64
+          num_layers: 2
+          bidirectional: false
+          dropout: 0.25
+          pooling: last
+      - model: tcn
+        parameters:
+          channels:
+          - 32
+          - 64
+          - 64
+          kernel_size: 3
+          dropout: 0.25
+          pooling: mean
+      - model: transformer
+        parameters:
+          model_dim: 32
+          num_heads: 4
+          num_layers: 2
+          feedforward_dim: 64
+          dropout: 0.25
+          pooling: mean
+          max_length: 150
+training:
+  mode: screening
+  screening:
+    seed: 42
+    only_unseen_candidates: false
+    selection_source: validation_only
+    expected_runs: 176
+  confirmation:
+    blocked_until_screening_promotion: true
+    promotion_file: fase_2/outputs/binary_v1/balance_class_weights/selection.yaml
+    seeds:
+    - 42
+    - 123
+    - 456
+    - 789
+    - 2026
+    candidates: []
+  max_epochs: 150
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping:
+    monitor: val_macro_f1
+    mode: max
+    patience: 15
+    minimum_delta: 0.002
+  checkpoint_every_epochs: 10
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  resume: true
+  device: cuda
+balancing:
+  none:
+    enabled: true
+  class_weights:
+    formula: N/(K*N_c)
+    fit_on: train_only
+  weighted_sampling:
+    replacement: true
+    fit_on: train_only
+  focal:
+    gamma: 2.0
+    alpha: N/(K*N_c)
+    fit_on: train_only
+  augmentation:
+    enabled: false
+    fit_on: train_only
+thresholds:
+  prediction: argmax
+  crossfit_fatigue: disabled_after_negative_result
+  selection_source: validation_only
+  test_access_for_selection: false
+event_evaluation:
+  enabled: true
+  status: pending_full_oof_predictions
+  target_class: fatigue
+  minimum_duration_seconds: null
+  gap_tolerance_seconds: null
+  minimum_iou: null
+  selection_source: validation_only
+compute_metrics:
+  global:
+  - accuracy
+  - balanced_accuracy
+  - macro_f1
+  - weighted_f1
+  per_class:
+  - precision
+  - recall
+  - f1
+  - pr_auc
+  stability:
+  - mean
+  - standard_deviation
+  - worst_video
+  - seed_variation
+  event:
+  - event_precision
+  - event_recall
+  - event_f1
+  - false_episodes_per_hour
+  - detection_latency
+  - fragmentation
+  - duration_error
+  cost:
+  - training_seconds
+  - latency_p50_ms
+  - latency_p95_ms
+  - throughput
+  - peak_ram
+  - peak_vram
+  - parameter_count
+  - model_size_bytes
+outputs:
+  root: fase_2/outputs/binary_v1/rounds/20260915_151225_610632/05_balance_class_weights
+  window_counts: fase_2/outputs/binary_v1/balance_class_weights/window_counts.csv
+  registry: fase_2/outputs/binary_v1/balance_class_weights/run_registry.csv
+  metrics: fase_2/outputs/binary_v1/balance_class_weights/metrics_long.csv
+  event_metrics: fase_2/outputs/binary_v1/balance_class_weights/event_metrics.csv
+  figures: fase_2/outputs/binary_v1/balance_class_weights/figures
+  checkpoints: fase_2/outputs/binary_v1/balance_class_weights/checkpoints
+  predictions: fase_2/outputs/binary_v1/balance_class_weights/predictions
+  resolved: fase_2/outputs/binary_v1/balance_class_weights/resolved
+  report: fase_2/outputs/binary_v1/balance_class_weights/report.md
+  figure_format: png
+target:
+  name: attention_distraction
+  version: 1
+  classes:
+  - attention
+  - distraction
+  display_names:
+    attention: Atenção
+    distraction: Distração
+  mapping:
+    alert: attention
+    fatigue: distraction
+    distraction: distraction
+  map_before_windowing: true
+  evaluation: development

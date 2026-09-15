@@ -229,8 +229,9 @@ def evaluate_predictions(
     predicted: np.ndarray,
     train_seconds: float,
     resumed: bool,
+    classes=CLASSES,
 ) -> tuple[dict[str, object], list[dict[str, object]], list[dict[str, object]]]:
-    present = [label for label in CLASSES if label in set(expected)]
+    present = [label for label in classes if label in set(expected)]
     balanced_accuracy = float(
         np.mean([np.mean(predicted[expected == label] == label) for label in present])
     )
@@ -246,18 +247,18 @@ def evaluate_predictions(
             expected, predicted, labels=present, average="macro", zero_division=0
         ),
         "macro_f1_all_classes": f1_score(
-            expected, predicted, labels=CLASSES, average="macro", zero_division=0
+            expected, predicted, labels=classes, average="macro", zero_division=0
         ),
         "present_classes": json.dumps(present),
-        "absent_classes": json.dumps([label for label in CLASSES if label not in present]),
+        "absent_classes": json.dumps([label for label in classes if label not in present]),
         "train_seconds": train_seconds,
         "resumed_checkpoint": resumed,
     }
     precision, recall, f1_values, support = precision_recall_fscore_support(
-        expected, predicted, labels=CLASSES, zero_division=0
+        expected, predicted, labels=classes, zero_division=0
     )
     per_class = []
-    for index, label in enumerate(CLASSES):
+    for index, label in enumerate(classes):
         has_support = bool(support[index])
         per_class.append(
             {
@@ -283,8 +284,8 @@ def evaluate_predictions(
             "predicted": prediction,
             "count": counts[(actual, prediction)],
         }
-        for actual in CLASSES
-        for prediction in CLASSES
+        for actual in classes
+        for prediction in classes
     ]
     return summary, per_class, confusion
 

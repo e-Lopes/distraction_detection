@@ -1,0 +1,11 @@
+{
+  "status": "running",
+  "profiles": [
+    {
+      "config": "fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/00.yaml",
+      "label": "Atenção × Distração — comparação completa",
+      "status": "running",
+      "stage": "train"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+config,label,status,stage,remaining
+fase_2/configs/binary_experiment.yaml,Atenção × Distração — comparação completa,completed,check-data,176
+fase_2/configs/binary/behavior_features.yaml,Características temporais,completed,check-data,48
+fase_2/configs/binary/temporal_r0.yaml,G2 · Temporais R0 sem balanceamento,completed,check-data,36
+fase_2/configs/binary/preprocessing_r1.yaml,G3 · Pré-processamento R1,completed,check-data,60
+fase_2/configs/binary/preprocessing_r2.yaml,G3 · Pré-processamento R2,completed,check-data,60
+fase_2/configs/binary/balance_class_weights.yaml,G4 · Pesos de classe,completed,check-data,32
+fase_2/configs/binary/balance_weighted_sampling.yaml,G4 · Amostragem ponderada,completed,check-data,32
+fase_2/configs/binary/balance_augmentation.yaml,G4 · Aumento de dados,completed,check-data,32
+fase_2/configs/binary/focal.yaml,G4.5 · Focal Loss,completed,check-data,24
+fase_2/configs/binary/measurement.yaml,Qualidade das medidas · binário,failed,check-data,
+fase_2/configs/binary/pose.yaml,G4.6 · Robustez à pose,failed,check-data,

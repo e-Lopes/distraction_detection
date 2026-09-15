@@ -41,9 +41,9 @@ class CostLimitExceeded(RuntimeError):
 def build_temporal_feature_windows(series, labels_by_video, *, size_frames: int,
                                    stride_frames: int, minimum_proportion: float,
                                    groups: Sequence[str], thresholds: Mapping[str, float],
-                                   fps_by_video: Mapping[str, float]) -> list[FeatureWindow]:
+                                   fps_by_video: Mapping[str, float], classes=CLASSES) -> list[FeatureWindow]:
     windows = build_windows(labels_by_video, size_frames=size_frames, stride_frames=stride_frames,
-                            behavior_classes=set(CLASSES), minimum_proportion=minimum_proportion)
+                            behavior_classes=set(classes), minimum_proportion=minimum_proportion)
     result = []
     for window in windows:
         if window.label == "mixed":
@@ -149,7 +149,8 @@ class XGBoostLabelAdapter:
         self.balancing = balancing
 
     def fit(self, values: np.ndarray, labels: Sequence[str]) -> "XGBoostLabelAdapter":
-        encoded = np.asarray([CLASSES.index(label) for label in labels])
+        self.classes_ = np.asarray(sorted(set(labels)))
+        encoded = np.asarray([list(self.classes_).index(label) for label in labels])
         fit_params = {}
         if self.balancing == "class_weights":
             counts = {label: list(labels).count(label) for label in set(labels)}
@@ -159,13 +160,19 @@ class XGBoostLabelAdapter:
         return self
 
     def predict(self, values: np.ndarray) -> np.ndarray:
-        return np.asarray([CLASSES[int(value)] for value in self.model.predict(values)])
+        return self.classes_[self.model.predict(values).astype(int)]
+
+    def predict_proba(self, values):
+        return self.model.predict_proba(values)
 
 
 def feature_classifier(model: str, parameters: Mapping[str, object], *, seed: int,
                        balancing: str) -> BaseEstimator:
     class_weight = "balanced" if balancing == "class_weights" else None
     params = dict(parameters)
+    if model == "dummy":
+        from sklearn.dummy import DummyClassifier
+        return DummyClassifier(strategy="most_frequent")
     if model == "logistic_regression":
         return Pipeline([("scale", StandardScaler()), ("model", LogisticRegression(
             **params, class_weight=class_weight, random_state=seed))])

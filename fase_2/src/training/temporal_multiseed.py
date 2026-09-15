@@ -81,8 +81,8 @@ def device_metadata(device: torch.device) -> dict[str, object]:
     return metadata
 
 
-def _decode(values: np.ndarray) -> np.ndarray:
-    return np.asarray([CLASSES[int(value)] for value in values])
+def _decode(values: np.ndarray, classes=CLASSES) -> np.ndarray:
+    return np.asarray([classes[int(value)] for value in values])
 
 
 def aggregate_by_seed(
@@ -531,6 +531,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     labels = expand_behavior_labels(
         {video_id: len(rows) for video_id, rows in series.items()}, _read_csv(interval_path)
     )
+    from ..data.targets import map_target_labels, target_classes
+    classes = target_classes(experiment)
+    labels = map_target_labels(labels, experiment)
     fingerprint = experiment_fingerprint(
         [
             experiment_path,
@@ -572,7 +575,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             representation=representation,
             training_augmentation=(experiment.get("augmentation") if balancing == "augmentation" else None),
             augmentation_seed=int(experiment.get("augmentation_seed", 42)),
-            augmentation_audit=augmentation_records,
+            augmentation_audit=augmentation_records, classes=classes,
         )
         if augmentation_records:
             _write_csv(
@@ -612,7 +615,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         checkpoint_dir=checkpoint_root / run_name,
                         fingerprint=fingerprint,
                         resume=not args.no_resume,
-                        feature_names=features,
+                        feature_names=features, num_classes=len(classes),
                     )
                     run_history = [
                         {
@@ -643,8 +646,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                             amp=bool(experiment["training"]["amp"]),
                         )
                         inference_seconds = time.perf_counter() - inference_started
-                        expected = _decode(expected_ids)
-                        predicted = _decode(predicted_ids)
+                        expected = _decode(expected_ids, classes)
+                        predicted = _decode(predicted_ids, classes)
                         summary, per_class, confusion = evaluate_predictions(
                             model_name=str(model_name),
                             ablation=f"temporal_{representation.lower()}",
@@ -653,7 +656,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             expected=expected,
                             predicted=predicted,
                             train_seconds=result.training_seconds,
-                            resumed=result.resumed,
+                            resumed=result.resumed, classes=classes,
                         )
                         context = {
                             "run_id": run_name,
@@ -705,9 +708,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                                 "predicted": prediction,
                                 "missing_ratio": item.missing_ratio,
                                 "interpolated_ratio": item.interpolated_ratio,
-                                "prob_alert": probability[0],
-                                "prob_fatigue": probability[1],
-                                "prob_distraction": probability[2],
+                                **{f"prob_{label}": float(probability[index])
+                                   for index, label in enumerate(classes)},
                             }
                             for item, actual, prediction, probability in zip(
                                 splits[subset].metadata, expected, predicted, probabilities
@@ -724,6 +726,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "configuration_id": configuration_id,
                         "representation": representation,
                         "feature_names": list(features),
+                        "classes": list(classes),
+                        "target": experiment.get("target"),
                         "window_size_frames": size,
                         "evaluation_subsets": list(evaluation_subsets),
                         "scaler": {"mean": scaler.mean, "scale": scaler.scale},
@@ -731,15 +735,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "balancing": balancing,
                         "loss": str(experiment["training"].get("loss", "cross_entropy")),
                         "train_class_counts": {
-                            CLASSES[index]: int(np.sum(splits["train"].labels == index))
-                            for index in range(len(CLASSES))
+                            classes[index]: int(np.sum(splits["train"].labels == index))
+                            for index in range(len(classes))
                         },
                         "class_weights": (
-                            class_weights(splits["train"].labels).tolist()
+                            class_weights(splits["train"].labels, num_classes=len(classes)).tolist()
                             if balancing == "class_weights" else None
                         ),
                         "focal_alpha": (
-                            class_weights(splits["train"].labels).tolist()
+                            class_weights(splits["train"].labels, num_classes=len(classes)).tolist()
                             if str(experiment["training"].get("loss", "cross_entropy"))
                             == "focal"
                             else None
@@ -749,8 +753,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                                 "replacement": True,
                                 "num_samples_per_epoch": len(splits["train"].labels),
                                 "seed": seed,
-                                "sample_weight_min": float(sample_weights(splits["train"].labels).min()),
-                                "sample_weight_max": float(sample_weights(splits["train"].labels).max()),
+                                "sample_weight_min": float(sample_weights(splits["train"].labels, num_classes=len(classes)).min()),
+                                "sample_weight_max": float(sample_weights(splits["train"].labels, num_classes=len(classes)).max()),
                             } if balancing == "weighted_sampling" else None
                         ),
                         "augmentation": experiment.get("augmentation") if balancing == "augmentation" else None,

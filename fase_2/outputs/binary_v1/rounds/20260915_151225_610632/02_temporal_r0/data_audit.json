@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-09-15T18:12:36+00:00",
+  "status": "passed",
+  "errors": [],
+  "warnings": [
+    "A regra histórica de rótulo considera apenas imagens anotadas. Trechos parcialmente sem rótulo não são automaticamente descartados.",
+    "Interpolação linear é retrospectiva dentro do trecho; a configuração principal usa preenchimento com zero, sem interpolação."
+  ],
+  "note": "Verificação de integridade; não certifica a qualidade das anotações humanas."
+}

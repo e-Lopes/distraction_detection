@@ -1,0 +1,5 @@
+model,ablation,fold,subset,actual,predicted,count,run_id,seed,representation,window_size_frames,balancing
+random_forest,R0_flat,2,validation,attention,attention,951,final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42,42,R0_flat,30,none
+random_forest,R0_flat,2,validation,attention,distraction,135,final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42,42,R0_flat,30,none
+random_forest,R0_flat,2,validation,distraction,attention,70,final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42,42,R0_flat,30,none
+random_forest,R0_flat,2,validation,distraction,distraction,29,final__screening__feature__random_forest__r0_flat__w30__fold_2__seed_42,42,R0_flat,30,none

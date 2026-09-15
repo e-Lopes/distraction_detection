@@ -1,0 +1,181 @@
+extends: final_experiment.yaml
+name: Atenção × Distração — comparação completa
+version: 1
+target:
+  name: attention_distraction
+  version: 1
+  classes:
+  - attention
+  - distraction
+  display_names:
+    attention: Atenção
+    distraction: Distração
+  mapping:
+    alert: attention
+    fatigue: distraction
+    distraction: distraction
+  map_before_windowing: true
+  evaluation: development
+models:
+  screening:
+    rule:
+      enabled: true
+      representation: R0
+      windows: &id001
+      - 30
+      - 60
+      - 150
+      balancing: none
+      candidates:
+      - model: fixed_rules
+        parameters:
+          ear_threshold: 0.25
+          ear_consecutive_frames: 20
+          mar_threshold: 0.55
+          pitch_threshold: -15.0
+    feature:
+      enabled: true
+      representation: R0_flat
+      windows: *id001
+      balancing: none
+      candidates:
+      - model: dummy
+        parameters: {}
+      - model: logistic_regression
+        parameters:
+          C: 1.0
+          max_iter: 1000
+      - model: svm
+        parameters:
+          C: 1.0
+          kernel: linear
+          probability: true
+      - model: random_forest
+        parameters:
+          n_estimators: 300
+          max_depth: null
+          n_jobs: 2
+      - model: xgboost
+        parameters:
+          n_estimators: 300
+          max_depth: 6
+          learning_rate: 0.05
+          n_jobs: 2
+    distance:
+      enabled: true
+      representation: R0
+      windows:
+      - 60
+      candidates:
+      - model: knn_dtw
+        parameters:
+          k: 1
+          dependent: true
+          sakoe_chiba_radius: 6
+        cost:
+          max_pairs_without_confirmation: 5000000
+          cache_distances: true
+    shapelet:
+      enabled: true
+      representation: R0
+      windows:
+      - 60
+      candidates:
+      - model: random_shapelet_ridge
+        parameters:
+          candidate_budget: 2000
+          max_shapelets: 200
+          min_length: 6
+          max_length: 30
+          n_jobs: 1
+    transform:
+      enabled: true
+      representation: R0
+      windows: *id001
+      balancing: none
+      candidates:
+      - model: minirocket_ridge
+        parameters:
+          num_kernels: 5040
+          max_dilations_per_kernel: 32
+          n_jobs: 1
+          alphas:
+          - 0.01
+          - 0.1
+          - 1.0
+          - 10.0
+      - model: multirocket_ridge
+        parameters:
+          n_kernels: 840
+          alpha: 1.0
+          n_jobs: 2
+          batch_size: 64
+      - model: hydra_multirocket_ridge
+        parameters:
+          n_kernels: 840
+          n_groups: 16
+          alpha: 1.0
+          n_jobs: 2
+          batch_size: 64
+      - model: mantis_frozen_ridge
+        parameters:
+          checkpoint: paris-noah/Mantis-8M
+          revision: bc7d5ab40c02133386a28e2c127f35c17c86901d
+          device: cuda
+          batch_size: 16
+          alpha: 1.0
+          resampling: linear_512_align_corners_false
+          channels: independent_embedding_concatenation
+    deep:
+      enabled: true
+      representation: R0
+      windows: *id001
+      balancing: class_weights
+      candidates:
+      - model: lstm
+        parameters:
+          hidden_dim: 64
+          num_layers: 2
+          bidirectional: false
+          dropout: 0.25
+          pooling: last
+      - model: tcn
+        parameters:
+          channels:
+          - 32
+          - 64
+          - 64
+          kernel_size: 3
+          dropout: 0.25
+          pooling: mean
+      - model: transformer
+        parameters:
+          model_dim: 32
+          num_heads: 4
+          num_layers: 2
+          feedforward_dim: 64
+          dropout: 0.25
+          pooling: mean
+          max_length: 150
+      - model: inception_individual
+        parameters:
+          filters: 32
+          depth: 6
+          bottleneck: 32
+          kernel_size: 40
+training:
+  device: cuda
+  batch_size: 64
+  screening:
+    only_unseen_candidates: false
+    expected_runs: 176
+  confirmation:
+    candidates: []
+    seeds:
+    - 42
+    - 123
+    - 456
+    - 789
+    - 2026
+outputs:
+  root: fase_2/outputs/binary_v1/comparison

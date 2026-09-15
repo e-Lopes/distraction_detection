@@ -1,0 +1,47 @@
+extends: ../binary_experiment.yaml
+name: Características temporais
+models:
+  screening:
+    rule:
+      enabled: false
+    feature:
+      enabled: true
+      representation: temporal_behavior_v1
+      windows:
+      - 30
+      - 60
+      - 150
+      balancing: class_weights
+      candidates:
+      - model: logistic_regression
+        parameters:
+          C: 1.0
+          max_iter: 1000
+      - model: svm
+        parameters:
+          C: 1.0
+          kernel: linear
+          probability: true
+      - model: random_forest
+        parameters:
+          n_estimators: 300
+          max_depth: null
+          n_jobs: 2
+      - model: xgboost
+        parameters:
+          n_estimators: 300
+          max_depth: 6
+          learning_rate: 0.05
+          n_jobs: 2
+    distance:
+      enabled: false
+    shapelet:
+      enabled: false
+    transform:
+      enabled: false
+    deep:
+      enabled: false
+    ensemble:
+      enabled: false
+outputs:
+  root: fase_2/outputs/binary_v1/behavior_features

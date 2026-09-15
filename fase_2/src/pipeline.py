@@ -16,6 +16,8 @@ from typing import Iterable, Mapping, Sequence
 
 import yaml
 
+from .data.targets import map_target_labels, target_classes, validate_target
+
 
 DEFAULT_CONFIG = Path("fase_2/configs/final_experiment.yaml")
 REGISTRY_FIELDS = (
@@ -120,6 +122,20 @@ def load_config(path: str | Path = DEFAULT_CONFIG, _seen=None) -> dict:
                     for s in data['models']['screening'].values() if s.get('enabled'))
         if count > protocol['budget']['max_fits']:
             raise ValueError('Measurement matrix exceeds its explicit fit budget')
+    validate_target(data)
+    if data.get("target"):
+        root = Path(data["outputs"]["root"])
+        if "binary" not in root.parts and not any("binary" in part for part in root.parts):
+            raise ValueError("O target binário exige diretório de saídas próprio contendo binary.")
+        defaults = {"registry": "run_registry.csv", "metrics": "metrics_long.csv",
+                    "event_metrics": "event_metrics.csv", "checkpoints": "checkpoints",
+                    "predictions": "predictions", "resolved": "resolved",
+                    "window_counts": "window_counts.csv"}
+        for key, suffix in defaults.items():
+            data["outputs"][key] = str(root / suffix)
+        data["outputs"]["report"] = str(root / "report.md")
+        data["outputs"]["figures"] = str(root / "figures")
+        data["training"]["confirmation"]["promotion_file"] = str(root / "selection.yaml")
     return data
 
 
@@ -134,7 +150,7 @@ def _sha256(path: Path) -> str:
 def pipeline_fingerprint(config_path: Path, config: Mapping[str, object]) -> str:
     """Hash somente da configuração e dos pequenos manifestos canônicos."""
     digest = hashlib.sha256(config_path.read_bytes())
-    if config.get('modern_protocol') or config.get('measurement_protocol'):
+    if config.get('modern_protocol') or config.get('measurement_protocol') or config.get('target'):
         import importlib.metadata
         digest.update(json.dumps(config, sort_keys=True).encode())
         for source in sorted(Path('fase_2/src').rglob('*.py')):
@@ -150,7 +166,7 @@ def pipeline_fingerprint(config_path: Path, config: Mapping[str, object]) -> str
     for video in config["data"]["videos"]:
         series_path = Path(config["data"]["facial_series"]) / f"{video}.csv"
         if series_path.is_file():
-            if config.get('modern_protocol') or config.get('measurement_protocol'):
+            if config.get('modern_protocol') or config.get('measurement_protocol') or config.get('target'):
                 digest.update(_sha256(series_path).encode())
                 if config.get('measurement_protocol') and series_path.with_suffix('.json').is_file():
                     digest.update(_sha256(series_path.with_suffix('.json')).encode())
@@ -330,7 +346,8 @@ def _checked_record(config, old):
     prefix = artifact.parent.name if artifact.suffix == ".pt" else old["run_id"]
     predictions = Path(config["outputs"].get("predictions", ""))
     subsets = ('validation',) if (config.get('modern_protocol', {}).get('evaluation') == 'development'
-                                 or config.get('measurement_protocol', {}).get('evaluation') == 'development') else ('validation', 'test')
+                                 or config.get('measurement_protocol', {}).get('evaluation') == 'development'
+                                                       or config.get('target', {}).get('evaluation') == 'development') else ('validation', 'test')
     if not artifact.is_file() or not all((predictions / f"{prefix}__{s}.csv").is_file()
                                         for s in subsets):
         return {**old, "status": "pending"}
@@ -341,6 +358,9 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                paradigm: str = "all") -> list[PlannedRun]:
     path = Path(config_path)
     config = load_config(path)
+    if config.get('suite'):
+        from .binary_suite import plan
+        return plan(path, family, scope, paradigm)
     base = pipeline_fingerprint(path, config)
     existing = load_registry(config)
     folds = [int(value) for value in config["splits"]["folds"]]
@@ -377,6 +397,11 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                     run_id = (f"final__screening__{run_paradigm}__{model}__"
                               f"{representation.lower()}__w{window}__fold_{fold}__seed_{seed}")
                     blocked_reason = ""
+                    if representation.startswith('pose_'):
+                        paths = [Path(config['data']['facial_series']) / f'{v}.csv' for v in config['data']['videos']]
+                        required = {'ear_left','ear_right','ear_asymmetry','eye_quality_left','eye_quality_right'}
+                        if any(not p.is_file() or not required.issubset(p.open().readline().strip().split(',')) for p in paths):
+                            blocked_reason = 'Reextração geometry_v2 completa necessária; use Extrair indicadores neste perfil.'
                     if config.get('measurement_protocol'):
                         if representation not in config['preprocessing']['historical_representations']:
                             blocked_reason = 'Predominant eye requires installation/development verification'
@@ -409,6 +434,7 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                         representation, int(window), fold, seed, balancing, fingerprint, status,
                         source=source, artifact=artifact, reason=reason))
 
+    from .binary_suite import valid_selection
     promotion_file = Path(config["training"]["confirmation"]["promotion_file"])
     promoted = promotion_file.is_file()
     newly_extracted = any((Path(config["data"]["facial_series"]) / f"{video}.extraction.json").is_file()
@@ -417,7 +443,7 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
         if not candidate.get("enabled", False):
             continue
         run_family = str(candidate["family"])
-        run_paradigm = "deep" if run_family == "temporal" else "feature"
+        run_paradigm = candidate.get("paradigm", "deep" if run_family == "temporal" else "feature")
         if not _matches_filters(run_family, "confirmation", run_paradigm, family=family,
                                 scope=scope, paradigm=paradigm):
             continue
@@ -431,7 +457,7 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                 representation = str(candidate["representation"])
                 run_id = (f"final__confirmation__{candidate['model']}__{representation.lower()}__"
                           f"w{candidate['window']}__{candidate['balancing']}__fold_{fold}__seed_{candidate_seed}")
-                historical = (None if newly_extracted or config.get('modern_protocol') else _historical_compatible(str(candidate["model"]),
+                historical = (None if newly_extracted or config.get('modern_protocol') or config.get('target') else _historical_compatible(str(candidate["model"]),
                                                      str(candidate["balancing"]), fold, candidate_seed))
                 old = _checked_record(config, existing.get(run_id))
                 if historical:
@@ -441,7 +467,7 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                       and Path(old.get("artifact", "")).is_file()):
                     status, source, artifact = "completed", old.get("source", "new"), old.get("artifact", "")
                     reason = ""
-                elif not promoted:
+                elif not promoted or (config.get("target") and not valid_selection(config, candidate)):
                     status, source, artifact = "blocked", "new", ""
                     reason = f"confirmation blocked until screening promotion: {promotion_file}"
                 else:
@@ -451,6 +477,10 @@ def build_plan(config_path: str | Path, family: str = "all", scope: str = "all",
                     str(candidate["model"]), representation, int(candidate["window"]), fold,
                     candidate_seed, str(candidate["balancing"]), fingerprint, status,
                     source=source, artifact=artifact, reason=reason))
+    if config.get("target"):
+        from dataclasses import replace
+        # Configuration-specific roots isolate all runs; target is also in fingerprints.
+        runs = [replace(run, reason=run.reason) for run in runs]
     return runs
 
 
@@ -486,7 +516,7 @@ def sync_plan_registry(config_path: str | Path, family: str = "all", scope: str 
 def sync_historical_registry(config_path: str | Path) -> int:
     """Import existing scientific executions without reading heavy artifacts."""
     config = load_config(config_path)
-    if config.get('modern_protocol') or config.get('measurement_protocol'):
+    if config.get('modern_protocol') or config.get('measurement_protocol') or config.get('target'):
         return 0  # Historical names alone do not establish compatible input provenance.
     registry = load_registry(config)
     sources = (
@@ -705,6 +735,8 @@ def prepare(config_path: str | Path, *, force: bool = False) -> int:
     )
     detections = dict(load_detection_series(series_dir / f"{v}.csv") for v in expected_ids)
     labels = expand_behavior_labels({v: len(rows) for v, rows in detections.items()}, intervals)
+    labels = map_target_labels(labels, config)
+    allowed = set(target_classes(config))
     by_class = summarize_by_class(labels, detections, behavior_classes=allowed)
     _, by_window = summarize_windows(labels, detections,
         sizes_frames=config["windowing"]["sizes_frames"],
@@ -839,6 +871,7 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
         selected = [run]
         seeds = sorted({run.seed for run in selected})
         runtime = {
+            "target": config.get("target"),
             "input_fingerprint": pipeline_fingerprint(config_path, config),
             "extraction_manifest": config["data"]["extraction_manifest"],
             "experiment_name": "final_confirmation",
@@ -849,13 +882,16 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
             "preprocessing_config": "fase_2/configs/preprocessing/baseline_zero_fill.yaml",
             "models": [model], "seeds": config["training"]["confirmation"]["seeds"],
             "evaluation_subsets": (["validation"] if (config.get('modern_protocol', {}).get('evaluation') == 'development'
-                                                       or config.get('measurement_protocol', {}).get('evaluation') == 'development')
+                                                       or config.get('measurement_protocol', {}).get('evaluation') == 'development'
+                                                       or config.get('target', {}).get('evaluation') == 'development')
                                    else ["validation", "test"]),
             "training": {
                 "max_epochs": config["training"]["max_epochs"],
                 "batch_size": config["training"]["batch_size"],
                 "learning_rate": config["training"]["learning_rate"],
                 "weight_decay": config["training"]["weight_decay"],
+                "loss": config["training"].get("loss", "cross_entropy"),
+                "focal_gamma": config["training"].get("focal_gamma", 2.0),
                 "monitor": "val_macro_f1", "mode": "max",
                 "patience": config["training"]["early_stopping"]["patience"],
                 "minimum_delta": config["training"]["early_stopping"]["minimum_delta"],
@@ -864,9 +900,10 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
                 "amp": config["training"]["amp"], "deterministic": True,
                 "num_workers": config["training"]["num_workers"], "balancing": balancing,
             },
-            "parameters": {model: (_screening_candidate(config, run)['parameters'] if run.scope == 'screening'
-                                   else config["models"]["temporal"]["parameters"][model])},
+            "parameters": {model: _screening_candidate(config, run)["parameters"]},
         }
+        runtime["augmentation"] = config.get("augmentation")
+        runtime["max_samples_per_subset"] = config["training"].get("max_samples_per_subset")
         resolved = Path(config["outputs"]["resolved"]) / f"temporal_{model}_{balancing}_w{window}.yaml"
         resolved.parent.mkdir(parents=True, exist_ok=True)
         data_path = resolved.parent / "temporal_data.yaml"
@@ -890,7 +927,7 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
                      "--max-runs", str(len(selected))]
         for seed in seeds:
             arguments.extend(["--seed", str(seed)])
-        if config.get('modern_protocol') or config.get('measurement_protocol'):
+        if config.get('modern_protocol') or config.get('measurement_protocol') or config.get('target'):
             arguments.extend(['--device', config['training'].get('device', 'cuda')])
         if force:
             arguments.append("--no-resume")
@@ -915,8 +952,14 @@ def _train_temporal(config_path: Path, config: Mapping[str, object],
 
 
 def _screening_candidate(config: Mapping[str, object], run: PlannedRun) -> Mapping[str, object]:
-    if run.scope == "confirmation" and run.family == "classical":
-        return {"parameters": config["models"]["classical"][run.model]}
+    if run.scope == "confirmation":
+        candidate = next(c for c in config['training']['confirmation']['candidates']
+                         if c['model'] == run.model and c['representation'] == run.representation)
+        if 'parameters' in candidate:
+            return candidate
+        group = 'temporal' if run.family == 'temporal' else 'classical'
+        parameters = config['models'][group]
+        return {'parameters': parameters['parameters'][run.model] if group == 'temporal' else parameters[run.model]}
     section = config["models"]["screening"][run.paradigm]
     return next(item for item in section["candidates"] if item["model"] == run.model
                 and item.get('representation', section['representation']) == run.representation)
@@ -933,6 +976,13 @@ def _fit_or_resume(model, x_train, y_train, config, run, *, force=False):
         if saved.get("fingerprint") == run.fingerprint:
             print(f"Modelo salvo encontrado. Continuando avaliação: {run.model}, divisão {run.fold}.")
             return joblib.load(target)
+    if run.balancing == 'weighted_sampling':
+        import numpy as np
+        labels, counts = np.unique(y_train, return_counts=True)
+        weights = np.asarray([1.0 / counts[list(labels).index(label)] for label in y_train])
+        indices = np.random.default_rng(run.seed).choice(len(y_train), len(y_train),
+                                                       replace=True, p=weights / weights.sum())
+        x_train, y_train = x_train[indices], y_train[indices]
     model.fit(x_train, y_train)
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_suffix(".joblib.tmp")
@@ -955,7 +1005,7 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
     from .data.splits import SplitBlock
     from .preprocessing.missingness import expand_behavior_labels
     from .training.classical_baselines import evaluate_predictions, feature_matrix, split_windows
-    from .training.dummy_baseline import CLASSES, load_series
+    from .training.dummy_baseline import load_series
     from .training.tsc_adapters import (
         DependentDTW1NN, MiniRocketRidgeAdapter, ShapeletRidgeAdapter,
         build_temporal_feature_windows, enforce_dtw_limit, estimate_dtw_cost,
@@ -972,9 +1022,11 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
     if not executable:
         return
 
+    CLASSES = target_classes(config)
     series = load_series(Path(config["data"]["facial_series"]))
     intervals = _read_csv(Path(config["data"]["annotations"]))
     labels = expand_behavior_labels({key: len(value) for key, value in series.items()}, intervals)
+    labels = map_target_labels(labels, config)
     blocks = [SplitBlock(fold=int(row["fold"]), subset=row["subset"], video_id=row["video_id"],
                          start_frame=int(row["start_frame"]), end_frame=int(row["end_frame"]))
               for row in _read_csv(Path(config["splits"]["manifest"]))]
@@ -996,14 +1048,24 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
         started = time.perf_counter()
         try:
             candidate = _screening_candidate(config, run)
-            if run.paradigm == "feature" and run.representation != "R0_flat" and not run.representation.startswith('Q'):
+            if run.representation.startswith('pose_'):
+                from .training.pose_binary import datasets
+                prepared, correction = datasets(series, labels, blocks, config, run)
+                x_train, y_train, _ = prepared['train']
+                model = feature_classifier(run.model, candidate['parameters'], seed=run.seed, balancing=run.balancing)
+                model = _fit_or_resume(model, x_train, y_train, config, run, force=force)
+                correction_path = Path(config['outputs']['checkpoints']) / f'{run.run_id}__pose.joblib'
+                joblib.dump(correction, correction_path)
+                evaluation = {name: prepared[name][:2] for name in ('validation','test')}
+                metadata = {name: prepared[name][2] for name in ('validation','test')}
+            elif run.paradigm == "feature" and run.representation == "temporal_behavior_v1":
                 if run.window_size_frames not in feature_windows:
                     feature_windows[run.window_size_frames] = build_temporal_feature_windows(
                         series, labels, size_frames=run.window_size_frames,
                         stride_frames=int(config["windowing"]["stride_frames"]),
                         minimum_proportion=float(config["windowing"]["minimum_target_proportion"]),
                         groups=feature_config["groups"], thresholds=feature_config["thresholds"],
-                        fps_by_video=fps_by_video)
+                        fps_by_video=fps_by_video, classes=CLASSES)
                 subsets = split_windows(feature_windows[run.window_size_frames], blocks, run.fold)
                 indices = range(len(subsets["train"][0].values))
                 x_train, y_train = feature_matrix(subsets["train"], indices)
@@ -1018,11 +1080,13 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                 if key not in sequence_cache:
                     from .training.temporal_data import build_sequence_fold
                     sequence_cache[key] = build_sequence_fold(
-                        series, labels, blocks, config["preprocessing"]["historical_representations"][run.representation if run.representation.startswith('Q') else 'R0'],
+                        series, labels, blocks, config["preprocessing"]["historical_representations"][run.representation if run.representation in config['preprocessing']['historical_representations'] else 'R0'],
                         fold=run.fold, size_frames=run.window_size_frames,
                         stride_frames=int(config["windowing"]["stride_frames"]),
                         minimum_proportion=float(config["windowing"]["minimum_target_proportion"]),
-                        representation=run.representation if run.representation.startswith('Q') else 'R0')
+                        representation=run.representation if run.representation in config['preprocessing']['historical_representations'] else 'R0', classes=CLASSES,
+                        training_augmentation=config.get('augmentation') if run.balancing == 'augmentation' else None,
+                        augmentation_seed=run.seed)
                 subsets, sequence_scaler, training_medians = sequence_cache[key]
                 preprocessing_path = Path(config["outputs"]["checkpoints"]) / f"{run.run_id}__preprocessing.json"
                 preprocessing_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1038,13 +1102,15 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                     x_train = x_train[:, :, 5:].mean(axis=1)
                     model = LogisticRegression(**candidate['parameters'], random_state=run.seed,
                                                class_weight='balanced')
-                elif (run.representation == "R0_flat" or run.representation.startswith('Q')) and run.model == "svm":
-                    from sklearn.svm import SVC
-                    if run.balancing not in {"none", "class_weights"}:
-                        raise ValueError("Confirmação SVM aceita none ou class_weights.")
-                    x_train = x_train.reshape(len(x_train), -1)
-                    model = SVC(**candidate["parameters"], random_state=run.seed,
-                                class_weight="balanced" if run.balancing == "class_weights" else None)
+                elif run.paradigm in {"feature", "rule"}:
+                    if run.model == 'fixed_rules':
+                        from .training.binary_rules import FixedRules
+                        model = FixedRules(candidate['parameters'], sequence_scaler,
+                                           binary=bool(config.get('target')))
+                    else:
+                        x_train = x_train.reshape(len(x_train), -1)
+                        model = feature_classifier(run.model, candidate['parameters'],
+                                                   seed=run.seed, balancing=run.balancing)
                 elif run.paradigm == "distance":
                     parameters = candidate["parameters"]
                     cost = estimate_dtw_cost(len(x_train),
@@ -1073,13 +1139,14 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                 if run.model == 'missingness_logistic':
                     evaluation = {name: (values[:, :, 5:].mean(axis=1), expected)
                                   for name, (values, expected) in evaluation.items()}
-                elif run.representation == "R0_flat" or (run.representation.startswith('Q') and run.model == 'svm'):
+                elif run.paradigm == "feature":
                     evaluation = {name: (values.reshape(len(values), -1), expected)
                                   for name, (values, expected) in evaluation.items()}
                 metadata = {name: subsets[name].metadata for name in ("validation", "test")}
 
             if (config.get('modern_protocol', {}).get('evaluation') == 'development'
-                    or config.get('measurement_protocol', {}).get('evaluation') == 'development'):
+                    or config.get('measurement_protocol', {}).get('evaluation') == 'development'
+                                                       or config.get('target', {}).get('evaluation') == 'development'):
                 evaluation = {'validation': evaluation['validation']}
             checkpoint = Path(config["outputs"]["checkpoints"]) / f"{run.run_id}.joblib"
             checkpoint.parent.mkdir(parents=True, exist_ok=True)
@@ -1093,7 +1160,8 @@ def _train_screening(config: Mapping[str, object], runs: Sequence[PlannedRun], *
                 summary, per_class, confusion = evaluate_predictions(
                     model_name=run.model, ablation=run.representation, fold=run.fold,
                     subset=subset_name, expected=expected, predicted=predicted,
-                    train_seconds=time.perf_counter() - started, resumed=run.source == "resumed")
+                    train_seconds=time.perf_counter() - started, resumed=run.source == "resumed",
+                    classes=CLASSES)
                 summary.update(run_id=run.run_id, scope=run.scope, paradigm=run.paradigm,
                                family=run.family, seed=run.seed, representation=run.representation,
                                window_size_frames=run.window_size_frames, balancing=run.balancing,
@@ -1192,7 +1260,7 @@ def train(config_path: str | Path, family: str, *, scope: str = "screening",
                          force=force, allow_expensive=allow_expensive)
     if runnable_confirmation and family in {"temporal", "all"}:
         _train_temporal(path, config, runnable_confirmation, force)
-    print("[DONE] train; resultados históricos compatíveis foram reutilizados")
+    print("[DONE] train; consulte o registro de execuções e seus estados")
     return 0
 
 

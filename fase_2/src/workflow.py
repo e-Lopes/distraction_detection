@@ -38,7 +38,8 @@ def extract(config_path, *, video_dir=None):
         signature = {"source": str(source.resolve()),
                      "size": source_stat.st_size if source_stat else None,
                      "mtime_ns": source_stat.st_mtime_ns if source_stat else None,
-                     "extractor_version": 2, "roi": list(roi) if roi else None}
+                     "extractor_version": 2, "roi": list(roi) if roi else None,
+                     "schema_version": config["data"].get("schema_version", "v1")}
         if target.is_file() and progress_path.is_file():
             saved = json.loads(progress_path.read_text(encoding="utf-8"))
             if (saved.get("signature") == signature and saved.get("status") == "completed"
@@ -61,7 +62,8 @@ def extract(config_path, *, video_dir=None):
         save_state(progress_path, {"status": "running", "signature": signature})
         summary = _extract_video_worker({"video_id": video_id, "video_path": source,
             "output_path": target, "roi": roi, "overwrite": True,
-            "hash_video": True, "progress_every": 1000})
+            "hash_video": True, "progress_every": 1000,
+            "schema_version": config["data"].get("schema_version", "v1")})
         pipeline._validate_series(target, int(video["num_frames"]), float(video["fps"]))
         if not summary.complete:
             raise ValueError(f"Extração incompleta: {video_id}.")

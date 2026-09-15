@@ -1,0 +1,3 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+random_forest,R0_flat,4,validation,attention,0.9316969050160085,0.8712574850299402,0.9004641567818463,1002,final__screening__feature__random_forest__r0_flat__w150__fold_4__seed_42,42,R0_flat,150,none
+random_forest,R0_flat,4,validation,distraction,0.23214285714285715,0.3786407766990291,0.2878228782287823,103,final__screening__feature__random_forest__r0_flat__w150__fold_4__seed_42,42,R0_flat,150,none

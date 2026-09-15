@@ -1,0 +1,12 @@
+config,label,status,stage,remaining
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/00.yaml,Atenção × Distração — comparação completa,completed,check-data,176
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/01.yaml,Características temporais,completed,check-data,48
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/02.yaml,G2 · Temporais R0 sem balanceamento,completed,check-data,36
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/03.yaml,G3 · Pré-processamento R1,completed,check-data,60
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/04.yaml,G3 · Pré-processamento R2,completed,check-data,60
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/05.yaml,G4 · Pesos de classe,completed,check-data,32
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/06.yaml,G4 · Amostragem ponderada,completed,check-data,32
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/07.yaml,G4 · Aumento de dados,completed,check-data,32
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/08.yaml,G4.5 · Focal Loss,completed,check-data,24
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/09.yaml,Qualidade das medidas · binário,failed,check-data,
+fase_2/outputs/binary_v1/rounds/20260915_151225_610632/configs/10.yaml,G4.6 · Robustez à pose,failed,check-data,

@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-09-15T18:12:12+00:00",
+  "status": "failed",
+  "errors": [
+    "Série facial video_01: [Errno 2] No such file or directory: 'fase_2/data/interim/binary_geometry_v2/video_01.csv'",
+    "Série facial video_02: [Errno 2] No such file or directory: 'fase_2/data/interim/binary_geometry_v2/video_02.csv'",
+    "Série facial video_03: [Errno 2] No such file or directory: 'fase_2/data/interim/binary_geometry_v2/video_03.csv'",
+    "Série facial video_04: [Errno 2] No such file or directory: 'fase_2/data/interim/binary_geometry_v2/video_04.csv'"
+  ],
+  "warnings": [
+    "A regra histórica de rótulo considera apenas imagens anotadas. Trechos parcialmente sem rótulo não são automaticamente descartados.",
+    "Interpolação linear é retrospectiva dentro do trecho; a configuração principal usa preenchimento com zero, sem interpolação."
+  ],
+  "note": "Verificação de integridade; não certifica a qualidade das anotações humanas."
+}

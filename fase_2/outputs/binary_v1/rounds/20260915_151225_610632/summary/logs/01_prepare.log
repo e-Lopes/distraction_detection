@@ -1,0 +1,8 @@
+[PREPARE 1/7] Validando manifesto e metadados
+[PREPARE 2/7] Validando intervalos anotados
+[PREPARE 3/7] Validando e reutilizando séries faciais canônicas
+[PREPARE 4/7] Conferindo configuração das medidas por trecho
+[PREPARE 5/7] Validando folds e purge gap
+[PREPARE 6/7] Auditando duração real das janelas por FPS
+[PREPARE 7/7] Registrando fingerprint e cache
+[DONE] prepare fingerprint=f1fdc42258d4 cache=fase_2/outputs/binary_v1/rounds/20260915_151225_610632/00_binary_experiment/prepare_state.json

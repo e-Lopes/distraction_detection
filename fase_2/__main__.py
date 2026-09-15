@@ -27,8 +27,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     interface_parser = commands.add_parser("interface", help="central desktop do protocolo")
     _config_argument(interface_parser)
+    interface_parser.set_defaults(config="fase_2/configs/binary_suite.yaml")
     interface_parser.add_argument("--summary", action="store_true",
                                   help="mostra pendências e encerra, sem alterar artefatos")
+
+    suite_parser = commands.add_parser("suite", help="executa a bateria binária completa em sequência")
+    _config_argument(suite_parser)
+    suite_parser.set_defaults(config="fase_2/configs/binary_suite.yaml")
+    suite_parser.add_argument("--action", choices=("chain","prepare","train","report","check-data"), default="chain")
+    suite_parser.add_argument("--scope", choices=("screening","confirmation","all"), default="screening")
+    suite_parser.add_argument("--paradigm", default="all")
+    suite_parser.add_argument("--allow-expensive", action="store_true")
+    suite_parser.add_argument("--plan", action="store_true")
 
     audit_parser = commands.add_parser("check-data", help="confere os dados antes de treinar")
     _config_argument(audit_parser)
@@ -74,6 +84,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(arguments: list[str] | None = None) -> int:
     args = build_parser().parse_args(arguments)
+    if args.command == "suite":
+        if args.plan:
+            print(format_plan(args.config, "all", args.scope, args.paradigm))
+            return 0
+        from .src.binary_suite import run
+        return run(args.config, action=args.action, scope=args.scope, paradigm=args.paradigm,
+                   allow_expensive=args.allow_expensive)
     if args.command == "results":
         from .scripts.index_results import main as index_main
         return index_main([])

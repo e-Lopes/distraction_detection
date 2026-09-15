@@ -1,0 +1,3 @@
+model,ablation,fold,subset,label,precision,recall,f1,support,run_id,seed,representation,window_size_frames,balancing
+logistic_regression,R0_flat,3,validation,attention,0.8751322751322751,0.8387423935091278,0.8565510098394614,986,final__screening__feature__logistic_regression__r0_flat__w60__fold_3__seed_42,42,R0_flat,60,none
+logistic_regression,R0_flat,3,validation,distraction,0.22815533980582525,0.28484848484848485,0.25336927223719674,165,final__screening__feature__logistic_regression__r0_flat__w60__fold_3__seed_42,42,R0_flat,60,none

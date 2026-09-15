@@ -1,0 +1,533 @@
+name: Qualidade das medidas · binário
+version: 1
+primary_metric: macro_f1_oof
+delta_macro_f1: 0.01
+data:
+  video_dir: fase_2/data/raw
+  manifest: fase_2/data/manifests/videos.csv
+  annotations: fase_2/data/manifests/annotation_frame_intervals.csv
+  facial_series: fase_2/data/interim/measurement_raw_v1
+  extraction_manifest: fase_2/data/interim/measurement_raw_v1/extraction_manifest.csv
+  roi_config: fase_1/roi_config_temporal.example.json
+  classes:
+  - alert
+  - fatigue
+  - distraction
+  indicators:
+  - ear
+  - mar
+  - pitch
+  - yaw
+  - roll
+  videos:
+  - video_01
+  - video_02
+  - video_03
+  - video_04
+preprocessing:
+  primary: zero_fill
+  historical_representations:
+    R0:
+      short_gap_max_frames: 0
+      long_gap_fill: zero
+    R1:
+      short_gap_max_frames: 15
+      short_gap_method: linear
+      long_gap_fill: training_median
+    R2:
+      short_gap_max_frames: 15
+      short_gap_method: linear
+      long_gap_fill: training_median
+      flags:
+      - face_detected
+      - was_interpolated
+      - missing_duration_so_far
+    QA:
+      measurement_policy:
+        reference_r0: true
+        reject_quality: false
+        eye: mean
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+    QB0:
+      measurement_policy:
+        reject_quality: false
+        eye: mean
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+    QB:
+      measurement_policy:
+        reject_quality: true
+        eye: mean
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+  fit_on: train_only
+  preserve_long_gaps: true
+  preserve_operator_absence: true
+windowing:
+  sizes_frames:
+  - 30
+  - 60
+  - 150
+  stride_frames: 15
+  label_rule: majority
+  minimum_target_proportion: 0.6
+  transition_policy: exclude_from_primary_training
+  preserve_frame_baseline: true
+  resampling: disabled
+features:
+  base:
+  - ear
+  - mar
+  - pitch
+  - yaw
+  - roll
+  primary_classical: R0_flat
+  primary_temporal: R0
+  temporal_behavior_v1:
+    enabled: true
+    config: fase_2/configs/features/temporal_behavior_v1.yaml
+    groups:
+    - signal_distribution
+    - signal_dynamics
+    - ocular
+    - oral
+    - head_pose
+    - multivariate
+    - missingness
+  optional_dependencies:
+    minirocket: false
+    catch22: false
+    tsfresh: false
+    tsfel: false
+splits:
+  strategy: leave_one_video_out
+  manifest: fase_2/data/manifests/temporal_splits.csv
+  config: fase_2/configs/splits/leave_one_video_out.yaml
+  folds:
+  - 1
+  - 2
+  - 3
+  - 4
+  purge_gap_frames: 150
+  validation: contiguous_blocks
+  external_test_for_selection: false
+models:
+  classical:
+    historical:
+    - dummy
+    - fixed_rules
+    - svm
+    - random_forest
+    - xgboost
+    new:
+    - logistic_regression
+    svm:
+      C: 1.0
+      kernel: linear
+      probability: true
+    logistic_regression:
+      C: 1.0
+      class_weight: null
+      max_iter: 1000
+      solver: lbfgs
+  temporal:
+    historical:
+    - lstm
+    - tcn
+    - transformer
+    optional:
+      minirocket: false
+    parameters:
+      lstm:
+        hidden_dim: 64
+        num_layers: 2
+        bidirectional: false
+        dropout: 0.25
+        pooling: last
+      tcn:
+        channels:
+        - 32
+        - 64
+        - 64
+        kernel_size: 3
+        dropout: 0.25
+        pooling: mean
+      transformer:
+        model_dim: 32
+        num_heads: 4
+        num_layers: 2
+        feedforward_dim: 64
+        dropout: 0.25
+        pooling: mean
+        max_length: 150
+  screening:
+    feature:
+      enabled: true
+      representation: QA
+      windows:
+      - 60
+      balancing: class_weights
+      candidates:
+      - model: svm
+        parameters: &id001
+          C: 1.0
+          kernel: linear
+          probability: false
+        representation: QA
+      - model: svm
+        parameters: *id001
+        representation: QB0
+      - model: svm
+        parameters: *id001
+        representation: QB
+      - model: svm
+        parameters: *id001
+        representation: QC
+      - model: svm
+        parameters: *id001
+        representation: QE01
+      - model: svm
+        parameters: *id001
+        representation: QE02
+      - model: svm
+        parameters: *id001
+        representation: QES
+      - model: missingness_logistic
+        variants:
+        - QB
+        parameters:
+          C: 1.0
+          max_iter: 1000
+        representation: QB
+    distance:
+      enabled: false
+      representation: R0
+      windows:
+      - 60
+      candidates:
+      - model: knn_dtw
+        parameters:
+          k: 1
+          dependent: true
+          sakoe_chiba_radius: 6
+        cost:
+          max_pairs_without_confirmation: 5000000
+          cache_distances: true
+    shapelet:
+      enabled: false
+      representation: R0
+      windows:
+      - 60
+      candidates:
+      - model: random_shapelet_ridge
+        parameters:
+          candidate_budget: 2000
+          max_shapelets: 200
+          min_length: 6
+          max_length: 30
+          n_jobs: 1
+    transform:
+      enabled: false
+      representation: R0
+      windows:
+      - 30
+      - 60
+      - 150
+      candidates:
+      - model: minirocket_ridge
+        parameters:
+          num_kernels: 5040
+          max_dilations_per_kernel: 32
+          n_jobs: 1
+          alphas:
+          - 0.01
+          - 0.1
+          - 1.0
+          - 10.0
+      disabled_candidates:
+      - model: dwt_svm
+        reason: not_required_for_initial_screening
+      - model: sax
+        reason: information_loss_and_no_initial_scientific_need
+    ensemble:
+      enabled: false
+      candidates:
+      - drcif
+      - arsenal
+      - hivecote_v2
+      documented_only:
+      - ts_chief
+    deep:
+      enabled: true
+      representation: QA
+      windows:
+      - 60
+      balancing: class_weights
+      candidates:
+      - model: lstm
+        parameters: &id002
+          hidden_dim: 64
+          num_layers: 2
+          bidirectional: false
+          dropout: 0.25
+          pooling: last
+        representation: QA
+      - model: lstm
+        parameters: *id002
+        representation: QB0
+      - model: lstm
+        parameters: *id002
+        representation: QB
+      - model: lstm
+        parameters: *id002
+        representation: QC
+      - model: lstm
+        parameters: *id002
+        representation: QE01
+      - model: lstm
+        parameters: *id002
+        representation: QE02
+      - model: lstm
+        parameters: *id002
+        representation: QES
+training:
+  mode: screening
+  screening:
+    seed: 42
+    only_unseen_candidates: true
+    selection_source: validation_only
+    expected_runs: 60
+  confirmation:
+    blocked_until_screening_promotion: true
+    promotion_file: fase_2/outputs/binary_v1/measurement/selection.yaml
+    seeds:
+    - 42
+    - 123
+    - 456
+    - 789
+    - 2026
+    candidates: []
+  max_epochs: 150
+  batch_size: 1024
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping:
+    monitor: val_macro_f1
+    mode: max
+    patience: 15
+    minimum_delta: 0.002
+  checkpoint_every_epochs: 10
+  gradient_clip_norm: 1.0
+  amp: true
+  deterministic: true
+  num_workers: 0
+  resume: true
+  device: cuda
+balancing:
+  none:
+    enabled: true
+  class_weights:
+    formula: N/(K*N_c)
+    fit_on: train_only
+  weighted_sampling:
+    replacement: true
+    fit_on: train_only
+  focal:
+    gamma: 2.0
+    alpha: N/(K*N_c)
+    fit_on: train_only
+  augmentation:
+    enabled: false
+    fit_on: train_only
+thresholds:
+  prediction: argmax
+  crossfit_fatigue: disabled_after_negative_result
+  selection_source: validation_only
+  test_access_for_selection: false
+event_evaluation:
+  enabled: true
+  status: pending_full_oof_predictions
+  target_class: fatigue
+  minimum_duration_seconds: null
+  gap_tolerance_seconds: null
+  minimum_iou: null
+  selection_source: validation_only
+compute_metrics:
+  global:
+  - accuracy
+  - balanced_accuracy
+  - macro_f1
+  - weighted_f1
+  per_class:
+  - precision
+  - recall
+  - f1
+  - pr_auc
+  stability:
+  - mean
+  - standard_deviation
+  - worst_video
+  - seed_variation
+  event:
+  - event_precision
+  - event_recall
+  - event_f1
+  - false_episodes_per_hour
+  - detection_latency
+  - fragmentation
+  - duration_error
+  cost:
+  - training_seconds
+  - latency_p50_ms
+  - latency_p95_ms
+  - throughput
+  - peak_ram
+  - peak_vram
+  - parameter_count
+  - model_size_bytes
+outputs:
+  root: fase_2/outputs/binary_v1/rounds/20260915_151225_610632/09_measurement
+  window_counts: fase_2/outputs/binary_v1/measurement/window_counts.csv
+  registry: fase_2/outputs/binary_v1/measurement/run_registry.csv
+  metrics: fase_2/outputs/binary_v1/measurement/metrics_long.csv
+  event_metrics: fase_2/outputs/binary_v1/measurement/event_metrics.csv
+  figures: fase_2/outputs/binary_v1/measurement/figures
+  checkpoints: fase_2/outputs/binary_v1/measurement/checkpoints
+  predictions: fase_2/outputs/binary_v1/measurement/predictions
+  resolved: fase_2/outputs/binary_v1/measurement/resolved
+  report: fase_2/outputs/binary_v1/measurement/report.md
+  figure_format: png
+measurement_protocol:
+  development_fold: 1
+  evaluation: development
+  predominant_eye: null
+  quality:
+    min_eye_width_px: 8
+    min_mouth_width_px: 12
+    max_pose_rmse_px: 15
+  extraction:
+    coordinate_policy: original_pixels_letterbox_inverse
+    intrinsics: approximate_full_frame_fx_fy_width_zero_distortion
+    pose_convention: object_to_camera_Rz_Ry_Rx_columns_Y_Z_X_degrees
+    contrast_enhancement: disabled
+    resize:
+    - 640
+    - 640
+    min_detection_confidence: 0.5
+    minimum_tracking_iou: 0.25
+    max_sample_frames: 90
+    progress_every: 15
+    sample_output: fase_2/outputs/measurement_samples/v1
+    videos:
+      video_01:
+        path: fase_2/data/raw/videos/1.mp4
+        roi:
+        - 1145
+        - 521
+        - 538
+        - 491
+        verified_anchors: {}
+      video_02:
+        path: fase_2/data/raw/videos/2.mp4
+        roi:
+        - 1145
+        - 521
+        - 538
+        - 491
+        verified_anchors: {}
+      video_03:
+        path: fase_2/data/raw/videos/3.mp4
+        roi:
+        - 1145
+        - 521
+        - 538
+        - 491
+        verified_anchors: {}
+      video_04:
+        path: fase_2/data/raw/videos/4.mp4
+        roi:
+        - 1145
+        - 521
+        - 538
+        - 491
+        verified_anchors: {}
+  variants:
+    QA:
+      enabled: true
+      policy:
+        reference_r0: true
+        reject_quality: false
+        eye: mean
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+    QB0:
+      enabled: true
+      policy:
+        reject_quality: false
+        eye: mean
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+    QB:
+      enabled: true
+      policy:
+        reject_quality: true
+        eye: mean
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+    QC:
+      enabled: true
+      policy:
+        reject_quality: true
+        eye: predominant
+        interpolation_seconds: 0
+        smoothing_seconds: 0
+    QD:
+      enabled: false
+      policy:
+        reject_quality: true
+        eye: predominant
+        reference_rotation: null
+    QE01:
+      enabled: true
+      policy:
+        reject_quality: true
+        eye: predominant
+        interpolation_seconds: 0.1
+        smoothing_seconds: 0
+    QE02:
+      enabled: true
+      policy:
+        reject_quality: true
+        eye: predominant
+        interpolation_seconds: 0.2
+        smoothing_seconds: 0
+    QES:
+      enabled: true
+      policy:
+        reject_quality: true
+        eye: predominant
+        interpolation_seconds: 0
+        smoothing_seconds: 0.1
+  budget:
+    max_fits: 60
+    seeds:
+    - 42
+    windows_frames:
+    - 60
+    combined_filter: false
+target:
+  name: attention_distraction
+  version: 1
+  classes:
+  - attention
+  - distraction
+  display_names:
+    attention: Atenção
+    distraction: Distração
+  mapping:
+    alert: attention
+    fatigue: distraction
+    distraction: distraction
+  map_before_windowing: true
+  evaluation: development
