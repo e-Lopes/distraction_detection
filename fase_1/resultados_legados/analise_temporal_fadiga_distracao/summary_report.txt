@@ -1,0 +1,76 @@
+======================================================================
+  FATIGUE & DISTRACTION ANALYSIS -- SUMMARY REPORT
+  For Seminar Presentation
+======================================================================
+
+  Heuristic Thresholds:
+    EAR threshold:    < 0.25 for 20 consecutive frames
+    MAR threshold:    > 0.55
+    Pitch threshold:  < -15.0°
+
+----------------------------------------------------------------------
+
+  Video: DEMO_synthetic
+  Resolution: 1920x1080
+  FPS: 25.0
+  Duration: 120s (2.0 min)
+  Total frames analysed: 3,000
+
+    ALERT         :   2,534 frames  ( 84.5%)
+    FATIGUE       :      87 frames  (  2.9%)
+    DISTRACTION   :     379 frames  ( 12.6%)
+
+  EAR stats (when face detected):
+    mean=0.276  std=0.038  min=0.108  max=0.398
+  MAR stats (when face detected):
+    mean=0.197  std=0.065  min=0.150  max=0.779
+  Pitch stats (when face detected):
+    mean=-7.2°  std=8.1°  min=-37.2°  max=+12.6°
+
+  Face detection rate: 2,894/3,000 (96.5%)
+----------------------------------------------------------------------
+
+  Video: DEMO_synthetic_2
+  Resolution: 1920x1080
+  FPS: 25.0
+  Duration: 80s (1.3 min)
+  Total frames analysed: 2,000
+
+    ALERT         :   1,938 frames  ( 96.9%)
+    FATIGUE       :       0 frames  (  0.0%)
+    DISTRACTION   :      62 frames  (  3.1%)
+
+  EAR stats (when face detected):
+    mean=0.300  std=0.020  min=0.237  max=0.363
+  MAR stats (when face detected):
+    mean=0.152  std=0.024  min=0.120  max=0.244
+  Pitch stats (when face detected):
+    mean=-3.5°  std=5.0°  min=-25.4°  max=+9.9°
+
+  Face detection rate: 2,000/2,000 (100.0%)
+----------------------------------------------------------------------
+
+======================================================================
+  OVERALL SUMMARY
+======================================================================
+  Videos analysed:        2
+  Total frames:           5,000
+  Total duration:         200s (3.3 min)
+
+  ALERT         :    4,472 frames  ( 89.4%)
+  FATIGUE       :       87 frames  (  1.7%)
+  DISTRACTION   :      441 frames  (  8.8%)
+======================================================================
+
+
+-- TALKING POINTS FOR PRESENTATION ----------------------
+
+Slide 10 (Threshold Table):
+  "O sistema heurístico usa thresholds fixos:
+   EAR abaixo de 0.25 por 20 frames = fadiga,
+   MAR acima de 0.55 = bocejo,
+   Pitch abaixo de -15.0° = distração."
+
+Slide 11-12 (Results):
+  "Nos 2 vídeos analisados (3 min total),
+   o estado mais frequente foi ALERT com 89.4% dos frames."

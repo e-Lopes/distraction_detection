@@ -6,9 +6,9 @@ Processa o CSV unificado com as features reais e gera as janelas binárias.
 
 from pathlib import Path
 from load_own_data import load_unified_csv_to_windows, print_class_window_counts, save_windows
-from episode_sampler import index_by_task_class, EpisodeSampler
 
-UNIFIED_CSV_PATH = "/home/eduardo/Code/distraction_detection/teste_metodologia/results/classificacoes_frames_exatos.csv"
+TEST_DIR = Path(__file__).resolve().parent
+UNIFIED_CSV_PATH = TEST_DIR / "results/classificacoes_com_mediapipe.csv"
 WINDOW_LEN = 90
 STRIDE = 15
 MIN_VALID_RATIO = 0.5
@@ -17,7 +17,7 @@ K_SHOT = 3
 Q_QUERY = 5
 SEED = 42
 DEMO_TASK_ID = None
-SAVE_WINDOWS_PATH = "/home/eduardo/Code/distraction_detection/teste_metodologia/results/windows_binary.pkl"
+SAVE_WINDOWS_PATH = TEST_DIR / "results/windows_binary.pkl"
 
 def main() -> None:
     csv_path = Path(UNIFIED_CSV_PATH)

@@ -1,0 +1,144 @@
+{
+  "arguments": {
+    "frames_per_clip": 60,
+    "cpu_threads": 4,
+    "gpu_index": 0
+  },
+  "clips": [
+    {
+      "video_id": "video_01",
+      "state": "alert",
+      "start": 13291,
+      "count": 60
+    },
+    {
+      "video_id": "video_01",
+      "state": "distraction",
+      "start": 8157,
+      "count": 60
+    },
+    {
+      "video_id": "video_01",
+      "state": "fatigue",
+      "start": 4353,
+      "count": 60
+    },
+    {
+      "video_id": "video_01",
+      "state": "absent",
+      "start": 22379,
+      "count": 60
+    },
+    {
+      "video_id": "video_02",
+      "state": "alert",
+      "start": 5105,
+      "count": 60
+    },
+    {
+      "video_id": "video_02",
+      "state": "distraction",
+      "start": 12921,
+      "count": 60
+    },
+    {
+      "video_id": "video_03",
+      "state": "alert",
+      "start": 3407,
+      "count": 60
+    },
+    {
+      "video_id": "video_03",
+      "state": "distraction",
+      "start": 29250,
+      "count": 60
+    },
+    {
+      "video_id": "video_03",
+      "state": "fatigue",
+      "start": 28669,
+      "count": 60
+    },
+    {
+      "video_id": "video_03",
+      "state": "absent",
+      "start": 10939,
+      "count": 60
+    },
+    {
+      "video_id": "video_04",
+      "state": "alert",
+      "start": 25421,
+      "count": 60
+    },
+    {
+      "video_id": "video_04",
+      "state": "distraction",
+      "start": 27710,
+      "count": 60
+    },
+    {
+      "video_id": "video_04",
+      "state": "fatigue",
+      "start": 21723,
+      "count": 15
+    },
+    {
+      "video_id": "video_04",
+      "state": "absent",
+      "start": 9451,
+      "count": 60
+    }
+  ],
+  "roi": [
+    1145,
+    521,
+    538,
+    491
+  ],
+  "label_sha256": "6bf046be73806420de13f2f40b2120b8ee733fdf3d0f2464ecad6142ca423e5d",
+  "models": {
+    "repository": "https://github.com/yakhyo/mediapipe-face-mesh-onnx.git",
+    "revision": "add50e0f486405c96695812f9a9b9b89a485892b",
+    "source_hashes": {
+      "models\\__init__.py": "156e6ee98ff8b1eb8bcabe292435d65ba2bcc7142b15e501d3e84c952c1f0a06",
+      "models\\blazeface.py": "8f2ade0f797574869a99c79a559be180ff31e1dfa8d041d41846c26b475dd4c3",
+      "models\\model.py": "cf6b15c2977eefe15deef32784538cb7664704fb5ad5f04cf7da52f44766b88b",
+      "models\\onnx_model.py": "0c8375f9fd64567b4256f79b3486213d9c1ef1312d262abb26c96641369600a7",
+      "models\\tessellation.py": "ef686b0fe90d3722a304c6b3709da1784ef3d558e457bbe17dbbaec8dcddab0a"
+    },
+    "weights": {
+      "face_detection_short_range.pt": {
+        "url": "https://github.com/yakhyo/mediapipe-face-mesh-onnx/releases/download/weights/face_detection_short_range.pt",
+        "sha256": "7eb4d030f2458413a3382c10db7aaac46c4bc91725a12b531c94b557cb92bfe3"
+      },
+      "face_landmarker_256x256.pt": {
+        "url": "https://github.com/yakhyo/mediapipe-face-mesh-onnx/releases/download/weights/face_landmarker_256x256.pt",
+        "sha256": "fe4527aed53fe16c9b5825055787c707781022f7b4a76960dfafe7a5441f23ec"
+      },
+      "yolo11n-pose.pt": {
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-pose.pt",
+        "sha256": "869e83fcdffdc7371fa4e34cd8e51c838cc729571d1635e5141e3075e9319dc0"
+      }
+    }
+  },
+  "torch": "2.5.1+cu121",
+  "mediapipe": "0.10.21",
+  "opencv": "4.10.0",
+  "gpu": "NVIDIA GeForce RTX 2060 SUPER",
+  "execution": "FP32 eager, TF32 off; same facial helpers and weights; no body gate",
+  "tracking_reset": "each clip, no preceding warmup frames",
+  "complete": true,
+  "elapsed_seconds": 68.00956920000317,
+  "calls": {
+    "torch_cpu": {
+      "detector": 798,
+      "mesh": 593
+    },
+    "torch_cuda": {
+      "detector": 798,
+      "mesh": 593
+    }
+  },
+  "warmup_calls_per_network": 3
+}

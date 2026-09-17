@@ -45,30 +45,42 @@ def load_unified_csv_to_windows(
 ) -> List[Window]:
     df = pd.read_csv(csv_path)
     all_windows: List[Window] = []
-    
-    # Capitaliza o estado para corresponder às chaves do BINARY_LABEL_MAP
-    df[STATE_COLUMN] = df[STATE_COLUMN].astype(str).str.capitalize()
+
+    required_columns = {
+        TASK_COLUMN,
+        FRAME_INDEX_COLUMN,
+        TIMESTAMP_COLUMN,
+        STATE_COLUMN,
+        DETECTED_COLUMN,
+        *FEATURE_COLUMNS,
+    }
+    missing_columns = sorted(required_columns.difference(df.columns))
+    if missing_columns:
+        raise ValueError(f"Colunas ausentes no CSV: {missing_columns}")
+
+    # BINARY_LABEL_MAP usa chaves minusculas; build_windows faz o mapeamento final.
+    df[STATE_COLUMN] = df[STATE_COLUMN].astype(str).str.strip().str.lower()
 
     for task_id, group_df in df.groupby(TASK_COLUMN):
         df_sorted = group_df.sort_values(FRAME_INDEX_COLUMN).reset_index(drop=True)
         
         states = df_sorted[STATE_COLUMN]
         is_valid_state = states.isin(list(BINARY_LABEL_MAP.keys()))
-        face_ok = df_sorted[DETECTED_COLUMN].astype(bool)
+        face_ok = pd.to_numeric(
+            df_sorted[DETECTED_COLUMN], errors="coerce"
+        ).fillna(0).astype(bool)
         
         # Frame é considerado válido se a face foi detectada e o estado é válido
         frame_detected = (face_ok & is_valid_state).tolist()
         
-        # Mapeia os rótulos para o esquema binário (Alert vs Not-Alert)
         raw_labels = df_sorted[STATE_COLUMN].tolist()
-        labels = [BINARY_LABEL_MAP.get(lbl, lbl) for lbl in raw_labels]
 
         # Trata features ausentes preenchendo por propagação ou zeros
         feats_df = df_sorted[FEATURE_COLUMNS].ffill().bfill().fillna(0.0)
         features = feats_df.to_numpy(dtype=np.float32)
 
         windows = build_windows(
-            frame_labels=labels,
+            frame_labels=raw_labels,
             frame_detected=frame_detected,
             frame_features=features,
             task_id=str(task_id),

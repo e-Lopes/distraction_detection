@@ -36,12 +36,12 @@ pose = mp_pose.Pose(min_detection_confidence=MIN_POSE_CONFIDENCE,
                     min_tracking_confidence=MIN_POSE_CONFIDENCE)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = YOLO("fase_1/yolo26x.pt").to(device)
+model = YOLO("C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\yolo26x.pt").to(device)
 
 # ========= FUNÇÕES =========
 def load_config():
     try:
-        with open("fase_1/roi_config.json") as f:
+        with open("C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\roi_config.json") as f:
             config = json.load(f)
         return config['roi_cadeira']
     except Exception as e:
@@ -263,7 +263,7 @@ def process_video(video_path, roi):
             cv2.rectangle(display_frame, (0, 0), (w, h), cor, 3)
             #cv2.putText(display_frame, f"{estado_texto[current_state]} ({angulo:.1f} graus)", 
             #           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, cor, 2)
-            q
+            
             # Mostrar distância sempre (com formatação condicional)
             dist_text = "Dist. pulsos: N/A" if normalized_distance < 0 else f"Dist. pulsos: {normalized_distance:.2f}"
             #cv2.putText(display_frame, dist_text, 

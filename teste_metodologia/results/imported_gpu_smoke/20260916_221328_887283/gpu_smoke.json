@@ -1,0 +1,28 @@
+{
+  "gpu": "NVIDIA GeForce RTX 2060 SUPER",
+  "cuda_forward_calls": 0,
+  "optimizer_steps": 0,
+  "checkpoint_saved": false,
+  "episodes": [
+    {
+      "video_id": "video_01",
+      "status": "insufficient_windows",
+      "reason": "video_01: classe 1 sem janelas suficientes para K=1, Q=1."
+    },
+    {
+      "video_id": "video_02",
+      "status": "insufficient_windows",
+      "reason": "video_02: classe 1 sem janelas suficientes para K=1, Q=1."
+    },
+    {
+      "video_id": "video_03",
+      "status": "insufficient_windows",
+      "reason": "video_03: classe 1 sem janelas suficientes para K=1, Q=1."
+    },
+    {
+      "video_id": "video_04",
+      "status": "insufficient_windows",
+      "reason": "video_04: classe 1 sem janelas suficientes para K=1, Q=1."
+    }
+  ]
+}

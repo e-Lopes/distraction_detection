@@ -1,0 +1,111 @@
+{
+  "targets": [
+    [
+      1,
+      17796
+    ],
+    [
+      1,
+      25597
+    ],
+    [
+      1,
+      25598
+    ],
+    [
+      2,
+      3051
+    ],
+    [
+      2,
+      9265
+    ],
+    [
+      2,
+      18552
+    ],
+    [
+      3,
+      3946
+    ],
+    [
+      3,
+      4406
+    ],
+    [
+      3,
+      4407
+    ],
+    [
+      3,
+      28673
+    ],
+    [
+      4,
+      244
+    ],
+    [
+      4,
+      245
+    ],
+    [
+      4,
+      23862
+    ]
+  ],
+  "camera": [
+    [
+      538.0,
+      0.0,
+      269.0
+    ],
+    [
+      0.0,
+      538.0,
+      245.5
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "camera_calibrated": false,
+  "seed": 42,
+  "precision": "FP32 eager, TF32 off",
+  "torch": "2.5.1+cu121",
+  "opencv": "4.10.0",
+  "model_manifest": {
+    "repository": "https://github.com/yakhyo/mediapipe-face-mesh-onnx.git",
+    "revision": "add50e0f486405c96695812f9a9b9b89a485892b",
+    "source_hashes": {
+      "models\\__init__.py": "156e6ee98ff8b1eb8bcabe292435d65ba2bcc7142b15e501d3e84c952c1f0a06",
+      "models\\blazeface.py": "8f2ade0f797574869a99c79a559be180ff31e1dfa8d041d41846c26b475dd4c3",
+      "models\\model.py": "cf6b15c2977eefe15deef32784538cb7664704fb5ad5f04cf7da52f44766b88b",
+      "models\\onnx_model.py": "0c8375f9fd64567b4256f79b3486213d9c1ef1312d262abb26c96641369600a7",
+      "models\\tessellation.py": "ef686b0fe90d3722a304c6b3709da1784ef3d558e457bbe17dbbaec8dcddab0a"
+    },
+    "weights": {
+      "face_detection_short_range.pt": {
+        "url": "https://github.com/yakhyo/mediapipe-face-mesh-onnx/releases/download/weights/face_detection_short_range.pt",
+        "sha256": "7eb4d030f2458413a3382c10db7aaac46c4bc91725a12b531c94b557cb92bfe3"
+      },
+      "face_landmarker_256x256.pt": {
+        "url": "https://github.com/yakhyo/mediapipe-face-mesh-onnx/releases/download/weights/face_landmarker_256x256.pt",
+        "sha256": "fe4527aed53fe16c9b5825055787c707781022f7b4a76960dfafe7a5441f23ec"
+      },
+      "yolo11n-pose.pt": {
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-pose.pt",
+        "sha256": "869e83fcdffdc7371fa4e34cd8e51c838cc729571d1635e5141e3075e9319dc0"
+      }
+    }
+  },
+  "script_sha256": "67d19ea8f374544a63ec3b73a79dec9ef08ff4888fc6a050dbb5a293642f00fa",
+  "source_hashes": {
+    "video_01.csv": "3c7dead041db2dac253e0768d8e6c1cb4e735953e21f6f98edd18d449f7fc5c3",
+    "video_02.csv": "53712d7ef82981a9a928ab57c33a86266dbdbb38956611c3c9adf040fc4ba20d",
+    "video_03.csv": "637941e2b783c5cc67d05eeb64afbe622b792e5e665e845f622a2672392210da",
+    "video_04.csv": "afdbcc810d340259ccdf1890a7c6ec220f4672cc9d4a4e45d03ce84ce5006092"
+  },
+  "note": "Diagnostic sample selected for extreme jumps, not prevalence of geometric failures. No production correction."
+}

@@ -10,7 +10,7 @@ from PIL import Image
 from io import BytesIO
 
 # Configurações globais
-MODEL_PATH = "yolov11x.pt"
+MODEL_PATH = "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\yolo26x.pt"
 DEVICE = "cuda"  # ou "cpu"
 CONFIDENCE_THRESHOLD = 0.4
 PROCESS_EVERY_N_FRAMES = 5

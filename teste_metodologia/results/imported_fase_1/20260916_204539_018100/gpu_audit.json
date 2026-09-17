@@ -1,0 +1,6 @@
+{
+  "pose_cuda_calls": 122339,
+  "face_detector_cuda_calls": 122338,
+  "face_landmarker_cuda_calls": 86659,
+  "warmup_included": true
+}

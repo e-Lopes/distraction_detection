@@ -1,0 +1,124 @@
+{
+  "gpu": "NVIDIA GeForce RTX 2060 SUPER",
+  "cuda_forward_calls": 6,
+  "optimizer_steps": 0,
+  "checkpoint_saved": false,
+  "episodes": [
+    {
+      "video_id": "video_01",
+      "status": "ok",
+      "support_indices": [
+        235,
+        114
+      ],
+      "query_indices": [
+        259,
+        115
+      ],
+      "loss": 0.7156490087509155,
+      "inference_device": "cuda:0",
+      "support_mean": [
+        [
+          [
+            0.25692468881607056,
+            0.10071147233247757,
+            -35.48304748535156,
+            -36.06221389770508,
+            -101.20441436767578
+          ]
+        ]
+      ],
+      "support_std": [
+        [
+          [
+            0.0507587194442749,
+            0.13376200199127197,
+            11.459600448608398,
+            55.52947998046875,
+            119.3770751953125
+          ]
+        ]
+      ],
+      "note": "Random untrained encoder. Functional test only; no accuracy claim."
+    },
+    {
+      "video_id": "video_02",
+      "status": "insufficient_windows",
+      "reason": "video_02: classe 1 sem janelas suficientes para K=1, Q=1."
+    },
+    {
+      "video_id": "video_03",
+      "status": "ok",
+      "support_indices": [
+        947,
+        1286
+      ],
+      "query_indices": [
+        1049,
+        1282
+      ],
+      "loss": 0.7199002504348755,
+      "inference_device": "cuda:0",
+      "support_mean": [
+        [
+          [
+            0.27202317118644714,
+            0.02495715208351612,
+            -28.967199325561523,
+            -8.438650131225586,
+            -139.57916259765625
+          ]
+        ]
+      ],
+      "support_std": [
+        [
+          [
+            0.03719625622034073,
+            0.01139138825237751,
+            5.308051109313965,
+            34.489601135253906,
+            59.159305572509766
+          ]
+        ]
+      ],
+      "note": "Random untrained encoder. Functional test only; no accuracy claim."
+    },
+    {
+      "video_id": "video_04",
+      "status": "ok",
+      "support_indices": [
+        1532,
+        1484
+      ],
+      "query_indices": [
+        1396,
+        1485
+      ],
+      "loss": 0.6758513450622559,
+      "inference_device": "cuda:0",
+      "support_mean": [
+        [
+          [
+            0.2508781850337982,
+            0.04212002083659172,
+            -35.73447036743164,
+            -6.475861072540283,
+            -158.92506408691406
+          ]
+        ]
+      ],
+      "support_std": [
+        [
+          [
+            0.05394107103347778,
+            0.039716415107250214,
+            2.0694282054901123,
+            4.135574817657471,
+            8.657771110534668
+          ]
+        ]
+      ],
+      "note": "Random untrained encoder. Functional test only; no accuracy claim."
+    }
+  ]
+}

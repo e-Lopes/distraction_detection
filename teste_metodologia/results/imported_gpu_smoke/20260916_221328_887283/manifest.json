@@ -1,0 +1,88 @@
+{
+  "source_files": [
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\config.json",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\config.json",
+      "sha256": "18bf19eab602739e0e0d8c01941a124f691737fe323c94389bc6a31ffea0abb2"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\gpu_audit.json",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\gpu_audit.json",
+      "sha256": "f5672e8ce1f7a79f7f949592ed6ce24b38bc0036f8f31c65c2fe5bbc894f0726"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_01.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_01.csv",
+      "sha256": "3c7dead041db2dac253e0768d8e6c1cb4e735953e21f6f98edd18d449f7fc5c3"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_01_diagnostico_deteccao.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_01_diagnostico_deteccao.csv",
+      "sha256": "d74d5423fc7b2d5f5fb6ed5ecae8487cd54d4d28696f2fc9e396d7d5cf5f2676"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_01_estatisticas.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_01_estatisticas.csv",
+      "sha256": "9d3ca5dda07fe8b4fe8a77d2e7d665b0b6d13efbcb9126114dddd45b2ff1ff07"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_02.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_02.csv",
+      "sha256": "53712d7ef82981a9a928ab57c33a86266dbdbb38956611c3c9adf040fc4ba20d"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_02_diagnostico_deteccao.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_02_diagnostico_deteccao.csv",
+      "sha256": "2b382bf560a061705be0173a4fd5500b1676104ff979dd6686b2fcb7500b51e5"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_02_estatisticas.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_02_estatisticas.csv",
+      "sha256": "ac6a1775021e464000e00fd036533cb001ebd13001a34748fbc9a01581284301"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_03.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_03.csv",
+      "sha256": "637941e2b783c5cc67d05eeb64afbe622b792e5e665e845f622a2672392210da"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_03_diagnostico_deteccao.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_03_diagnostico_deteccao.csv",
+      "sha256": "6cb512f575b818bb0ae77ef105a86cb7bda2d06714747734572abba764611a77"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_03_estatisticas.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_03_estatisticas.csv",
+      "sha256": "5c501d6cdfae60a257de4a01bf36fd5c33a7a98ab5115d8920a6d96aba9897e1"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_04.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_04.csv",
+      "sha256": "afdbcc810d340259ccdf1890a7c6ec220f4672cc9d4a4e45d03ce84ce5006092"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_04_diagnostico_deteccao.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_04_diagnostico_deteccao.csv",
+      "sha256": "277e3a08d5671662178584b46fdb858b13b1e178206543c0ce1ad2a43c9b58db"
+    },
+    {
+      "source": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\extracao_ao_vivo\\20260916_204539_018100\\video_04_estatisticas.csv",
+      "copy": "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\teste_metodologia\\results\\imported_fase_1\\20260916_204539_018100\\video_04_estatisticas.csv",
+      "sha256": "89dc68b8ed560594c3bee3882fea5177218ff286c705b989decf737732f3088e"
+    }
+  ],
+  "labels_sha256": "6bf046be73806420de13f2f40b2120b8ee733fdf3d0f2464ecad6142ca423e5d",
+  "rows": 122337,
+  "unlabeled_frames": 2,
+  "window_len": 90,
+  "stride": 90,
+  "k_shot": 1,
+  "q_query": 1,
+  "imputation": false,
+  "strict_windows": 35,
+  "angle_quality_validated": false,
+  "complete": true,
+  "script_sha256": "42286d02a86d1d891a7a6830515f924ec67173faa6bdaaf0f1a116d69a2c2b94",
+  "torch_version": "2.5.1+cu121",
+  "smoke_executed": false
+}

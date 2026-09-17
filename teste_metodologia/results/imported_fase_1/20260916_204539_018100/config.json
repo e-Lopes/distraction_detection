@@ -1,0 +1,74 @@
+{
+  "roi": [
+    1145,
+    521,
+    538,
+    491
+  ],
+  "videos": [
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\1.mp4",
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\2.mp4",
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\3.mp4",
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\4.mp4"
+  ],
+  "inference_device": "cuda:0",
+  "inference_backend": "torch_cuda",
+  "gpu_name": "NVIDIA GeForce RTX 2060 SUPER",
+  "torch_version": "2.5.1+cu121",
+  "torch_cuda_version": "12.1",
+  "ultralytics_version": "8.3.65",
+  "pose_model": "YOLO11n-pose",
+  "face_detector": "BlazeFace short range",
+  "face_model": "FaceLandmarker 478 (not legacy attention)",
+  "tracking": false,
+  "comparability_note": "Different models and tracking from CPU reference; validate coverage and indicator thresholds before scientific use.",
+  "pose_confidence_threshold": 0.7,
+  "face_detection_threshold": 0.5,
+  "face_presence_threshold": 0.5,
+  "weights": {
+    "face_detection_short_range.pt": {
+      "url": "https://github.com/yakhyo/mediapipe-face-mesh-onnx/releases/download/weights/face_detection_short_range.pt",
+      "sha256": "7eb4d030f2458413a3382c10db7aaac46c4bc91725a12b531c94b557cb92bfe3"
+    },
+    "face_landmarker_256x256.pt": {
+      "url": "https://github.com/yakhyo/mediapipe-face-mesh-onnx/releases/download/weights/face_landmarker_256x256.pt",
+      "sha256": "fe4527aed53fe16c9b5825055787c707781022f7b4a76960dfafe7a5441f23ec"
+    },
+    "yolo11n-pose.pt": {
+      "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-pose.pt",
+      "sha256": "869e83fcdffdc7371fa4e34cd8e51c838cc729571d1635e5141e3075e9319dc0"
+    }
+  },
+  "source_revision": "add50e0f486405c96695812f9a9b9b89a485892b",
+  "source_hashes": {
+    "models\\__init__.py": "156e6ee98ff8b1eb8bcabe292435d65ba2bcc7142b15e501d3e84c952c1f0a06",
+    "models\\blazeface.py": "8f2ade0f797574869a99c79a559be180ff31e1dfa8d041d41846c26b475dd4c3",
+    "models\\model.py": "cf6b15c2977eefe15deef32784538cb7664704fb5ad5f04cf7da52f44766b88b",
+    "models\\onnx_model.py": "0c8375f9fd64567b4256f79b3486213d9c1ef1312d262abb26c96641369600a7",
+    "models\\tessellation.py": "ef686b0fe90d3722a304c6b3709da1784ef3d558e457bbe17dbbaec8dcddab0a"
+  },
+  "facial_execution": "CUDA graphs, float32, batch=1",
+  "cpu_stages": [
+    "video decoding",
+    "crop/resize",
+    "postprocessing",
+    "EAR/MAR/solvePnP",
+    "plots",
+    "CSV/statistics"
+  ],
+  "cuda_warmup_verified": true,
+  "opencv_version": "4.10.0",
+  "schema_version": 3,
+  "acceptance_rule": "pose_detected AND face_mesh_detected",
+  "face_detected_semantics": "Legacy alias of indicators_accepted",
+  "validity_semantics": "Finite successful calculation, not a visibility or anatomical quality score; not evaluated when acceptance fails",
+  "ear_selection": "minimum_mean_image_x",
+  "angle_reference": null,
+  "angle_convention": "historical: pitch=Y, yaw=Z, roll=X",
+  "headless": true,
+  "graph_fps": 5,
+  "fast": false,
+  "statistics_mode_bin_degrees": 1.0,
+  "statistics_mode_bin_ratio": 0.01,
+  "statistics_note": "Frame-weighted; finite detected samples only. Linear angle summaries; modes are not neutral-pose calibration."
+}

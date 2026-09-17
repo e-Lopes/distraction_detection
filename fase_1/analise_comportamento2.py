@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from pathlib import Path
 
-videos = '/home/edu/Desktop/distraction_detection/distraction_detection/videos/'
+videos = 'C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\videos\\'
 
 # Configurações
 ANGULO_ALERTA = 20
@@ -28,7 +28,7 @@ pose = mp_pose.Pose(min_detection_confidence=0.7, min_tracking_confidence=0.5)
 
 def load_config():
     try:
-        with open('roi_config.json') as f:
+        with open('fase_1\\roi_config.json') as f:
             config = json.load(f)
         return config['roi_cadeira'], config['video_path']
     except Exception as e:

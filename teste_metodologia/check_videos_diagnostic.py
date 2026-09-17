@@ -8,7 +8,7 @@ que a distribuição de frames, detecções faciais e estados estão corretas.
 import pandas as pd
 from pathlib import Path
 
-UNIFIED_CSV = "/home/eduardo/Code/distraction_detection/teste_metodologia/results/classificacoes_frames_exatos.csv"
+UNIFIED_CSV = Path(__file__).resolve().parent / "results/classificacoes_com_mediapipe.csv"
 
 def main():
     if not Path(UNIFIED_CSV).exists():
@@ -24,6 +24,13 @@ def main():
         total_frames = len(group)
         face_detected_count = (group["face_detected"] == 1).sum()
         detection_rate = (face_detected_count / total_frames) * 100 if total_frames > 0 else 0
+        pose_detected_count = None
+        invalid_face_without_pose = 0
+        if "pose_detected" in group.columns:
+            pose_detected_count = (group["pose_detected"] == 1).sum()
+            invalid_face_without_pose = (
+                group["face_detected"].eq(1) & group["pose_detected"].ne(1)
+            ).sum()
         
         print(f"--------------------------------------------------")
         print(f" Vídeo ID: {video_id}")
@@ -31,6 +38,10 @@ def main():
         print(f"  -> Total de frames: {total_frames}")
         print(f"  -> Frames com face detectada (1): {face_detected_count} ({detection_rate:.1f}%)")
         print(f"  -> Frames sem face detectada (0): {total_frames - face_detected_count} ({100 - detection_rate:.1f}%)")
+        if pose_detected_count is not None:
+            pose_rate = (pose_detected_count / total_frames) * 100
+            print(f"  -> Frames com pessoa detectada: {pose_detected_count} ({pose_rate:.1f}%)")
+            print(f"  -> Faces validas sem pessoa detectada: {invalid_face_without_pose}")
         
         print(f"  -> Distribuição de Estados:")
         state_counts = group["state"].value_counts(dropna=False)

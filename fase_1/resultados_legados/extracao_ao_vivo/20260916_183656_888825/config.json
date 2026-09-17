@@ -1,0 +1,23 @@
+{
+  "roi": [
+    1145,
+    521,
+    538,
+    491
+  ],
+  "videos": [
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\1.mp4",
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\2.mp4",
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\3.mp4",
+    "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw\\4.mp4"
+  ],
+  "ear_selection": "minimum_mean_image_x",
+  "angle_reference": null,
+  "angle_convention": "historical: pitch=Y, yaw=Z, roll=X",
+  "headless": true,
+  "graph_fps": 5,
+  "fast": false,
+  "statistics_mode_bin_degrees": 1.0,
+  "statistics_mode_bin_ratio": 0.01,
+  "statistics_note": "Frame-weighted; finite detected samples only. Linear angle summaries; modes are not neutral-pose calibration."
+}

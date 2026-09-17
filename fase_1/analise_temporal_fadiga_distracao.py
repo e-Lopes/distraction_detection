@@ -51,9 +51,9 @@ from matplotlib.gridspec import GridSpec
 # ==============================================================================
 
 BASE_DIR = Path(__file__).resolve().parent
-VIDEO_DIR = BASE_DIR / "videos"             # Folder with 1.mp4, 2.mp4, 3.mp4, 4.mp4
-ROI_CONFIG_PATH = BASE_DIR / "roi_config_temporal.example.json"
-OUTPUT_DIR = BASE_DIR / "presentation_outputs"
+VIDEO_DIR = "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_2\\data\\raw"             # Folder with 1.mp4, 2.mp4, 3.mp4, 4.mp4
+ROI_CONFIG_PATH = "fase_1\roi_config.json"
+OUTPUT_DIR = "C:\\Users\\Eduardo\\Desktop\\Mestrado\\distraction_detection\\distraction_detection\\fase_1\\resultados_legados\\analise_temporal_fadiga_distracao"
 
 # Explicit video list (processed in order)
 VIDEO_FILES = ["1.mp4", "2.mp4", "3.mp4", "4.mp4"]
